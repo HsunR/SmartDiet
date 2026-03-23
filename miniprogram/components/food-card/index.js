@@ -15,13 +15,31 @@ Component({
   },
 
   data: {
-    totalCalories: 0
+    totalCalories: 0,
+    totalProtein: 0,
+    totalFat: 0,
+    totalCarb: 0,
+    proteinPercent: 0,
+    fatPercent: 0,
+    carbPercent: 0
   },
 
   observers: {
     'foods': function(foods) {
       const totalCalories = foods.reduce((sum, f) => sum + (f.nutrients?.calories || 0), 0)
-      this.setData({ totalCalories })
+      const totalProtein = foods.reduce((sum, f) => sum + (f.nutrients?.protein || 0), 0)
+      const totalFat = foods.reduce((sum, f) => sum + (f.nutrients?.fat || 0), 0)
+      const totalCarb = foods.reduce((sum, f) => sum + (f.nutrients?.carbohydrate || 0), 0)
+      
+      this.setData({
+        totalCalories,
+        totalProtein,
+        totalFat,
+        totalCarb,
+        proteinPercent: Math.min(totalProtein / 100 * 100, 100),
+        fatPercent: Math.min(totalFat / 80 * 100, 100),
+        carbPercent: Math.min(totalCarb / 300 * 100, 100)
+      })
     }
   },
 

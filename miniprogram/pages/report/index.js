@@ -18,6 +18,18 @@ Page({
       fat: 55,
       carbohydrate: 300
     },
+    progress: {
+      calories: 0,
+      protein: 0,
+      fat: 0,
+      carbohydrate: 0
+    },
+    progressColor: {
+      calories: '#4CAF50',
+      protein: '#4CAF50',
+      fat: '#4CAF50',
+      carbohydrate: '#4CAF50'
+    },
     gaps: [],
     loading: true,
     activeTab: 'overview',
@@ -27,11 +39,22 @@ Page({
       { key: 'trend', name: '趋势' }
     ],
     weekData: [],
+    weekSummary: {
+      totalCalories: 0,
+      avgCalories: 0,
+      targetDays: 0
+    },
     mealRecords: {
       breakfast: [],
       lunch: [],
       dinner: [],
       snack: []
+    },
+    mealCalories: {
+      breakfast: 0,
+      lunch: 0,
+      dinner: 0,
+      snack: 0
     }
   },
 
@@ -64,11 +87,17 @@ Page({
         const records = recordsResult.data || []
         const mealRecords = this.groupByMeal(records)
         const summary = this.calculateSummary(records)
+        const progress = this.calculateProgress(summary)
+        const progressColor = this.getProgressColors(progress)
+        const mealCalories = this.calculateMealCalories(mealRecords)
         
         this.setData({
           records,
           mealRecords,
-          summary
+          summary,
+          progress,
+          progressColor,
+          mealCalories
         })
       }
       
@@ -100,6 +129,7 @@ Page({
     records.forEach(record => {
       const mealType = record.mealType || 'snack'
       if (mealRecords[mealType]) {
+        record.foodsNames = (record.foods || []).map(f => f.name).join('、')
         mealRecords[mealType].push(record)
       }
     })
@@ -119,6 +149,40 @@ Page({
     }, { calories: 0, protein: 0, fat: 0, carbohydrate: 0 })
   },
 
+  calculateProgress: function(summary) {
+    const { targets } = this.data
+    return {
+      calories: Math.min(Math.round((summary.calories / targets.calories) * 100), 150),
+      protein: Math.min(Math.round((summary.protein / targets.protein) * 100), 150),
+      fat: Math.min(Math.round((summary.fat / targets.fat) * 100), 150),
+      carbohydrate: Math.min(Math.round((summary.carbohydrate / targets.carbohydrate) * 100), 150)
+    }
+  },
+
+  getProgressColors: function(progress) {
+    const getColor = (percent) => {
+      if (percent < 50) return '#FF9800'
+      if (percent <= 100) return '#4CAF50'
+      if (percent <= 110) return '#FF9800'
+      return '#F44336'
+    }
+    return {
+      calories: getColor(progress.calories),
+      protein: getColor(progress.protein),
+      fat: getColor(progress.fat),
+      carbohydrate: getColor(progress.carbohydrate)
+    }
+  },
+
+  calculateMealCalories: function(mealRecords) {
+    return {
+      breakfast: mealRecords.breakfast.reduce((sum, r) => sum + (r.totalCalories || 0), 0),
+      lunch: mealRecords.lunch.reduce((sum, r) => sum + (r.totalCalories || 0), 0),
+      dinner: mealRecords.dinner.reduce((sum, r) => sum + (r.totalCalories || 0), 0),
+      snack: mealRecords.snack.reduce((sum, r) => sum + (r.totalCalories || 0), 0)
+    }
+  },
+
   loadWeekData: async function() {
     const weekData = []
     const today = new Date()
@@ -132,24 +196,40 @@ Page({
         const result = await safeApiCall(() => api.food.getRecords(dateStr))
         const records = result.success ? (result.data || []) : []
         const summary = this.calculateSummary(records)
+        const percent = Math.round((summary.calories / this.data.targets.calories) * 100)
         
         weekData.push({
           date: dateStr,
           day: this.getDayName(date),
           calories: summary.calories,
-          target: this.data.targets.calories
+          target: this.data.targets.calories,
+          percent: percent,
+          barColor: (percent >= 80 && percent <= 110) ? '#4CAF50' : '#FF9800'
         })
       } catch (error) {
         weekData.push({
           date: dateStr,
           day: this.getDayName(date),
           calories: 0,
-          target: this.data.targets.calories
+          target: this.data.targets.calories,
+          percent: 0,
+          barColor: '#FF9800'
         })
       }
     }
     
-    this.setData({ weekData })
+    const totalCalories = weekData.reduce((sum, d) => sum + d.calories, 0)
+    const avgCalories = Math.round(totalCalories / 7)
+    const targetDays = weekData.filter(d => d.percent >= 80 && d.percent <= 110).length
+    
+    this.setData({ 
+      weekData,
+      weekSummary: {
+        totalCalories,
+        avgCalories,
+        targetDays
+      }
+    })
   },
 
   getDayName: function(date) {
@@ -188,17 +268,6 @@ Page({
   onTabChange: function(e) {
     const { tab } = e.currentTarget.dataset
     this.setData({ activeTab: tab })
-  },
-
-  getProgressPercent: function(current, target) {
-    return Math.min(Math.round((current / target) * 100), 150)
-  },
-
-  getProgressColor: function(percent) {
-    if (percent < 50) return '#FF9800'
-    if (percent <= 100) return '#4CAF50'
-    if (percent <= 110) return '#FF9800'
-    return '#F44336'
   },
 
   onRecordTap: function(e) {
@@ -261,47 +330,46 @@ Page({
     })
   },
 
+  getRecommendation: async function() {
+    wx.showLoading({ title: '获取建议中...' })
+    
+    try {
+      const { gaps } = this.data
+      const result = await safeApiCall(() => api.recommend.getFoodRecommendation(gaps, {}))
+      
+      wx.hideLoading()
+      
+      if (result.success && result.suggestions) {
+        let content = '饮食建议：\n\n'
+        result.suggestions.forEach(s => {
+          content += `• ${s.reason}\n`
+          content += `  推荐：${s.foods.join('、')}\n\n`
+        })
+        
+        wx.showModal({
+          title: '个性化建议',
+          content: content,
+          showCancel: false
+        })
+      }
+    } catch (error) {
+      wx.hideLoading()
+      wx.showToast({
+        title: '获取建议失败',
+        icon: 'none'
+      })
+    }
+  },
+
   onAddFood: function() {
     wx.switchTab({
       url: '/pages/recognize/index'
     })
   },
 
-  getRecommendation: async function() {
-    wx.showLoading({ title: '生成建议中...' })
-    
-    try {
-      const result = await safeApiCall(() => api.recommend.getFoodRecommendation(this.data.gaps, {}))
-      
-      if (result.success && result.suggestions) {
-        this.showRecommendationModal(result.suggestions)
-      }
-    } catch (error) {
-      wx.showToast({
-        title: '获取建议失败',
-        icon: 'none'
-      })
-    } finally {
-      wx.hideLoading()
-    }
-  },
-
-  showRecommendationModal: function(suggestions) {
-    let content = ''
-    suggestions.forEach((s, i) => {
-      content += `${i + 1}. ${s.nutrient}：${s.foods.join('、')}\n`
-    })
-    
-    wx.showModal({
-      title: '饮食建议',
-      content: content,
-      showCancel: false
-    })
-  },
-
   onShareAppMessage: function() {
     return {
-      title: 'AI营养师 - 今日饮食报告',
+      title: 'AI营养师 - 今日报告',
       path: '/pages/report/index'
     }
   }

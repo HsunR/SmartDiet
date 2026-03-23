@@ -35,7 +35,31 @@ exports.main = async (event, context) => {
   try {
     const foodCollection = db.collection('food_database')
     
-    const countResult = await foodCollection.count()
+    let countResult
+    try {
+      countResult = await foodCollection.count()
+    } catch (countError) {
+      if (countError.errCode === -502005) {
+        console.log('集合不存在，开始创建集合并初始化数据...')
+        
+        const addPromises = FOOD_DATA.map(food => {
+          return foodCollection.add({
+            data: {
+              ...food,
+              createdAt: new Date()
+            }
+          })
+        })
+        
+        await Promise.all(addPromises)
+        
+        return {
+          success: true,
+          message: `集合创建成功，已初始化 ${FOOD_DATA.length} 条食物数据`
+        }
+      }
+      throw countError
+    }
     
     if (countResult.total === 0) {
       const addPromises = FOOD_DATA.map(food => {
@@ -63,7 +87,8 @@ exports.main = async (event, context) => {
     console.error('Init database error:', error)
     return {
       success: false,
-      error: error.message
+      error: error.message,
+      errCode: error.errCode
     }
   }
 }

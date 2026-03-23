@@ -12,7 +12,7 @@
   </view>
   
   <view wx:elif="{{records.length === 0}}" class="empty-container">
-    <image src="/assets/icons/empty.png" class="empty-icon" mode="aspectFit"></image>
+    <view class="empty-icon">📋</view>
     <text class="empty-text">暂无记录</text>
     <button class="empty-btn" bindtap="onAddFood">添加记录</button>
   </view>
@@ -45,9 +45,9 @@
         <view class="record-content">
           <view class="record-header">
             <text class="record-meal">{{record.mealType === 'breakfast' ? '早餐' : record.mealType === 'lunch' ? '午餐' : record.mealType === 'dinner' ? '晚餐' : '加餐'}}</text>
-            <text class="record-time">{{record.createdAt}}</text>
+            <text class="record-time">{{record.displayTime}}</text>
           </view>
-          <text class="record-foods">{{record.foods.map(f => f.name).join('、')}}</text>
+          <text class="record-foods">{{record.foodsNames}}</text>
           <view class="record-nutrients">
             <text class="nutrient-tag">{{record.totalCalories}} kcal</text>
             <text class="nutrient-tag" wx:if="{{record.nutrients.protein}}">{{record.nutrients.protein}}g蛋白质</text>
@@ -78,17 +78,17 @@
       <view class="date-field">
         <text class="field-label">开始日期</text>
         <picker mode="date" value="{{startDate}}" bindchange="onStartDateChange">
-          <view class="field-value">{{startDate}}</view>
+          <view class="picker-value">{{startDate}}</view>
         </picker>
       </view>
       <view class="date-field">
         <text class="field-label">结束日期</text>
         <picker mode="date" value="{{endDate}}" bindchange="onEndDateChange">
-          <view class="field-value">{{endDate}}</view>
+          <view class="picker-value">{{endDate}}</view>
         </picker>
       </view>
     </view>
-    <view class="popup-footer">
+    <view class="popup-actions">
       <button class="popup-btn cancel" bindtap="cancelDateFilter">取消</button>
       <button class="popup-btn confirm" bindtap="applyDateFilter">确定</button>
     </view>

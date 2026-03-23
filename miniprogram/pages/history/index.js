@@ -102,6 +102,10 @@ Page({
           totalCalories: 0
         }
       }
+      
+      record.foodsNames = (record.foods || []).map(f => f.name).join('、')
+      record.displayTime = this.formatDisplayTime(record.createdAt)
+      
       grouped[date].records.push(record)
       grouped[date].totalCalories += record.totalCalories || 0
     })
@@ -124,6 +128,14 @@ Page({
       const day = date.getDate()
       return `${month}月${day}日`
     }
+  },
+
+  formatDisplayTime: function(timestamp) {
+    if (!timestamp) return ''
+    const date = new Date(timestamp)
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    return `${hours}:${minutes}`
   },
 
   onDateFilter: function() {
@@ -214,6 +226,12 @@ Page({
           }
         }
       }
+    })
+  },
+
+  onAddFood: function() {
+    wx.switchTab({
+      url: '/pages/recognize/index'
     })
   },
 

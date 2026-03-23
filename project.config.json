@@ -35,15 +35,28 @@
     "packNpmRelationList": [],
     "minifyWXSS": true,
     "showES6CompileOption": false,
-    "minifyWXML": true
+    "minifyWXML": true,
+    "compileWorklet": false,
+    "localPlugins": false,
+    "disableUseStrict": false,
+    "useCompilerPlugins": false,
+    "condition": false,
+    "swc": false,
+    "disableSWC": true
   },
-  "appid": "your-appid-here",
+  "appid": "wx72b1119029a6841a",
   "projectname": "SmartDiet",
   "description": "AI饮食识别与健康建议小程序",
-  "cloudfunctionTemplateRoot": "",
+  "cloudfunctionTemplateRoot": "cloudfunctionTemplate/",
   "condition": {},
   "editorSetting": {
     "tabIndent": "insertSpaces",
     "tabSize": 2
+  },
+  "compileType": "miniprogram",
+  "simulatorPluginLibVersion": {},
+  "packOptions": {
+    "ignore": [],
+    "include": []
   }
 }

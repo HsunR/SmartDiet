@@ -4,7 +4,7 @@ App({
       console.error('请使用 2.2.3 或以上的基础库以使用云能力')
     } else {
       wx.cloud.init({
-        env: 'smartdiet-xxx',
+        env: 'cloud1-5g94ikff8709bdba',
         traceUser: true,
       })
     }

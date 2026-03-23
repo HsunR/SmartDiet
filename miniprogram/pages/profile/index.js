@@ -33,6 +33,10 @@ Page({
       { value: 4, label: '活跃' },
       { value: 5, label: '非常活跃' }
     ],
+    goalIndex: 1,
+    goalLabel: '维持',
+    activityIndex: 2,
+    activityLabel: '中度活动',
     targets: {
       calories: 2000,
       protein: 75,
@@ -81,11 +85,29 @@ Page({
       if (result.success && result.data) {
         const profile = result.data
         this.setData({ profile })
+        this.updateSelections()
         this.calculateTargets()
       }
     } catch (error) {
       console.error('Load profile error:', error)
     }
+  },
+
+  updateSelections: function() {
+    const { profile, goals, activityLevels } = this.data
+    
+    const goalIndex = goals.findIndex(g => g.value === profile.goal)
+    const goalLabel = goalIndex >= 0 ? goals[goalIndex].label : goals[1].label
+    
+    const activityIndex = activityLevels.findIndex(a => a.value === profile.activityLevel)
+    const activityLabel = activityIndex >= 0 ? activityLevels[activityIndex].label : activityLevels[2].label
+    
+    this.setData({
+      goalIndex: goalIndex >= 0 ? goalIndex : 1,
+      goalLabel,
+      activityIndex: activityIndex >= 0 ? activityIndex : 2,
+      activityLabel
+    })
   },
 
   loadUserStats: async function() {
@@ -205,16 +227,22 @@ Page({
 
   onGoalChange: function(e) {
     const index = e.detail.value
+    const { goals } = this.data
     this.setData({
-      'profile.goal': this.data.goals[index].value
+      'profile.goal': goals[index].value,
+      goalIndex: parseInt(index),
+      goalLabel: goals[index].label
     })
     this.calculateTargets()
   },
 
   onActivityChange: function(e) {
     const index = e.detail.value
+    const { activityLevels } = this.data
     this.setData({
-      'profile.activityLevel': this.data.activityLevels[index].value
+      'profile.activityLevel': activityLevels[index].value,
+      activityIndex: parseInt(index),
+      activityLabel: activityLevels[index].label
     })
     this.calculateTargets()
   },

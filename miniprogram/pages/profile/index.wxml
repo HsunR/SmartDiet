@@ -1,7 +1,7 @@
 <view class="profile-container">
   <view wx:if="{{!hasLogin}}" class="login-section">
     <view class="login-card">
-      <image src="/assets/icons/logo.png" class="login-logo" mode="aspectFit"></image>
+      <view class="login-logo">🥗</view>
       <text class="login-title">AI营养师</text>
       <text class="login-desc">智能饮食管理，健康生活每一天</text>
       <button class="login-btn" bindtap="onLogin">
@@ -14,10 +14,14 @@
     <view class="user-header">
       <view class="user-info" bindtap="onGetUserProfile">
         <image 
-          src="{{userInfo.avatarUrl || '/assets/icons/user-avatar.png'}}" 
+          wx:if="{{userInfo.avatarUrl}}"
+          src="{{userInfo.avatarUrl}}" 
           class="user-avatar"
           mode="aspectFill"
         ></image>
+        <view class="user-avatar-placeholder" wx:else>
+          <text>👤</text>
+        </view>
         <view class="user-detail">
           <text class="user-name">{{userInfo.nickName || '用户'}}</text>
           <text class="user-id">ID: {{openid || '---'}}</text>
@@ -103,11 +107,11 @@
             mode="selector" 
             range="{{activityLevels}}" 
             range-key="label" 
-            value="{{profile.activityLevel - 1}}"
+            value="{{activityIndex}}"
             bindchange="onActivityChange"
           >
             <view class="form-value">
-              <text>{{activityLevels[profile.activityLevel - 1].label}}</text>
+              <text>{{activityLabel}}</text>
               <text class="arrow">›</text>
             </view>
           </picker>
@@ -119,11 +123,11 @@
             mode="selector" 
             range="{{goals}}" 
             range-key="label" 
-            value="{{goals.findIndex(g => g.value === profile.goal)}}"
+            value="{{goalIndex}}"
             bindchange="onGoalChange"
           >
             <view class="form-value">
-              <text>{{goals.find(g => g.value === profile.goal).label}}</text>
+              <text>{{goalLabel}}</text>
               <text class="arrow">›</text>
             </view>
           </picker>
@@ -161,7 +165,7 @@
       </view>
     </view>
     
-    <view class="menu-section">
+    <view class="menu-card">
       <view 
         class="menu-item" 
         wx:for="{{menuItems}}" 
@@ -169,16 +173,14 @@
         data-path="{{item.path}}"
         bindtap="onMenuTap"
       >
-        <view class="menu-icon">
-          <text class="iconfont icon-{{item.icon}}"></text>
-        </view>
+        <text class="menu-icon">{{item.icon === 'history' ? '📋' : item.icon === 'settings' ? '⚙️' : item.icon === 'feedback' ? '💬' : 'ℹ️'}}</text>
         <text class="menu-title">{{item.title}}</text>
         <text class="menu-arrow">›</text>
       </view>
     </view>
     
     <view class="save-section">
-      <button class="save-btn" bindtap="saveProfile">保存修改</button>
+      <button class="save-btn" bindtap="saveProfile">保存资料</button>
     </view>
   </view>
 </view>
