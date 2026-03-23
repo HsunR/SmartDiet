@@ -1,0 +1,65 @@
+<view class="food-card">
+  <view class="card-header">
+    <text class="card-title">识别结果</text>
+    <text class="card-calories">共 {{totalCalories}} kcal</text>
+  </view>
+  
+  <view class="food-list">
+    <view 
+      class="food-item" 
+      wx:for="{{foods}}" 
+      wx:key="name"
+      data-index="{{index}}"
+      bindtap="onFoodTap"
+    >
+      <view class="food-icon">
+        <text>{{item.category === '主食' ? '🍚' : item.category === '肉类' ? '🍖' : item.category === '蔬菜' ? '🥬' : item.category === '水果' ? '🍎' : '🍽️'}}</text>
+      </view>
+      
+      <view class="food-info">
+        <view class="food-name">{{item.name}}</view>
+        <view class="food-meta">
+          <text class="food-category">{{item.category}}</text>
+          <text class="food-weight">{{item.estimatedWeight}}g</text>
+        </view>
+      </view>
+      
+      <view class="food-nutrients">
+        <text class="nutrient-value">{{item.nutrients.calories}} kcal</text>
+      </view>
+    </view>
+  </view>
+  
+  <view class="nutrients-summary">
+    <view class="nutrient-bar">
+      <text class="nutrient-label">蛋白质</text>
+      <view class="bar-container">
+        <view class="bar-fill protein" style="width: {{foods.reduce((s, f) => s + (f.nutrients.protein || 0), 0) / 100 * 100}}%"></view>
+      </view>
+      <text class="nutrient-value">{{foods.reduce((s, f) => s + (f.nutrients.protein || 0), 0).toFixed(1)}}g</text>
+    </view>
+    <view class="nutrient-bar">
+      <text class="nutrient-label">脂肪</text>
+      <view class="bar-container">
+        <view class="bar-fill fat" style="width: {{foods.reduce((s, f) => s + (f.nutrients.fat || 0), 0) / 80 * 100}}%"></view>
+      </view>
+      <text class="nutrient-value">{{foods.reduce((s, f) => s + (f.nutrients.fat || 0), 0).toFixed(1)}}g</text>
+    </view>
+    <view class="nutrient-bar">
+      <text class="nutrient-label">碳水</text>
+      <view class="bar-container">
+        <view class="bar-fill carb" style="width: {{foods.reduce((s, f) => s + (f.nutrients.carbohydrate || 0), 0) / 300 * 100}}%"></view>
+      </view>
+      <text class="nutrient-value">{{foods.reduce((s, f) => s + (f.nutrients.carbohydrate || 0), 0).toFixed(1)}}g</text>
+    </view>
+  </view>
+  
+  <view class="card-actions" wx:if="{{editable}}">
+    <view class="action-btn edit-btn" bindtap="onEdit">
+      <text>修改</text>
+    </view>
+    <view class="action-btn confirm-btn" bindtap="onConfirm">
+      <text>确认记录</text>
+    </view>
+  </view>
+</view>

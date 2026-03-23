@@ -1,0 +1,142 @@
+@import './styles/variables.wxss';
+@import './styles/common.wxss';
+
+page {
+  background-color: #FAFAFA;
+  font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  font-size: 28rpx;
+  color: #212121;
+  line-height: 1.5;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.page-content {
+  flex: 1;
+  padding: 24rpx;
+  box-sizing: border-box;
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.flex-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-primary {
+  color: #4CAF50;
+}
+
+.text-secondary {
+  color: #757575;
+}
+
+.text-warning {
+  color: #FF9800;
+}
+
+.text-error {
+  color: #F44336;
+}
+
+.text-success {
+  color: #66BB6A;
+}
+
+.bg-primary {
+  background-color: #4CAF50;
+}
+
+.bg-white {
+  background-color: #FFFFFF;
+}
+
+.bg-light {
+  background-color: #FAFAFA;
+}
+
+.mt-xs { margin-top: 8rpx; }
+.mt-sm { margin-top: 16rpx; }
+.mt-md { margin-top: 24rpx; }
+.mt-lg { margin-top: 32rpx; }
+.mt-xl { margin-top: 48rpx; }
+
+.mb-xs { margin-bottom: 8rpx; }
+.mb-sm { margin-bottom: 16rpx; }
+.mb-md { margin-bottom: 24rpx; }
+.mb-lg { margin-bottom: 32rpx; }
+.mb-xl { margin-bottom: 48rpx; }
+
+.ml-xs { margin-left: 8rpx; }
+.ml-sm { margin-left: 16rpx; }
+.ml-md { margin-left: 24rpx; }
+.ml-lg { margin-left: 32rpx; }
+
+.mr-xs { margin-right: 8rpx; }
+.mr-sm { margin-right: 16rpx; }
+.mr-md { margin-right: 24rpx; }
+.mr-lg { margin-right: 32rpx; }
+
+.p-xs { padding: 8rpx; }
+.p-sm { padding: 16rpx; }
+.p-md { padding: 24rpx; }
+.p-lg { padding: 32rpx; }
+
+.border-radius-sm { border-radius: 8rpx; }
+.border-radius-md { border-radius: 16rpx; }
+.border-radius-lg { border-radius: 24rpx; }
+.border-radius-full { border-radius: 9999rpx; }
+
+.shadow-sm {
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+}
+
+.shadow-md {
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+}
+
+.shadow-lg {
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.12);
+}

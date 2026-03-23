@@ -1,0 +1,184 @@
+<view class="profile-container">
+  <view wx:if="{{!hasLogin}}" class="login-section">
+    <view class="login-card">
+      <image src="/assets/icons/logo.png" class="login-logo" mode="aspectFit"></image>
+      <text class="login-title">AI营养师</text>
+      <text class="login-desc">智能饮食管理，健康生活每一天</text>
+      <button class="login-btn" bindtap="onLogin">
+        <text>微信登录</text>
+      </button>
+    </view>
+  </view>
+  
+  <view wx:else class="profile-content">
+    <view class="user-header">
+      <view class="user-info" bindtap="onGetUserProfile">
+        <image 
+          src="{{userInfo.avatarUrl || '/assets/icons/user-avatar.png'}}" 
+          class="user-avatar"
+          mode="aspectFill"
+        ></image>
+        <view class="user-detail">
+          <text class="user-name">{{userInfo.nickName || '用户'}}</text>
+          <text class="user-id">ID: {{openid || '---'}}</text>
+        </view>
+      </view>
+      <view class="edit-btn" bindtap="onEditProfile">
+        <text>编辑资料</text>
+      </view>
+    </view>
+    
+    <view class="stats-card">
+      <view class="stat-item">
+        <text class="stat-value">{{stats.totalRecords}}</text>
+        <text class="stat-label">记录次数</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-value">{{stats.totalDays}}</text>
+        <text class="stat-label">记录天数</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-value">{{stats.avgCalories}}</text>
+        <text class="stat-label">日均热量</text>
+      </view>
+    </view>
+    
+    <view class="profile-card">
+      <view class="card-header">
+        <text class="card-title">个人资料</text>
+      </view>
+      
+      <view class="profile-form">
+        <view class="form-item">
+          <text class="form-label">性别</text>
+          <picker mode="selector" range="{{['男', '女']}}" value="{{profile.gender - 1}}" bindchange="onGenderChange">
+            <view class="form-value">
+              <text>{{profile.gender === 1 ? '男' : '女'}}</text>
+              <text class="arrow">›</text>
+            </view>
+          </picker>
+        </view>
+        
+        <view class="form-item">
+          <text class="form-label">年龄</text>
+          <input 
+            type="number" 
+            value="{{profile.age}}" 
+            class="form-input"
+            data-field="age"
+            bindinput="onInputChange"
+          />
+          <text class="form-unit">岁</text>
+        </view>
+        
+        <view class="form-item">
+          <text class="form-label">身高</text>
+          <input 
+            type="digit" 
+            value="{{profile.height}}" 
+            class="form-input"
+            data-field="height"
+            bindinput="onInputChange"
+          />
+          <text class="form-unit">cm</text>
+        </view>
+        
+        <view class="form-item">
+          <text class="form-label">体重</text>
+          <input 
+            type="digit" 
+            value="{{profile.weight}}" 
+            class="form-input"
+            data-field="weight"
+            bindinput="onInputChange"
+          />
+          <text class="form-unit">kg</text>
+        </view>
+        
+        <view class="form-item">
+          <text class="form-label">活动水平</text>
+          <picker 
+            mode="selector" 
+            range="{{activityLevels}}" 
+            range-key="label" 
+            value="{{profile.activityLevel - 1}}"
+            bindchange="onActivityChange"
+          >
+            <view class="form-value">
+              <text>{{activityLevels[profile.activityLevel - 1].label}}</text>
+              <text class="arrow">›</text>
+            </view>
+          </picker>
+        </view>
+        
+        <view class="form-item">
+          <text class="form-label">目标</text>
+          <picker 
+            mode="selector" 
+            range="{{goals}}" 
+            range-key="label" 
+            value="{{goals.findIndex(g => g.value === profile.goal)}}"
+            bindchange="onGoalChange"
+          >
+            <view class="form-value">
+              <text>{{goals.find(g => g.value === profile.goal).label}}</text>
+              <text class="arrow">›</text>
+            </view>
+          </picker>
+        </view>
+      </view>
+    </view>
+    
+    <view class="targets-card">
+      <view class="card-header">
+        <text class="card-title">每日营养目标</text>
+        <text class="card-subtitle">根据您的资料自动计算</text>
+      </view>
+      
+      <view class="targets-grid">
+        <view class="target-item">
+          <text class="target-value">{{targets.calories}}</text>
+          <text class="target-unit">kcal</text>
+          <text class="target-label">热量</text>
+        </view>
+        <view class="target-item">
+          <text class="target-value">{{targets.protein}}</text>
+          <text class="target-unit">g</text>
+          <text class="target-label">蛋白质</text>
+        </view>
+        <view class="target-item">
+          <text class="target-value">{{targets.fat}}</text>
+          <text class="target-unit">g</text>
+          <text class="target-label">脂肪</text>
+        </view>
+        <view class="target-item">
+          <text class="target-value">{{targets.carbohydrate}}</text>
+          <text class="target-unit">g</text>
+          <text class="target-label">碳水</text>
+        </view>
+      </view>
+    </view>
+    
+    <view class="menu-section">
+      <view 
+        class="menu-item" 
+        wx:for="{{menuItems}}" 
+        wx:key="title"
+        data-path="{{item.path}}"
+        bindtap="onMenuTap"
+      >
+        <view class="menu-icon">
+          <text class="iconfont icon-{{item.icon}}"></text>
+        </view>
+        <text class="menu-title">{{item.title}}</text>
+        <text class="menu-arrow">›</text>
+      </view>
+    </view>
+    
+    <view class="save-section">
+      <button class="save-btn" bindtap="saveProfile">保存修改</button>
+    </view>
+  </view>
+</view>

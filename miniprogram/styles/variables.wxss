@@ -1,0 +1,51 @@
+:root {
+  --primary-color: #4CAF50;
+  --primary-light: #66BB6A;
+  --primary-dark: #43A047;
+  --primary-bg-light: #E8F5E9;
+  --primary-bg-medium: #C8E6C9;
+  
+  --secondary-color: #FF9800;
+  
+  --error-color: #F44336;
+  --warning-color: #FF9800;
+  --success-color: #66BB6A;
+  --info-color: #2196F3;
+  
+  --text-primary: #212121;
+  --text-secondary: #757575;
+  --text-disabled: #BDBDBD;
+  
+  --bg-page: #FAFAFA;
+  --bg-card: #FFFFFF;
+  --bg-divider: #EEEEEE;
+  
+  --spacing-xs: 8rpx;
+  --spacing-sm: 16rpx;
+  --spacing-md: 24rpx;
+  --spacing-lg: 32rpx;
+  --spacing-xl: 48rpx;
+  
+  --radius-sm: 8rpx;
+  --radius-md: 16rpx;
+  --radius-lg: 24rpx;
+  --radius-xl: 32rpx;
+  --radius-full: 9999rpx;
+  
+  --shadow-sm: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8rpx 32rpx rgba(0, 0, 0, 0.12);
+  
+  --font-size-xs: 20rpx;
+  --font-size-sm: 24rpx;
+  --font-size-base: 28rpx;
+  --font-size-md: 32rpx;
+  --font-size-lg: 36rpx;
+  --font-size-xl: 40rpx;
+  --font-size-xxl: 48rpx;
+  
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+}

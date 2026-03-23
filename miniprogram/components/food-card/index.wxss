@@ -1,0 +1,165 @@
+.food-card {
+  background-color: #FFFFFF;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx;
+  background-color: #E8F5E9;
+}
+
+.card-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #212121;
+}
+
+.card-calories {
+  font-size: 26rpx;
+  color: #4CAF50;
+  font-weight: 600;
+}
+
+.food-list {
+  padding: 16rpx;
+}
+
+.food-item {
+  display: flex;
+  align-items: center;
+  padding: 16rpx;
+  border-bottom: 1rpx solid #F5F5F5;
+}
+
+.food-item:last-child {
+  border-bottom: none;
+}
+
+.food-icon {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #FAFAFA;
+  border-radius: 12rpx;
+  font-size: 32rpx;
+  margin-right: 16rpx;
+}
+
+.food-info {
+  flex: 1;
+}
+
+.food-name {
+  font-size: 28rpx;
+  color: #212121;
+  font-weight: 500;
+  margin-bottom: 4rpx;
+}
+
+.food-meta {
+  display: flex;
+  align-items: center;
+}
+
+.food-category {
+  font-size: 22rpx;
+  color: #757575;
+  margin-right: 16rpx;
+}
+
+.food-weight {
+  font-size: 22rpx;
+  color: #BDBDBD;
+}
+
+.food-nutrients {
+  text-align: right;
+}
+
+.nutrient-value {
+  font-size: 26rpx;
+  color: #4CAF50;
+  font-weight: 500;
+}
+
+.nutrients-summary {
+  padding: 16rpx 24rpx;
+  background-color: #FAFAFA;
+}
+
+.nutrient-bar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.nutrient-bar:last-child {
+  margin-bottom: 0;
+}
+
+.nutrient-label {
+  width: 80rpx;
+  font-size: 24rpx;
+  color: #757575;
+}
+
+.bar-container {
+  flex: 1;
+  height: 12rpx;
+  background-color: #EEEEEE;
+  border-radius: 6rpx;
+  overflow: hidden;
+  margin: 0 16rpx;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 6rpx;
+  transition: width 0.3s ease;
+}
+
+.bar-fill.protein {
+  background-color: #2196F3;
+}
+
+.bar-fill.fat {
+  background-color: #FF9800;
+}
+
+.bar-fill.carb {
+  background-color: #4CAF50;
+}
+
+.card-actions {
+  display: flex;
+  padding: 16rpx;
+  border-top: 1rpx solid #EEEEEE;
+}
+
+.action-btn {
+  flex: 1;
+  height: 72rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 36rpx;
+  font-size: 28rpx;
+  margin: 0 8rpx;
+}
+
+.edit-btn {
+  background-color: #F5F5F5;
+  color: #757575;
+}
+
+.confirm-btn {
+  background-color: #4CAF50;
+  color: #FFFFFF;
+}

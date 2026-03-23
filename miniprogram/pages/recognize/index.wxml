@@ -1,0 +1,152 @@
+<view class="recognize-container">
+  <view class="image-section" wx:if="{{!imageSrc}}">
+    <view class="upload-area" bindtap="chooseImage">
+      <view class="upload-icon">
+        <text class="iconfont icon-camera"></text>
+      </view>
+      <text class="upload-text">点击拍照或选择图片</text>
+      <text class="upload-hint">支持识别多种食物</text>
+    </view>
+  </view>
+  
+  <view class="image-preview" wx:if="{{imageSrc}}">
+    <image src="{{imageSrc}}" mode="aspectFit" class="preview-image"></image>
+    <view class="change-image" bindtap="chooseImage">
+      <text>更换图片</text>
+    </view>
+  </view>
+  
+  <view class="recognizing" wx:if="{{isRecognizing}}">
+    <view class="loading-spinner"></view>
+    <text>正在识别中...</text>
+  </view>
+  
+  <view class="food-section" wx:if="{{foods.length > 0 && !isRecognizing}}">
+    <view class="section-header">
+      <text class="section-title">识别结果</text>
+      <view class="meal-type-picker">
+        <picker mode="selector" range="{{mealTypes}}" range-key="label" value="{{mealType}}" bindchange="onMealTypeChange">
+          <view class="picker-value">
+            <text>{{mealTypes[0].label}}</text>
+            <text class="picker-arrow">▼</text>
+          </view>
+        </picker>
+      </view>
+    </view>
+    
+    <view class="food-list">
+      <view class="food-item" wx:for="{{foods}}" wx:key="name">
+        <view class="food-info">
+          <view class="food-name">{{item.name}}</view>
+          <view class="food-category">{{item.category}}</view>
+        </view>
+        
+        <view class="food-portion">
+          <text class="portion-label">份量</text>
+          <input 
+            type="digit" 
+            value="{{item.estimatedWeight}}" 
+            class="portion-input"
+            data-index="{{index}}"
+            bindinput="onFoodPortionChange"
+          />
+          <text class="portion-unit">克</text>
+        </view>
+        
+        <view class="food-nutrients">
+          <view class="nutrient-item">
+            <text class="nutrient-value">{{item.nutrients.calories}}</text>
+            <text class="nutrient-unit">kcal</text>
+          </view>
+          <view class="nutrient-item">
+            <text class="nutrient-value">{{item.nutrients.protein}}</text>
+            <text class="nutrient-unit">g蛋白质</text>
+          </view>
+          <view class="nutrient-item">
+            <text class="nutrient-value">{{item.nutrients.fat}}</text>
+            <text class="nutrient-unit">g脂肪</text>
+          </view>
+          <view class="nutrient-item">
+            <text class="nutrient-value">{{item.nutrients.carbohydrate}}</text>
+            <text class="nutrient-unit">g碳水</text>
+          </view>
+        </view>
+        
+        <view class="food-actions">
+          <view class="action-btn" data-index="{{index}}" bindtap="editFood">
+            <text>编辑</text>
+          </view>
+          <view class="action-btn action-btn-danger" data-index="{{index}}" bindtap="deleteFood">
+            <text>删除</text>
+          </view>
+        </view>
+      </view>
+    </view>
+    
+    <view class="add-food-btn" bindtap="addFood">
+      <text>+ 添加食物</text>
+    </view>
+    
+    <view class="total-section">
+      <view class="total-title">本餐营养汇总</view>
+      <view class="total-nutrients">
+        <view class="total-item">
+          <text class="total-value">{{totalNutrients.calories || 0}}</text>
+          <text class="total-unit">千卡</text>
+        </view>
+        <view class="total-item">
+          <text class="total-value">{{totalNutrients.protein || 0}}g</text>
+          <text class="total-unit">蛋白质</text>
+        </view>
+        <view class="total-item">
+          <text class="total-value">{{totalNutrients.fat || 0}}g</text>
+          <text class="total-unit">脂肪</text>
+        </view>
+        <view class="total-item">
+          <text class="total-value">{{totalNutrients.carbohydrate || 0}}g</text>
+          <text class="total-unit">碳水</text>
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <view class="save-section" wx:if="{{foods.length > 0 && !isRecognizing}}">
+    <button class="save-btn {{isSaving ? 'save-btn-loading' : ''}}" bindtap="saveRecord" disabled="{{isSaving}}">
+      {{isSaving ? '保存中...' : '保存记录'}}
+    </button>
+  </view>
+  
+  <view class="food-editor-mask" wx:if="{{showFoodEditor}}" bindtap="cancelFoodEdit"></view>
+  <view class="food-editor" wx:if="{{showFoodEditor}}">
+    <view class="editor-header">
+      <text class="editor-title">编辑食物</text>
+      <view class="editor-close" bindtap="cancelFoodEdit">
+        <text>×</text>
+      </view>
+    </view>
+    <view class="editor-content">
+      <view class="editor-field">
+        <text class="field-label">食物名称</text>
+        <input 
+          type="text" 
+          value="{{editingFood.name}}" 
+          class="field-input"
+          bindinput="onFoodNameChange"
+        />
+      </view>
+      <view class="editor-field">
+        <text class="field-label">份量（克）</text>
+        <input 
+          type="digit" 
+          value="{{editingFood.estimatedWeight}}" 
+          class="field-input"
+          bindinput="onEditorPortionChange"
+        />
+      </view>
+    </view>
+    <view class="editor-footer">
+      <button class="editor-btn editor-btn-cancel" bindtap="cancelFoodEdit">取消</button>
+      <button class="editor-btn editor-btn-confirm" bindtap="saveFoodEdit">确认</button>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,483 @@
+.report-container {
+  min-height: 100vh;
+  background-color: #FAFAFA;
+}
+
+.date-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24rpx;
+  background-color: #FFFFFF;
+}
+
+.date-nav {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 36rpx;
+  color: #4CAF50;
+}
+
+.date-picker {
+  display: flex;
+  align-items: center;
+  padding: 12rpx 32rpx;
+  background-color: #E8F5E9;
+  border-radius: 32rpx;
+}
+
+.date-text {
+  font-size: 28rpx;
+  color: #212121;
+  font-weight: 500;
+}
+
+.date-arrow {
+  margin-left: 8rpx;
+  font-size: 20rpx;
+  color: #757575;
+}
+
+.tabs {
+  display: flex;
+  background-color: #FFFFFF;
+  border-bottom: 1rpx solid #EEEEEE;
+}
+
+.tab-item {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 88rpx;
+  font-size: 28rpx;
+  color: #757575;
+  position: relative;
+}
+
+.tab-active {
+  color: #4CAF50;
+  font-weight: 600;
+}
+
+.tab-active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 48rpx;
+  height: 6rpx;
+  background-color: #4CAF50;
+  border-radius: 3rpx;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx;
+}
+
+.loading-spinner {
+  width: 64rpx;
+  height: 64rpx;
+  border: 6rpx solid #E8F5E9;
+  border-top-color: #4CAF50;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 24rpx;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.tab-content {
+  padding: 24rpx;
+}
+
+.summary-card {
+  background-color: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05);
+}
+
+.summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24rpx;
+}
+
+.summary-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #212121;
+}
+
+.summary-target {
+  font-size: 24rpx;
+  color: #757575;
+  padding: 8rpx 16rpx;
+  background-color: #F5F5F5;
+  border-radius: 16rpx;
+}
+
+.calories-display {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  margin-bottom: 24rpx;
+}
+
+.calories-value {
+  font-size: 72rpx;
+  font-weight: 700;
+  color: #4CAF50;
+}
+
+.calories-unit {
+  font-size: 28rpx;
+  color: #757575;
+  margin-left: 8rpx;
+}
+
+.progress-section {
+  display: flex;
+  align-items: center;
+  margin-bottom: 32rpx;
+}
+
+.progress-bar-container {
+  flex: 1;
+  height: 24rpx;
+  background-color: #EEEEEE;
+  border-radius: 12rpx;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 12rpx;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  margin-left: 16rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #4CAF50;
+}
+
+.nutrients-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16rpx;
+}
+
+.nutrient-item {
+  padding: 16rpx;
+  background-color: #FAFAFA;
+  border-radius: 12rpx;
+}
+
+.nutrient-header {
+  margin-bottom: 12rpx;
+}
+
+.nutrient-name {
+  font-size: 24rpx;
+  color: #212121;
+  font-weight: 500;
+}
+
+.nutrient-target {
+  font-size: 20rpx;
+  color: #BDBDBD;
+  margin-left: 8rpx;
+}
+
+.nutrient-progress {
+  display: flex;
+  align-items: center;
+}
+
+.progress-bar-small {
+  flex: 1;
+  height: 8rpx;
+  background-color: #EEEEEE;
+  border-radius: 4rpx;
+  overflow: hidden;
+  margin-right: 8rpx;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #4CAF50;
+  border-radius: 4rpx;
+}
+
+.nutrient-value {
+  font-size: 22rpx;
+  color: #4CAF50;
+  font-weight: 600;
+}
+
+.gaps-card {
+  background-color: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 24rpx;
+  margin-bottom: 24rpx;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.card-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #212121;
+}
+
+.card-action {
+  font-size: 24rpx;
+  color: #4CAF50;
+  padding: 8rpx 16rpx;
+  background-color: #E8F5E9;
+  border-radius: 16rpx;
+}
+
+.gaps-list {
+  
+}
+
+.gap-item {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #EEEEEE;
+}
+
+.gap-item:last-child {
+  border-bottom: none;
+}
+
+.gap-info {
+  flex: 1;
+}
+
+.gap-name {
+  font-size: 26rpx;
+  color: #212121;
+  margin-right: 16rpx;
+}
+
+.gap-value {
+  font-size: 24rpx;
+  color: #FF9800;
+}
+
+.gap-bar {
+  width: 120rpx;
+  height: 8rpx;
+  background-color: #EEEEEE;
+  border-radius: 4rpx;
+  overflow: hidden;
+}
+
+.gap-fill {
+  height: 100%;
+  background-color: #FF9800;
+  border-radius: 4rpx;
+}
+
+.quick-add {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 96rpx;
+  background-color: #FFFFFF;
+  border: 2rpx dashed #4CAF50;
+  border-radius: 24rpx;
+  margin-bottom: 24rpx;
+}
+
+.quick-add-icon {
+  font-size: 40rpx;
+  color: #4CAF50;
+  margin-right: 16rpx;
+}
+
+.quick-add-text {
+  font-size: 28rpx;
+  color: #4CAF50;
+}
+
+.meal-section {
+  background-color: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+}
+
+.meal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.meal-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #212121;
+}
+
+.meal-calories {
+  font-size: 26rpx;
+  color: #4CAF50;
+  font-weight: 500;
+}
+
+.meal-records {
+  
+}
+
+.record-item {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #EEEEEE;
+}
+
+.record-item:last-child {
+  border-bottom: none;
+}
+
+.record-image {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 12rpx;
+  margin-right: 16rpx;
+  background-color: #F5F5F5;
+}
+
+.record-info {
+  flex: 1;
+}
+
+.record-foods {
+  font-size: 26rpx;
+  color: #212121;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.record-time {
+  font-size: 22rpx;
+  color: #BDBDBD;
+}
+
+.record-calories {
+  font-size: 26rpx;
+  color: #4CAF50;
+  font-weight: 500;
+}
+
+.empty-meal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80rpx;
+  color: #BDBDBD;
+  font-size: 26rpx;
+}
+
+.trend-card {
+  background-color: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 24rpx;
+}
+
+.trend-chart {
+  margin: 24rpx 0;
+}
+
+.chart-bars {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 300rpx;
+  padding: 0 16rpx;
+}
+
+.chart-bar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 12%;
+}
+
+.bar-container {
+  width: 100%;
+  height: 200rpx;
+  background-color: #F5F5F5;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.bar-fill {
+  width: 100%;
+  border-radius: 8rpx;
+  transition: height 0.3s ease;
+}
+
+.bar-label {
+  font-size: 22rpx;
+  color: #757575;
+  margin-top: 8rpx;
+}
+
+.bar-value {
+  font-size: 20rpx;
+  color: #BDBDBD;
+  margin-top: 4rpx;
+}
+
+.trend-summary {
+  display: flex;
+  justify-content: space-around;
+  padding-top: 24rpx;
+  border-top: 1rpx solid #EEEEEE;
+}
+
+.trend-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-value {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #4CAF50;
+}
+
+.stat-label {
+  font-size: 22rpx;
+  color: #757575;
+  margin-top: 4rpx;
+}

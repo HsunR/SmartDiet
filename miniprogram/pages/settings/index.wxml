@@ -1,0 +1,108 @@
+<view class="settings-container">
+  <view class="settings-section">
+    <view class="section-header">
+      <text class="section-title">通知设置</text>
+    </view>
+    
+    <view class="setting-item">
+      <view class="setting-info">
+        <text class="setting-label">消息通知</text>
+        <text class="setting-desc">接收饮食提醒和健康建议</text>
+      </view>
+      <switch 
+        checked="{{settings.notification}}" 
+        color="#4CAF50"
+        bindchange="onNotificationChange"
+      />
+    </view>
+    
+    <view class="setting-item">
+      <view class="setting-info">
+        <text class="setting-label">每日提醒</text>
+        <text class="setting-desc">定时提醒记录饮食</text>
+      </view>
+      <switch 
+        checked="{{settings.reminder}}" 
+        color="#4CAF50"
+        bindchange="onReminderChange"
+      />
+    </view>
+    
+    <view class="setting-item" wx:if="{{settings.reminder}}">
+      <view class="setting-info">
+        <text class="setting-label">提醒时间</text>
+      </view>
+      <picker mode="time" value="{{settings.reminderTime}}" bindchange="onReminderTimeChange">
+        <view class="setting-value">
+          <text>{{reminderTimeDisplay}}</text>
+          <text class="arrow">›</text>
+        </view>
+      </picker>
+    </view>
+  </view>
+  
+  <view class="settings-section">
+    <view class="section-header">
+      <text class="section-title">显示设置</text>
+    </view>
+    
+    <view class="setting-item">
+      <view class="setting-info">
+        <text class="setting-label">深色模式</text>
+        <text class="setting-desc">跟随系统设置</text>
+      </view>
+      <switch 
+        checked="{{settings.darkMode}}" 
+        color="#4CAF50"
+        bindchange="onDarkModeChange"
+      />
+    </view>
+  </view>
+  
+  <view class="settings-section">
+    <view class="section-header">
+      <text class="section-title">数据管理</text>
+    </view>
+    
+    <view class="setting-item" bindtap="exportData">
+      <view class="setting-info">
+        <text class="setting-label">导出数据</text>
+        <text class="setting-desc">导出您的饮食记录</text>
+      </view>
+      <text class="arrow">›</text>
+    </view>
+    
+    <view class="setting-item" bindtap="clearCache">
+      <view class="setting-info">
+        <text class="setting-label">清除缓存</text>
+        <text class="setting-desc">当前缓存：{{cacheSize}}</text>
+      </view>
+      <text class="arrow">›</text>
+    </view>
+  </view>
+  
+  <view class="settings-section">
+    <view class="section-header">
+      <text class="section-title">其他</text>
+    </view>
+    
+    <view class="setting-item" bindtap="feedback">
+      <view class="setting-info">
+        <text class="setting-label">意见反馈</text>
+      </view>
+      <text class="arrow">›</text>
+    </view>
+    
+    <view class="setting-item" bindtap="showAbout">
+      <view class="setting-info">
+        <text class="setting-label">关于我们</text>
+        <text class="setting-desc">版本 {{version}}</text>
+      </view>
+      <text class="arrow">›</text>
+    </view>
+  </view>
+  
+  <view class="logout-section">
+    <button class="logout-btn" bindtap="logout">退出登录</button>
+  </view>
+</view>

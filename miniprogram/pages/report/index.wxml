@@ -1,0 +1,194 @@
+<view class="report-container">
+  <view class="date-header">
+    <view class="date-nav" bindtap="onPrevDay">
+      <text>‹</text>
+    </view>
+    <picker mode="date" value="{{currentDate}}" bindchange="onDateChange">
+      <view class="date-picker">
+        <text class="date-text">{{currentDate}}</text>
+        <text class="date-arrow">▼</text>
+      </view>
+    </picker>
+    <view class="date-nav" bindtap="onNextDay">
+      <text>›</text>
+    </view>
+  </view>
+  
+  <view class="tabs">
+    <view 
+      wx:for="{{tabs}}" 
+      wx:key="key"
+      class="tab-item {{activeTab === item.key ? 'tab-active' : ''}}"
+      data-tab="{{item.key}}"
+      bindtap="onTabChange"
+    >
+      <text>{{item.name}}</text>
+    </view>
+  </view>
+  
+  <view wx:if="{{loading}}" class="loading-container">
+    <view class="loading-spinner"></view>
+    <text>加载中...</text>
+  </view>
+  
+  <view wx:elif="{{activeTab === 'overview'}}" class="tab-content">
+    <view class="summary-card">
+      <view class="summary-header">
+        <text class="summary-title">今日摄入</text>
+        <view class="summary-target">
+          <text>目标 {{targets.calories}} kcal</text>
+        </view>
+      </view>
+      
+      <view class="calories-display">
+        <text class="calories-value">{{summary.calories}}</text>
+        <text class="calories-unit">kcal</text>
+      </view>
+      
+      <view class="progress-section">
+        <view class="progress-bar-container">
+          <view 
+            class="progress-bar-fill" 
+            style="width: {{getProgressPercent(summary.calories, targets.calories)}}%; background-color: {{getProgressColor(getProgressPercent(summary.calories, targets.calories))}};"
+          ></view>
+        </view>
+        <text class="progress-text">{{getProgressPercent(summary.calories, targets.calories)}}%</text>
+      </view>
+      
+      <view class="nutrients-grid">
+        <view class="nutrient-item">
+          <view class="nutrient-header">
+            <text class="nutrient-name">蛋白质</text>
+            <text class="nutrient-target">目标 {{targets.protein}}g</text>
+          </view>
+          <view class="nutrient-progress">
+            <view class="progress-bar-small">
+              <view class="progress-fill" style="width: {{getProgressPercent(summary.protein, targets.protein)}}%"></view>
+            </view>
+            <text class="nutrient-value">{{summary.protein}}g</text>
+          </view>
+        </view>
+        
+        <view class="nutrient-item">
+          <view class="nutrient-header">
+            <text class="nutrient-name">脂肪</text>
+            <text class="nutrient-target">目标 {{targets.fat}}g</text>
+          </view>
+          <view class="nutrient-progress">
+            <view class="progress-bar-small">
+              <view class="progress-fill" style="width: {{getProgressPercent(summary.fat, targets.fat)}}%"></view>
+            </view>
+            <text class="nutrient-value">{{summary.fat}}g</text>
+          </view>
+        </view>
+        
+        <view class="nutrient-item">
+          <view class="nutrient-header">
+            <text class="nutrient-name">碳水化合物</text>
+            <text class="nutrient-target">目标 {{targets.carbohydrate}}g</text>
+          </view>
+          <view class="nutrient-progress">
+            <view class="progress-bar-small">
+              <view class="progress-fill" style="width: {{getProgressPercent(summary.carbohydrate, targets.carbohydrate)}}%"></view>
+            </view>
+            <text class="nutrient-value">{{summary.carbohydrate}}g</text>
+          </view>
+        </view>
+      </view>
+    </view>
+    
+    <view class="gaps-card" wx:if="{{gaps.length > 0}}">
+      <view class="card-header">
+        <text class="card-title">营养缺口</text>
+        <view class="card-action" bindtap="getRecommendation">
+          <text>获取建议</text>
+        </view>
+      </view>
+      <view class="gaps-list">
+        <view class="gap-item" wx:for="{{gaps}}" wx:key="nutrient">
+          <view class="gap-info">
+            <text class="gap-name">{{item.nutrientName || item.nutrient}}</text>
+            <text class="gap-value">缺少 {{item.gap}}{{item.unit}}</text>
+          </view>
+          <view class="gap-bar">
+            <view class="gap-fill" style="width: {{item.percent || 50}}%"></view>
+          </view>
+        </view>
+      </view>
+    </view>
+    
+    <view class="quick-add" bindtap="onAddFood">
+      <text class="quick-add-icon">+</text>
+      <text class="quick-add-text">添加饮食记录</text>
+    </view>
+  </view>
+  
+  <view wx:elif="{{activeTab === 'detail'}}" class="tab-content">
+    <view class="meal-section" wx:for="{{['breakfast', 'lunch', 'dinner', 'snack']}}" wx:for-item="mealType" wx:key="*this">
+      <view class="meal-header">
+        <text class="meal-name">{{mealType === 'breakfast' ? '早餐' : mealType === 'lunch' ? '午餐' : mealType === 'dinner' ? '晚餐' : '加餐'}}</text>
+        <text class="meal-calories">{{mealRecords[mealType].reduce((sum, r) => sum + (r.totalCalories || 0), 0)}} kcal</text>
+      </view>
+      
+      <view class="meal-records" wx:if="{{mealRecords[mealType].length > 0}}">
+        <view 
+          class="record-item" 
+          wx:for="{{mealRecords[mealType]}}" 
+          wx:for-item="record"
+          wx:key="_id"
+          data-record="{{record}}"
+          bindtap="onRecordTap"
+        >
+          <image wx:if="{{record.imageUrl}}" src="{{record.imageUrl}}" class="record-image" mode="aspectFill"></image>
+          <view class="record-info">
+            <text class="record-foods">{{record.foods.map(f => f.name).join('、')}}</text>
+            <text class="record-time">{{record.createdAt}}</text>
+          </view>
+          <text class="record-calories">{{record.totalCalories}} kcal</text>
+        </view>
+      </view>
+      
+      <view class="empty-meal" wx:else>
+        <text>暂无记录</text>
+      </view>
+    </view>
+  </view>
+  
+  <view wx:elif="{{activeTab === 'trend'}}" class="tab-content">
+    <view class="trend-card">
+      <view class="card-header">
+        <text class="card-title">本周热量趋势</text>
+      </view>
+      
+      <view class="trend-chart">
+        <view class="chart-bars">
+          <view class="chart-bar-item" wx:for="{{weekData}}" wx:key="date">
+            <view class="bar-container">
+              <view 
+                class="bar-fill" 
+                style="height: {{item.calories / targets.calories * 100}}%; background-color: {{item.calories >= targets.calories * 0.8 && item.calories <= targets.calories * 1.1 ? '#4CAF50' : '#FF9800'}}"
+              ></view>
+            </view>
+            <text class="bar-label">{{item.day}}</text>
+            <text class="bar-value">{{item.calories}}</text>
+          </view>
+        </view>
+      </view>
+      
+      <view class="trend-summary">
+        <view class="trend-stat">
+          <text class="stat-value">{{weekData.reduce((sum, d) => sum + d.calories, 0)}}</text>
+          <text class="stat-label">本周总热量</text>
+        </view>
+        <view class="trend-stat">
+          <text class="stat-value">{{Math.round(weekData.reduce((sum, d) => sum + d.calories, 0) / 7)}}</text>
+          <text class="stat-label">日均热量</text>
+        </view>
+        <view class="trend-stat">
+          <text class="stat-value">{{weekData.filter(d => d.calories >= targets.calories * 0.8 && d.calories <= targets.calories * 1.1).length}}</text>
+          <text class="stat-label">达标天数</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

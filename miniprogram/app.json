@@ -1,0 +1,46 @@
+{
+  "pages": [
+    "pages/chat/index",
+    "pages/recognize/index",
+    "pages/report/index",
+    "pages/profile/index",
+    "pages/settings/index",
+    "pages/login/index",
+    "pages/history/index"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#4CAF50",
+    "navigationBarTitleText": "AI营养师",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#FAFAFA"
+  },
+  "tabBar": {
+    "color": "#757575",
+    "selectedColor": "#4CAF50",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/chat/index",
+        "text": "聊天"
+      },
+      {
+        "pagePath": "pages/recognize/index",
+        "text": "识别"
+      },
+      {
+        "pagePath": "pages/report/index",
+        "text": "报告"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的"
+      }
+    ]
+  },
+  "cloud": true,
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

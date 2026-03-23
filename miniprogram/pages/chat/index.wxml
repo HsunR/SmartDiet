@@ -1,0 +1,115 @@
+<view class="chat-container">
+  <scroll-view 
+    class="message-list" 
+    scroll-y 
+    scroll-into-view="{{scrollToView}}"
+    scroll-with-animation
+  >
+    <view 
+      wx:for="{{messages}}" 
+      wx:key="id" 
+      id="msg-{{item.id}}"
+      class="message-item {{item.role === 'user' ? 'message-user' : 'message-ai'}}"
+    >
+      <view class="message-avatar" wx:if="{{item.role === 'assistant'}}">
+        <image src="/assets/icons/ai-avatar.png" mode="aspectFill" class="avatar-img"></image>
+      </view>
+      
+      <view class="message-content">
+        <view class="message-bubble {{item.role === 'user' ? 'bubble-user' : 'bubble-ai'}}">
+          <text wx:if="{{item.type === 'text'}}" class="message-text">{{item.content}}</text>
+          
+          <image 
+            wx:elif="{{item.type === 'image'}}" 
+            src="{{item.data.imageUrl}}" 
+            mode="widthFix" 
+            class="message-image"
+            bindtap="previewImage"
+            data-url="{{item.data.imageUrl}}"
+          ></image>
+          
+          <food-card 
+            wx:elif="{{item.type === 'food_card'}}" 
+            foods="{{item.data.foods}}"
+            record-id="{{item.data.recordId}}"
+            bindconfirm="onFoodCardConfirm"
+            bindedit="onFoodCardEdit"
+          ></food-card>
+          
+          <view wx:elif="{{item.type === 'quick_actions'}}" class="quick-actions">
+            <text class="quick-actions-title">{{item.content}}</text>
+            <view class="quick-actions-list">
+              <view 
+                wx:for="{{item.data.actions}}" 
+                wx:for-item="action"
+                wx:key="id"
+                class="quick-action-btn"
+                bindtap="onQuickAction"
+                data-action="{{action.id}}"
+              >
+                <text>{{action.label}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+        
+        <view class="message-time" wx:if="{{item.timestamp}}">
+          <text>{{item.timestamp}}</text>
+        </view>
+      </view>
+      
+      <view class="message-avatar" wx:if="{{item.role === 'user'}}">
+        <image src="{{userInfo.avatarUrl || '/assets/icons/user-avatar.png'}}" mode="aspectFill" class="avatar-img"></image>
+      </view>
+    </view>
+    
+    <view wx:if="{{isLoading}}" class="message-item message-ai">
+      <view class="message-avatar">
+        <image src="/assets/icons/ai-avatar.png" mode="aspectFill" class="avatar-img"></image>
+      </view>
+      <view class="message-content">
+        <view class="message-bubble bubble-ai">
+          <view class="typing-indicator">
+            <view class="typing-dot"></view>
+            <view class="typing-dot"></view>
+            <view class="typing-dot"></view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+  
+  <view class="daily-progress" wx:if="{{dailyCalories > 0}}" bindtap="onViewReport">
+    <view class="progress-info">
+      <text class="progress-label">今日摄入</text>
+      <text class="progress-value">{{dailyCalories}} kcal</text>
+    </view>
+    <view class="progress-bar progress-bar-primary">
+      <view class="progress-bar-inner" style="width: {{dailyProgress}}%"></view>
+    </view>
+  </view>
+  
+  <view class="input-area safe-area-bottom">
+    <view class="input-wrapper">
+      <view class="camera-btn" bindtap="chooseImage">
+        <text class="iconfont icon-camera"></text>
+      </view>
+      
+      <input 
+        class="message-input"
+        type="text"
+        placeholder="输入消息..."
+        value="{{inputValue}}"
+        bindinput="onInputChange"
+        bindconfirm="sendMessage"
+        bindfocus="onInputFocus"
+        bindblur="onInputBlur"
+        confirm-type="send"
+      />
+      
+      <view class="send-btn {{inputValue ? 'send-btn-active' : ''}}" bindtap="sendMessage">
+        <text>发送</text>
+      </view>
+    </view>
+  </view>
+</view>

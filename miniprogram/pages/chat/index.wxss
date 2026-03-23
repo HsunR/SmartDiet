@@ -1,0 +1,268 @@
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #FAFAFA;
+}
+
+.message-list {
+  flex: 1;
+  padding: 24rpx;
+  padding-bottom: 160rpx;
+}
+
+.message-item {
+  display: flex;
+  margin-bottom: 32rpx;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-user {
+  flex-direction: row-reverse;
+}
+
+.message-avatar {
+  flex-shrink: 0;
+  width: 72rpx;
+  height: 72rpx;
+  margin: 0 16rpx;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #E8F5E9;
+}
+
+.message-content {
+  max-width: 70%;
+}
+
+.message-bubble {
+  padding: 24rpx;
+  border-radius: 16rpx;
+  word-wrap: break-word;
+  word-break: break-all;
+}
+
+.bubble-ai {
+  background-color: #FFFFFF;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+  border-top-left-radius: 4rpx;
+}
+
+.bubble-user {
+  background-color: #4CAF50;
+  color: #FFFFFF;
+  border-top-right-radius: 4rpx;
+}
+
+.message-text {
+  font-size: 28rpx;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.message-image {
+  max-width: 400rpx;
+  border-radius: 12rpx;
+}
+
+.message-time {
+  margin-top: 8rpx;
+  padding: 0 8rpx;
+}
+
+.message-time text {
+  font-size: 22rpx;
+  color: #BDBDBD;
+}
+
+.message-user .message-time {
+  text-align: right;
+}
+
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  padding: 8rpx 0;
+}
+
+.typing-dot {
+  width: 12rpx;
+  height: 12rpx;
+  margin: 0 6rpx;
+  background-color: #4CAF50;
+  border-radius: 50%;
+  animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-10rpx);
+    opacity: 1;
+  }
+}
+
+.quick-actions {
+  padding: 8rpx 0;
+}
+
+.quick-actions-title {
+  display: block;
+  font-size: 28rpx;
+  color: #212121;
+  margin-bottom: 16rpx;
+}
+
+.quick-actions-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.quick-action-btn {
+  padding: 16rpx 24rpx;
+  background-color: #E8F5E9;
+  border-radius: 32rpx;
+  font-size: 26rpx;
+  color: #4CAF50;
+  transition: all 0.2s ease;
+}
+
+.quick-action-btn:active {
+  background-color: #C8E6C9;
+  transform: scale(0.95);
+}
+
+.daily-progress {
+  position: fixed;
+  left: 24rpx;
+  right: 24rpx;
+  bottom: 160rpx;
+  padding: 20rpx 24rpx;
+  background-color: #FFFFFF;
+  border-radius: 16rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.progress-label {
+  font-size: 24rpx;
+  color: #757575;
+}
+
+.progress-value {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #4CAF50;
+}
+
+.progress-bar {
+  height: 12rpx;
+  background-color: #EEEEEE;
+  border-radius: 6rpx;
+  overflow: hidden;
+}
+
+.progress-bar-inner {
+  height: 100%;
+  background-color: #4CAF50;
+  border-radius: 6rpx;
+  transition: width 0.3s ease;
+}
+
+.input-area {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #FFFFFF;
+  border-top: 1rpx solid #EEEEEE;
+  z-index: 100;
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 24rpx;
+}
+
+.camera-btn {
+  width: 72rpx;
+  height: 72rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #E8F5E9;
+  border-radius: 50%;
+  margin-right: 16rpx;
+}
+
+.camera-btn text {
+  font-size: 36rpx;
+  color: #4CAF50;
+}
+
+.message-input {
+  flex: 1;
+  height: 72rpx;
+  padding: 0 24rpx;
+  background-color: #FAFAFA;
+  border-radius: 36rpx;
+  font-size: 28rpx;
+}
+
+.send-btn {
+  margin-left: 16rpx;
+  padding: 16rpx 32rpx;
+  background-color: #EEEEEE;
+  border-radius: 32rpx;
+  font-size: 28rpx;
+  color: #BDBDBD;
+  transition: all 0.2s ease;
+}
+
+.send-btn-active {
+  background-color: #4CAF50;
+  color: #FFFFFF;
+}
+
+.send-btn-active:active {
+  background-color: #43A047;
+}
