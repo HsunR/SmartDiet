@@ -2,8 +2,8 @@
   "functions": [
     {
       "name": "aiGateway",
-      "timeout": 60,
-      "memorySize": 512,
+      "timeout": 120,
+      "memorySize": 1024,
       "runtime": "Nodejs16.13"
     }
   ]

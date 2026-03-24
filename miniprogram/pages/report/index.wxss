@@ -78,11 +78,22 @@
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
 }
 
+.calendar-scroll {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.calendar-content {
+  display: inline-block;
+}
+
 .calendar-header {
   display: flex;
   background-color: #E8F5E9;
   border-bottom: 2rpx solid #C8E6C9;
-  position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 25;
 }
 
 .header-cell {
@@ -92,14 +103,15 @@
   justify-content: center;
   padding: 20rpx 8rpx;
   min-height: 80rpx;
+  box-sizing: border-box;
 }
 
 .meal-type-header {
   position: sticky;
   left: 0;
-  z-index: 20;
+  z-index: 30;
   flex-shrink: 0;
-  width: 100rpx;
+  width: 137rpx;
   background-color: #C8E6C9;
   font-size: 24rpx;
   color: #2E7D32;
@@ -107,18 +119,14 @@
   box-shadow: 2rpx 0 8rpx rgba(0, 0, 0, 0.1);
 }
 
-.header-scroll {
-  flex: 1;
-  white-space: nowrap;
-}
-
 .header-days {
   display: inline-flex;
 }
 
 .day-cell {
-  width: 120rpx;
+  width: 200rpx;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .day-cell.today {
@@ -138,7 +146,6 @@
 }
 
 .calendar-body {
-
 }
 
 .calendar-row {
@@ -154,9 +161,9 @@
 .meal-type-cell {
   position: sticky;
   left: 0;
-  z-index: 15;
+  z-index: 20;
   flex-shrink: 0;
-  width: 100rpx;
+  width: 120rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -178,17 +185,12 @@
   color: #616161;
 }
 
-.cells-scroll {
-  flex: 1;
-  white-space: nowrap;
-}
-
 .cells-row {
   display: inline-flex;
 }
 
 .calendar-cell {
-  width: 120rpx;
+  width: 200rpx;
   flex-shrink: 0;
   min-height: 160rpx;
   padding: 12rpx;

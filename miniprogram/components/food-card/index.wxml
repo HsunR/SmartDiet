@@ -11,7 +11,7 @@
   
   <view class="meal-overview">
     <view class="health-score-section">
-      <view class="score-circle" style="background: conic-gradient({{scoreColor}} {{mealOverview.overallHealthScore}}%, #E8E8E8 {{mealOverview.overallHealthScore}}%)">
+      <view class="score-circle" style="background: conic-gradient({{scoreColor}} {{mealOverview.overallHealthScore}}, #E8E8E8 {{mealOverview.overallHealthScore}})">
         <view class="score-inner">
           <text class="score-number">{{mealOverview.overallHealthScore}}</text>
           <text class="score-label">健康评分</text>
@@ -42,7 +42,7 @@
   <view class="food-list">
     <view 
       class="food-item" 
-      wx:for="{{foods}}" 
+      wx:for="{{processedFoods}}" 
       wx:key="id"
       data-index="{{index}}"
       bindtap="onFoodTap"

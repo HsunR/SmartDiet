@@ -8,12 +8,13 @@
 .message-list {
   flex: 1;
   padding: 24rpx;
-  padding-bottom: 200rpx;
+  padding-bottom: 280rpx;
 }
 
 .message-item {
   display: flex;
   margin-bottom: 24rpx;
+  margin-right: 25rpx
   animation: fadeIn 0.3s ease;
 }
 
@@ -26,11 +27,6 @@
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-.message-user {
-  flex-direction: row-reverse;
-  justify-content: flex-start;
 }
 
 .message-avatar {
@@ -60,9 +56,10 @@
 }
 
 .message-content {
-  max-width: 70%;
+  max-width: calc(100% - 120rpx);
   display: flex;
   flex-direction: column;
+  flex: 1;
 }
 
 .message-content-user {
@@ -70,11 +67,13 @@
 }
 
 .message-bubble {
-  padding: 24rpx;
+  padding: 10rpx;
   border-radius: 16rpx;
   word-wrap: break-word;
   word-break: break-word;
   overflow: visible;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .bubble-ai {
@@ -82,14 +81,12 @@
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
   border-top-left-radius: 4rpx;
   overflow: visible;
-  max-width: 100%;
 }
 
 .bubble-user {
   background-color: #4CAF50;
   color: #FFFFFF;
   border-top-right-radius: 4rpx;
-  max-width: 100%;
 }
 
 .message-text {
@@ -115,9 +112,6 @@
   color: #BDBDBD;
 }
 
-.message-user .message-time {
-  text-align: right;
-}
 
 .typing-indicator {
   display: flex;

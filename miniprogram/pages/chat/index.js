@@ -146,16 +146,18 @@ Page({
         messages: this.data.messages.slice(-10)
       }))
       
-      if (result.success && result.data) {
-        const aiMessage = createTextMessage(MESSAGE_ROLES.ASSISTANT, result.data.reply)
+      if (result.success && result.reply) {
+        const aiMessage = createTextMessage(MESSAGE_ROLES.ASSISTANT, result.reply)
         this.setData({
           messages: [...this.data.messages, aiMessage]
         })
       } else {
-        this.showErrorMessage('AI回复失败，请稍后重试')
+        const errorMsg = result.error || result.message || 'AI回复失败，请稍后重试'
+        this.showErrorMessage(errorMsg)
       }
     } catch (error) {
-      this.showErrorMessage('网络错误，请稍后重试')
+      const errorMsg = error.message || '网络错误，请稍后重试'
+      this.showErrorMessage(errorMsg)
     } finally {
       this.setData({ isLoading: false })
       this.scrollToBottom()
@@ -603,9 +605,20 @@ Page({
   scrollToBottom: function() {
     const messages = this.data.messages
     if (messages.length > 0) {
+      const lastMsgId = `msg-${messages[messages.length - 1].id}`
       this.setData({
-        scrollToView: `msg-${messages[messages.length - 1].id}`
+        scrollToView: lastMsgId
       })
+      setTimeout(() => {
+        this.setData({
+          scrollToView: lastMsgId
+        })
+      }, 100)
+      setTimeout(() => {
+        this.setData({
+          scrollToView: lastMsgId
+        })
+      }, 300)
     }
   },
 

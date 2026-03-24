@@ -36,7 +36,8 @@ Component({
   },
 
   data: {
-    scoreColor: '#4CAF50'
+    scoreColor: '#4CAF50',
+    processedFoods: []
   },
 
   observers: {
@@ -59,7 +60,7 @@ Component({
           estimatedWeight: food.estimatedWeight || (food.portionEstimation && food.portionEstimation.estimatedWeight) || 100,
           displayCalories: (food.nutrients && food.nutrients.calories) || (food.nutrientsEstimation && food.nutrientsEstimation.calories) || 0
         }))
-        this.setData({ foods: processedFoods })
+        this.setData({ processedFoods })
       }
     }
   },

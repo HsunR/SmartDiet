@@ -187,7 +187,7 @@ async function callZhipuAI(messages, stream = false) {
         messages: messages,
         stream: stream
       },
-      timeout: 60000
+      timeout: 55000
     })
     
     return response.data
@@ -256,7 +256,11 @@ async function getRecentDiet(openid) {
         date: _.gte(formatDate(threeDaysAgo))
       })
       .orderBy('date', 'desc')
-      .limit(20)
+      .limit(10)
+      .field({
+        totalCalories: true,
+        foods: true
+      })
       .get()
     
     if (result.data && result.data.length > 0) {
@@ -265,9 +269,9 @@ async function getRecentDiet(openid) {
       const mealCount = result.data.length
       
       const recentFoods = []
-      result.data.slice(0, 5).forEach(record => {
+      result.data.slice(0, 3).forEach(record => {
         (record.foods || []).forEach(food => {
-          if (recentFoods.length < 10) {
+          if (recentFoods.length < 8) {
             recentFoods.push(food.name)
           }
         })
@@ -276,7 +280,7 @@ async function getRecentDiet(openid) {
       return {
         mealCount,
         avgCalories,
-        recentFoods: [...new Set(recentFoods)].slice(0, 5)
+        recentFoods: [...new Set(recentFoods)].slice(0, 4)
       }
     }
   } catch (e) {

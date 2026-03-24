@@ -76,7 +76,7 @@ Page({
       })
     }
     
-    const cellWidth = 120
+    const cellWidth = 200
     const scrollLeft = Math.max(0, (todayIndex - 1) * cellWidth)
     
     this.setData({
@@ -178,15 +178,7 @@ Page({
     }
   },
 
-  onHeaderScroll: function(e) {
-    const scrollLeft = e.detail.scrollLeft
-    this.setData({ scrollLeft })
-  },
 
-  onBodyScroll: function(e) {
-    const scrollLeft = e.detail.scrollLeft
-    this.setData({ scrollLeft })
-  },
 
   onCellTap: function(e) {
     const { date, meal } = e.currentTarget.dataset

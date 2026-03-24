@@ -147,9 +147,9 @@
         </view>
       </view>
       
-      <view class="message-avatar" wx:if="{{item.role === 'user'}}">
+      <!-- <view class="message-avatar" wx:if="{{item.role === 'user'}}">
         <view class="avatar-placeholder avatar-user">{{userInfo.nickName ? userInfo.nickName[0] : '👤'}}</view>
-      </view>
+      </view> -->
     </view>
     
     <view wx:if="{{isLoading}}" class="message-item message-ai">
@@ -167,16 +167,6 @@
       </view>
     </view>
   </scroll-view>
-  
-  <view class="daily-progress" wx:if="{{dailyCalories > 0}}" bindtap="onViewReport">
-    <view class="progress-info">
-      <text class="progress-label">今日摄入</text>
-      <text class="progress-value">{{dailyCalories}} kcal</text>
-    </view>
-    <view class="progress-bar progress-bar-primary">
-      <view class="progress-bar-inner" style="width: {{dailyProgress}}%"></view>
-    </view>
-  </view>
   
   <view class="input-area">
     <view class="input-wrapper">

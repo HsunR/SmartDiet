@@ -21,75 +21,66 @@
   
   <view wx:else class="calendar-wrapper">
     <view class="calendar-table">
-      <view class="calendar-header">
-        <view class="header-cell meal-type-header">餐次</view>
-        <scroll-view 
-          class="header-scroll" 
-          scroll-x 
-          scroll-left="{{scrollLeft}}"
-          scroll-with-animation
-          bindscroll="onHeaderScroll"
-        >
-          <view class="header-days">
-            <view class="header-cell day-cell {{item.isToday ? 'today' : ''}}" wx:for="{{weekDays}}" wx:key="date">
-              <text class="day-name">{{item.dayName}}</text>
-              <text class="day-date">{{item.dayNum}}</text>
+      <scroll-view 
+        class="calendar-scroll" 
+        scroll-x 
+        scroll-left="{{scrollLeft}}"
+        enhanced
+        show-scrollbar="{{false}}"
+        bounces="{{false}}"
+      >
+        <view class="calendar-content">
+          <view class="calendar-header">
+            <view class="header-cell meal-type-header">餐次</view>
+            <view class="header-days">
+              <view class="header-cell day-cell {{item.isToday ? 'today' : ''}}" wx:for="{{weekDays}}" wx:key="date">
+                <text class="day-name">{{item.dayName}}</text>
+                <text class="day-date">{{item.dayNum}}</text>
+              </view>
             </view>
           </view>
-        </scroll-view>
-      </view>
-      
-      <view class="calendar-body">
-        <view class="calendar-row" wx:for="{{mealTypes}}" wx:key="type">
-          <view class="meal-type-cell">
-            <text class="meal-icon">{{item.icon}}</text>
-            <text class="meal-label">{{item.label}}</text>
-          </view>
           
-          <scroll-view 
-            class="cells-scroll"
-            scroll-x
-            scroll-left="{{scrollLeft}}"
-            scroll-with-animation
-            enhanced
-            show-scrollbar="{{false}}"
-            bindscroll="onBodyScroll"
-            data-row-index="{{index}}"
-          >
-            <view class="cells-row">
-              <view 
-                class="calendar-cell {{day.isToday ? 'today-cell' : ''}}" 
-                wx:for="{{weekDays}}" 
-                wx:for-item="day"
-                wx:key="date"
-                data-date="{{day.date}}"
-                data-meal="{{item.type}}"
-                bindtap="onCellTap"
-              >
-                <view wx:if="{{calendarData[day.date][item.type]}}" class="cell-content">
-                  <image 
-                    wx:if="{{calendarData[day.date][item.type].imageUrl}}" 
-                    src="{{calendarData[day.date][item.type].imageUrl}}" 
-                    class="cell-image"
-                    mode="aspectFill"
-                  ></image>
-                  <view class="cell-foods">
-                    <text class="food-name" wx:for="{{calendarData[day.date][item.type].foods}}" wx:for-item="food" wx:key="name">{{food.name}}</text>
+          <view class="calendar-body">
+            <view class="calendar-row" wx:for="{{mealTypes}}" wx:key="type">
+              <view class="meal-type-cell">
+                <text class="meal-icon">{{item.icon}}</text>
+                <text class="meal-label">{{item.label}}</text>
+              </view>
+              
+              <view class="cells-row">
+                <view 
+                  class="calendar-cell {{day.isToday ? 'today-cell' : ''}}" 
+                  wx:for="{{weekDays}}" 
+                  wx:for-item="day"
+                  wx:key="date"
+                  data-date="{{day.date}}"
+                  data-meal="{{item.type}}"
+                  bindtap="onCellTap"
+                >
+                  <view wx:if="{{calendarData[day.date][item.type]}}" class="cell-content">
+                    <image 
+                      wx:if="{{calendarData[day.date][item.type].imageUrl}}" 
+                      src="{{calendarData[day.date][item.type].imageUrl}}" 
+                      class="cell-image"
+                      mode="aspectFill"
+                    ></image>
+                    <view class="cell-foods">
+                      <text class="food-name" wx:for="{{calendarData[day.date][item.type].foods}}" wx:for-item="food" wx:key="name">{{food.name}}</text>
+                    </view>
+                    <view class="cell-tags">
+                      <text class="tag-positive" wx:for="{{calendarData[day.date][item.type].healthTags.positive}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+                      <text class="tag-warning" wx:for="{{calendarData[day.date][item.type].healthTags.warning}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+                    </view>
                   </view>
-                  <view class="cell-tags">
-                    <text class="tag-positive" wx:for="{{calendarData[day.date][item.type].healthTags.positive}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
-                    <text class="tag-warning" wx:for="{{calendarData[day.date][item.type].healthTags.warning}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+                  <view wx:else class="cell-empty">
+                    <text class="empty-icon">+</text>
                   </view>
-                  <text class="cell-calories">{{calendarData[day.date][item.type].totalCalories}} kcal</text>
-                </view>
-                <view wx:else class="cell-empty">
-                  <text class="empty-icon">+</text>
                 </view>
               </view>
             </view>
-          </scroll-view>
+          </view>
         </view>
-      </view>
+      </scroll-view>
     </view>
   </view>
   
