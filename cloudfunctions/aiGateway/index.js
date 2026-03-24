@@ -1,4 +1,5 @@
 const cloud = require('wx-server-sdk')
+const axios = require('axios')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
@@ -7,8 +8,17 @@ const _ = db.command
 const recordsCollection = db.collection('food_records')
 const usersCollection = db.collection('users')
 
+const ZHIPU_API_KEY = '6203eb5dbd6649a8ab6c22100b42a1df.njEya1qgXG5APJLm'
+const ZHIPU_API_URL = 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
+const ZHIPU_MODEL = 'glm-4.6v-flashX'
+
 const PROMPT_TEMPLATES = {
-  foodRecognition: `你是一位专业的营养师AI助手。请分析这张食物图片，识别其中的食物。
+  foodRecognition: `你是一位专业的营养师AI助手。请分析这张食物图片，识别其中的所有食物。
+
+请仔细观察图片，识别：
+1. 所有可见的食物种类
+2. 估算每种食物的分量
+3. 分析烹饪方式
 
 请以JSON格式返回结果，格式如下：
 {
@@ -27,7 +37,8 @@ const PROMPT_TEMPLATES = {
       }
     }
   ],
-  "description": "对图片中食物的简要描述"
+  "description": "对图片中食物的简要描述",
+  "mealType": "餐次(早餐/午餐/晚餐/加餐)"
 }
 
 如果无法识别图片中的食物，请返回：
@@ -119,6 +130,65 @@ const PROMPT_TEMPLATES = {
 请直接回复，不需要JSON格式。`
 }
 
+async function callZhipuAI(messages, stream = false) {
+  try {
+    const response = await axios({
+      method: 'POST',
+      url: ZHIPU_API_URL,
+      headers: {
+        'Authorization': `Bearer ${ZHIPU_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      data: {
+        model: ZHIPU_MODEL,
+        messages: messages,
+        stream: stream
+      },
+      timeout: 60000
+    })
+    
+    return response.data
+  } catch (error) {
+    console.error('ZhipuAI API Error:', error.response?.data || error.message)
+    throw new Error(error.response?.data?.error?.message || error.message || 'AI服务调用失败')
+  }
+}
+
+async function callZhipuAIWithImage(imageUrl, prompt) {
+  const messages = [
+    {
+      role: 'user',
+      content: [
+        {
+          type: 'image_url',
+          image_url: {
+            url: imageUrl
+          }
+        },
+        {
+          type: 'text',
+          text: prompt
+        }
+      ]
+    }
+  ]
+  
+  return await callZhipuAI(messages)
+}
+
+function parseJsonResponse(content) {
+  try {
+    const jsonMatch = content.match(/\{[\s\S]*\}/)
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0])
+    }
+    return null
+  } catch (error) {
+    console.error('JSON parse error:', error)
+    return null
+  }
+}
+
 exports.main = async (event, context) => {
   const { action, data } = event
   const wxContext = cloud.getWXContext()
@@ -160,118 +230,206 @@ exports.main = async (event, context) => {
 async function handleFoodRecognition(data) {
   const { imageUrl } = data
   
-  const mockResult = {
-    foods: [
-      {
-        name: '米饭',
-        category: '主食',
-        estimatedWeight: 150,
-        confidence: 0.95,
-        nutrients: {
-          calories: 174,
-          protein: 3.8,
-          fat: 0.5,
-          carbohydrate: 38.1
-        }
-      },
-      {
-        name: '红烧肉',
-        category: '肉类',
-        estimatedWeight: 100,
-        confidence: 0.92,
-        nutrients: {
-          calories: 358,
-          protein: 15.4,
-          fat: 30.8,
-          carbohydrate: 3.2
-        }
-      },
-      {
-        name: '炒青菜',
-        category: '蔬菜',
-        estimatedWeight: 120,
-        confidence: 0.88,
-        nutrients: {
-          calories: 32,
-          protein: 2.4,
-          fat: 1.2,
-          carbohydrate: 4.8
-        }
-      }
-    ],
-    description: '这是一份典型的中式午餐，包含米饭、红烧肉和炒青菜。'
+  if (!imageUrl) {
+    return {
+      success: false,
+      error: '请提供食物图片'
+    }
   }
   
-  return mockResult
+  try {
+    const response = await callZhipuAIWithImage(imageUrl, PROMPT_TEMPLATES.foodRecognition)
+    
+    const content = response.choices?.[0]?.message?.content
+    
+    if (!content) {
+      throw new Error('AI未返回有效响应')
+    }
+    
+    const result = parseJsonResponse(content)
+    
+    if (!result) {
+      return {
+        success: false,
+        error: '无法解析AI响应',
+        rawContent: content
+      }
+    }
+    
+    if (!result.success) {
+      return {
+        success: false,
+        message: result.message || '无法识别食物'
+      }
+    }
+    
+    result.foods = result.foods.map(food => ({
+      name: food.name || '未知食物',
+      category: food.category || '其他',
+      estimatedWeight: food.estimatedWeight || 100,
+      confidence: food.confidence || 0.8,
+      nutrients: {
+        calories: food.nutrients?.calories || 0,
+        protein: food.nutrients?.protein || 0,
+        fat: food.nutrients?.fat || 0,
+        carbohydrate: food.nutrients?.carbohydrate || 0
+      }
+    }))
+    
+    return result
+    
+  } catch (error) {
+    console.error('Food recognition error:', error)
+    return {
+      success: false,
+      error: error.message || '食物识别失败，请重试'
+    }
+  }
 }
 
 async function handleNutritionAnalysis(data) {
   const { foodInfo, userInfo } = data
   
-  const nutrients = {
-    calories: 564,
-    protein: 21.6,
-    fat: 32.5,
-    carbohydrate: 46.1,
-    fiber: 2.4,
-    vitamins: {
-      vitaminC: 28,
-      vitaminA: 156
-    },
-    minerals: {
-      calcium: 68,
-      iron: 3.2,
-      sodium: 420
-    },
-    analysisNotes: '本餐热量适中，蛋白质含量充足，建议增加蔬菜摄入量以补充膳食纤维。'
-  }
+  const prompt = PROMPT_TEMPLATES.nutritionAnalysis
+    .replace('{foodInfo}', JSON.stringify(foodInfo, null, 2))
+    .replace('{userInfo}', JSON.stringify(userInfo, null, 2))
   
-  return { nutrients }
+  try {
+    const response = await callZhipuAI([
+      {
+        role: 'user',
+        content: prompt
+      }
+    ])
+    
+    const content = response.choices?.[0]?.message?.content
+    const result = parseJsonResponse(content)
+    
+    if (!result) {
+      return {
+        nutrients: {
+          calories: 0,
+          protein: 0,
+          fat: 0,
+          carbohydrate: 0,
+          analysisNotes: '营养分析失败，请重试'
+        }
+      }
+    }
+    
+    return { nutrients: result }
+    
+  } catch (error) {
+    console.error('Nutrition analysis error:', error)
+    return {
+      nutrients: {
+        calories: 0,
+        protein: 0,
+        fat: 0,
+        carbohydrate: 0,
+        analysisNotes: '营养分析失败：' + error.message
+      }
+    }
+  }
 }
 
 async function handleRecommendation(openid, data) {
   const { gaps, preferences } = data
   
-  const suggestions = [
-    {
-      type: '补充',
-      nutrient: '维生素C',
-      foods: ['橙子', '猕猴桃', '西红柿'],
-      reason: '今日维生素C摄入不足，建议补充富含维生素C的水果'
-    },
-    {
-      type: '补充',
-      nutrient: '钙',
-      foods: ['牛奶', '酸奶', '豆腐'],
-      reason: '钙摄入量偏低，建议增加乳制品或豆制品'
-    },
-    {
-      type: '调整',
-      nutrient: '钠',
-      foods: ['减少腌制食品', '控制盐量'],
-      reason: '钠摄入偏高，建议减少盐分摄入'
+  try {
+    let userProfile = {}
+    try {
+      const userResult = await usersCollection.where({ openid }).get()
+      if (userResult.data && userResult.data.length > 0) {
+        userProfile = userResult.data[0]
+      }
+    } catch (e) {
+      console.log('Get user profile error:', e)
     }
-  ]
-  
-  return { suggestions }
+    
+    const prompt = PROMPT_TEMPLATES.recommendation
+      .replace('{userInfo}', JSON.stringify(userProfile, null, 2))
+      .replace('{todayRecords}', JSON.stringify(data.todayRecords || [], null, 2))
+      .replace('{nutrientGaps}', JSON.stringify(gaps, null, 2))
+    
+    const response = await callZhipuAI([
+      {
+        role: 'user',
+        content: prompt
+      }
+    ])
+    
+    const content = response.choices?.[0]?.message?.content
+    const result = parseJsonResponse(content)
+    
+    if (!result) {
+      return {
+        suggestions: [
+          {
+            type: '补充',
+            nutrient: '均衡饮食',
+            foods: ['蔬菜', '水果', '优质蛋白'],
+            reason: '建议保持均衡饮食'
+          }
+        ],
+        encouragement: '继续保持健康的饮食习惯！'
+      }
+    }
+    
+    return result
+    
+  } catch (error) {
+    console.error('Recommendation error:', error)
+    return {
+      suggestions: [],
+      encouragement: '继续保持健康的饮食习惯！'
+    }
+  }
 }
 
 async function handleChat(openid, data) {
   const { message, context } = data
   
-  let reply = ''
-  
-  if (message.includes('你好') || message.includes('您好')) {
-    reply = '您好！我是您的AI营养师，很高兴为您服务。今天想记录什么美食呢？'
-  } else if (message.includes('建议') || message.includes('推荐')) {
-    reply = '根据您今天的饮食情况，我建议您：\n1. 增加蔬菜水果的摄入\n2. 适量补充优质蛋白质\n3. 注意控制盐分摄入\n\n需要更详细的建议吗？'
-  } else if (message.includes('热量') || message.includes('卡路里')) {
-    reply = '热量是衡量食物能量的单位。一般成年人每日需要约1800-2500千卡热量。具体需求因人而异，取决于年龄、性别、体重和活动量等因素。'
-  } else if (message.includes('蛋白质')) {
-    reply = '蛋白质是人体必需的营养素，建议每日摄入量约为体重(kg)×0.8-1.2g。优质蛋白质来源包括：鸡蛋、鱼肉、瘦肉、豆制品等。'
-  } else {
-    reply = '感谢您的提问！作为您的AI营养师，我可以帮您：\n• 📷 拍照识别食物并计算营养\n• 📊 查看每日饮食报告\n• 💡 获取个性化饮食建议\n\n请随时告诉我您的需求！'
+  try {
+    let userProfile = {}
+    try {
+      const userResult = await usersCollection.where({ openid }).get()
+      if (userResult.data && userResult.data.length > 0) {
+        userProfile = userResult.data[0]
+      }
+    } catch (e) {
+      console.log('Get user profile error:', e)
+    }
+    
+    const conversationHistory = context?.history || []
+    const historyText = conversationHistory
+      .map(msg => `${msg.role === 'user' ? '用户' : 'AI'}: ${msg.content}`)
+      .join('\n')
+    
+    const prompt = PROMPT_TEMPLATES.chat
+      .replace('{conversationHistory}', historyText || '无历史对话')
+      .replace('{userProfile}', JSON.stringify(userProfile, null, 2))
+    
+    const messages = [
+      {
+        role: 'system',
+        content: prompt
+      },
+      {
+        role: 'user',
+        content: message
+      }
+    ]
+    
+    const response = await callZhipuAI(messages)
+    const reply = response.choices?.[0]?.message?.content || '抱歉，我暂时无法回答这个问题。'
+    
+    return { reply }
+    
+  } catch (error) {
+    console.error('Chat error:', error)
+    return {
+      reply: '抱歉，服务暂时不可用，请稍后再试。'
+    }
   }
-  
-  return { reply }
 }

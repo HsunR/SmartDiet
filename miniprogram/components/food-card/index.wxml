@@ -25,7 +25,7 @@
       </view>
       
       <view class="food-nutrients">
-        <text class="nutrient-value">{{item.nutrients.calories}} kcal</text>
+        <text class="nutrient-value">{{item.nutrients.calories || 0}} kcal</text>
       </view>
     </view>
   </view>
@@ -55,11 +55,11 @@
   </view>
   
   <view class="card-actions" wx:if="{{editable}}">
-    <view class="action-btn edit-btn" bindtap="onEdit">
+    <button class="action-btn edit-btn" bindtap="onEdit" hover-class="edit-btn-hover">
       <text>修改</text>
-    </view>
-    <view class="action-btn confirm-btn" bindtap="onConfirm">
+    </button>
+    <button class="action-btn confirm-btn" bindtap="onConfirm" hover-class="confirm-btn-hover">
       <text>确认记录</text>
-    </view>
+    </button>
   </view>
 </view>

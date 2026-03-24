@@ -189,6 +189,28 @@ const uploadFile = (cloudPath, filePath) => {
   })
 }
 
+const getTempFileURL = (fileID) => {
+  return new Promise((resolve, reject) => {
+    wx.cloud.getTempFileURL({
+      fileList: [fileID],
+      success: res => {
+        if (res.fileList && res.fileList.length > 0) {
+          resolve(res.fileList[0].tempFileURL)
+        } else {
+          reject(new Error('获取临时链接失败'))
+        }
+      },
+      fail: err => reject(err)
+    })
+  })
+}
+
+const uploadAndGetUrl = async (cloudPath, filePath) => {
+  const fileID = await uploadFile(cloudPath, filePath)
+  const tempUrl = await getTempFileURL(fileID)
+  return { fileID, tempUrl }
+}
+
 module.exports = {
   formatTime,
   formatDate,
@@ -208,5 +230,7 @@ module.exports = {
   validateNumber,
   getImageUrl,
   compressImage,
-  uploadFile
+  uploadFile,
+  getTempFileURL,
+  uploadAndGetUrl
 }

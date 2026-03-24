@@ -46,8 +46,27 @@
   background-color: #E8F5E9;
 }
 
+.avatar-placeholder {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 36rpx;
+}
+
+.avatar-ai {
+  background-color: #E8F5E9;
+}
+
+.avatar-user {
+  background-color: #4CAF50;
+  color: #FFFFFF;
+}
+
 .message-content {
-  max-width: 70%;
+  max-width: 85%;
 }
 
 .message-bubble {
@@ -55,12 +74,14 @@
   border-radius: 16rpx;
   word-wrap: break-word;
   word-break: break-all;
+  overflow: visible;
 }
 
 .bubble-ai {
   background-color: #FFFFFF;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
   border-top-left-radius: 4rpx;
+  overflow: visible;
 }
 
 .bubble-user {

@@ -1,5 +1,5 @@
 const { createTextMessage, createImageMessage, createFoodCardMessage, createQuickActionsMessage, MESSAGE_TYPES, MESSAGE_ROLES } = require('../../utils/constants')
-const { generateId, formatDate, formatTimeAgo, compressImage, uploadFile } = require('../../utils/util')
+const { generateId, formatDate, formatTimeAgo, compressImage, uploadFile, uploadAndGetUrl } = require('../../utils/util')
 const { api, safeApiCall } = require('../../utils/api')
 
 Page({
@@ -132,33 +132,30 @@ Page({
       const compressedPath = await compressImage(tempFilePath, 80)
       
       const cloudPath = `food_images/${generateId()}.jpg`
-      const fileID = await uploadFile(cloudPath, compressedPath)
+      const { fileID, tempUrl } = await uploadAndGetUrl(cloudPath, compressedPath)
       
-      const recognizeResult = await safeApiCall(() => api.food.recognize(fileID))
+      const recognizeResult = await safeApiCall(() => api.food.recognize(tempUrl))
       
       if (recognizeResult.success && recognizeResult.foods) {
         const foods = recognizeResult.foods
-        
-        const nutritionResult = await safeApiCall(() => api.food.analyzeNutrition(foods, {}))
-        
-        if (nutritionResult.success) {
-          foods.forEach(food => {
-            food.nutrients = nutritionResult.nutrients || {}
-          })
-        }
+        foods.forEach(food => {
+          food.imageUrl = fileID
+        })
         
         const foodCardMessage = createFoodCardMessage(foods, generateId())
         
+        const description = recognizeResult.description || ''
         const confirmMessage = createTextMessage(
           MESSAGE_ROLES.ASSISTANT,
-          `我识别到了 ${foods.length} 种食物，请确认或修改：`
+          `我识别到了 ${foods.length} 种食物${description ? '：' + description : ''}\n\n请确认或修改：`
         )
         
         this.setData({
           messages: [...this.data.messages, confirmMessage, foodCardMessage]
         })
       } else {
-        this.showErrorMessage('无法识别图片中的食物，请重新拍摄')
+        const errorMsg = recognizeResult.message || recognizeResult.error || '无法识别图片中的食物'
+        this.showErrorMessage(errorMsg)
       }
     } catch (error) {
       console.error('Image process error:', error)
@@ -230,7 +227,14 @@ Page({
   },
 
   onFoodCardConfirm: async function(e) {
+    console.log('onFoodCardConfirm triggered', e)
     const { foods, recordId } = e.detail
+    console.log('foods:', foods, 'recordId:', recordId)
+    
+    if (!foods || foods.length === 0) {
+      this.showErrorMessage('没有食物数据')
+      return
+    }
     
     try {
       const record = {
@@ -240,6 +244,8 @@ Page({
         totalCalories: foods.reduce((sum, f) => sum + (f.nutrients?.calories || 0), 0),
         imageUrl: foods[0]?.imageUrl || ''
       }
+      
+      console.log('Saving record:', record)
       
       const result = await safeApiCall(() => api.food.addRecord(record))
       
@@ -252,8 +258,11 @@ Page({
           messages: [...this.data.messages, successMessage]
         })
         this.updateDailyProgress()
+      } else {
+        this.showErrorMessage(result.error || '保存记录失败')
       }
     } catch (error) {
+      console.error('Save record error:', error)
       this.showErrorMessage('保存记录失败')
     }
     
@@ -261,7 +270,18 @@ Page({
   },
 
   onFoodCardEdit: function(e) {
+    console.log('onFoodCardEdit triggered', e)
     const { foods } = e.detail
+    console.log('foods for edit:', foods)
+    
+    if (!foods || foods.length === 0) {
+      wx.showToast({
+        title: '没有食物数据',
+        icon: 'none'
+      })
+      return
+    }
+    
     wx.navigateTo({
       url: `/pages/recognize/index?foods=${encodeURIComponent(JSON.stringify(foods))}`
     })

@@ -45,6 +45,8 @@ Component({
 
   methods: {
     onConfirm: function() {
+      console.log('food-card onConfirm triggered')
+      console.log('foods:', this.properties.foods)
       this.triggerEvent('confirm', {
         foods: this.properties.foods,
         recordId: this.properties.recordId
@@ -52,6 +54,8 @@ Component({
     },
 
     onEdit: function() {
+      console.log('food-card onEdit triggered')
+      console.log('foods:', this.properties.foods)
       this.triggerEvent('edit', {
         foods: this.properties.foods
       })

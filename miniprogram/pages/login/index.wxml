@@ -1,6 +1,6 @@
 <view class="login-container">
   <view class="login-content">
-    <image src="/assets/icons/logo.png" class="logo" mode="aspectFit"></image>
+    <view class="logo-placeholder">🥗</view>
     
     <view class="title-section">
       <text class="title">AI营养师</text>

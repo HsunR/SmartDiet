@@ -152,6 +152,13 @@
   border-radius: 36rpx;
   font-size: 28rpx;
   margin: 0 8rpx;
+  padding: 0;
+  border: none;
+  line-height: 72rpx;
+}
+
+.action-btn::after {
+  border: none;
 }
 
 .edit-btn {
@@ -159,7 +166,15 @@
   color: #757575;
 }
 
+.edit-btn-hover {
+  background-color: #EEEEEE;
+}
+
 .confirm-btn {
   background-color: #4CAF50;
   color: #FFFFFF;
+}
+
+.confirm-btn-hover {
+  background-color: #43A047;
 }
