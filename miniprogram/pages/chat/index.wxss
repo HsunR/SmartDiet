@@ -393,7 +393,7 @@
   position: fixed;
   left: 24rpx;
   right: 24rpx;
-  bottom: 140rpx;
+  bottom: 240rpx;
   padding: 20rpx 24rpx;
   background-color: #FFFFFF;
   border-radius: 16rpx;
@@ -437,7 +437,7 @@
   position: fixed;
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: 100rpx;
   background-color: #FFFFFF;
   z-index: 100;
   padding-bottom: env(safe-area-inset-bottom);

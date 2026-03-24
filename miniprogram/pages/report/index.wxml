@@ -28,6 +28,7 @@
           scroll-x 
           scroll-left="{{scrollLeft}}"
           scroll-with-animation
+          bindscroll="onHeaderScroll"
         >
           <view class="header-days">
             <view class="header-cell day-cell {{item.isToday ? 'today' : ''}}" wx:for="{{weekDays}}" wx:key="date">
@@ -52,6 +53,8 @@
             scroll-with-animation
             enhanced
             show-scrollbar="{{false}}"
+            bindscroll="onBodyScroll"
+            data-row-index="{{index}}"
           >
             <view class="cells-row">
               <view 

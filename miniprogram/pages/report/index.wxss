@@ -82,6 +82,7 @@
   display: flex;
   background-color: #E8F5E9;
   border-bottom: 2rpx solid #C8E6C9;
+  position: relative;
 }
 
 .header-cell {
@@ -94,12 +95,16 @@
 }
 
 .meal-type-header {
+  position: sticky;
+  left: 0;
+  z-index: 20;
   flex-shrink: 0;
   width: 100rpx;
   background-color: #C8E6C9;
   font-size: 24rpx;
   color: #2E7D32;
   font-weight: 600;
+  box-shadow: 2rpx 0 8rpx rgba(0, 0, 0, 0.1);
 }
 
 .header-scroll {
@@ -139,6 +144,7 @@
 .calendar-row {
   display: flex;
   border-bottom: 1rpx solid #EEEEEE;
+  position: relative;
 }
 
 .calendar-row:last-child {
@@ -146,6 +152,9 @@
 }
 
 .meal-type-cell {
+  position: sticky;
+  left: 0;
+  z-index: 15;
   flex-shrink: 0;
   width: 100rpx;
   display: flex;
@@ -156,6 +165,7 @@
   border-right: 1rpx solid #EEEEEE;
   padding: 16rpx 8rpx;
   min-height: 160rpx;
+  box-shadow: 2rpx 0 8rpx rgba(0, 0, 0, 0.05);
 }
 
 .meal-icon {

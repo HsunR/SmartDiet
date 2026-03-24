@@ -84,9 +84,15 @@ Page({
           
           wx.hideLoading()
           
-          wx.switchTab({
-            url: '/pages/chat/index'
-          })
+          if (result.data && result.data.age && result.data.height && result.data.weight) {
+            wx.switchTab({
+              url: '/pages/chat/index'
+            })
+          } else {
+            wx.redirectTo({
+              url: '/pages/onboarding/index'
+            })
+          }
           return
         }
         
@@ -168,8 +174,8 @@ Page({
 
   skipLogin: function() {
     app.globalData.hasLogin = true
-    wx.switchTab({
-      url: '/pages/chat/index'
+    wx.redirectTo({
+      url: '/pages/onboarding/index'
     })
   },
 

@@ -62,14 +62,14 @@ Page({
         this.setData({ userProfile: profile })
         
         if (!profile.age || !profile.height || !profile.weight) {
-          if (!this.data.hasInitialized) {
-            this.showUserInfoForm()
-          }
+          wx.redirectTo({
+            url: '/pages/onboarding/index'
+          })
         }
       } else {
-        if (!this.data.hasInitialized) {
-          this.showUserInfoForm()
-        }
+        wx.redirectTo({
+          url: '/pages/onboarding/index'
+        })
       }
     } catch (error) {
       console.error('Check profile error:', error)

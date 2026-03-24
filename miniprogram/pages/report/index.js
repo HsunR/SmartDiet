@@ -178,6 +178,16 @@ Page({
     }
   },
 
+  onHeaderScroll: function(e) {
+    const scrollLeft = e.detail.scrollLeft
+    this.setData({ scrollLeft })
+  },
+
+  onBodyScroll: function(e) {
+    const scrollLeft = e.detail.scrollLeft
+    this.setData({ scrollLeft })
+  },
+
   onCellTap: function(e) {
     const { date, meal } = e.currentTarget.dataset
     const { calendarData } = this.data
