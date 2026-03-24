@@ -1,7 +1,6 @@
 {
   "pages": [
     "pages/chat/index",
-    "pages/recognize/index",
     "pages/report/index",
     "pages/profile/index",
     "pages/settings/index",
@@ -16,6 +15,7 @@
     "backgroundColor": "#FAFAFA"
   },
   "tabBar": {
+    "custom": true,
     "color": "#757575",
     "selectedColor": "#4CAF50",
     "backgroundColor": "#FFFFFF",
@@ -24,10 +24,6 @@
       {
         "pagePath": "pages/chat/index",
         "text": "聊天"
-      },
-      {
-        "pagePath": "pages/recognize/index",
-        "text": "识别"
       },
       {
         "pagePath": "pages/report/index",

@@ -4,6 +4,23 @@ Component({
       type: Array,
       value: []
     },
+    mealOverview: {
+      type: Object,
+      value: {
+        mealType: '',
+        totalCalories: 0,
+        overallHealthScore: 0,
+        healthTags: {
+          positive: [],
+          warning: []
+        },
+        summary: ''
+      }
+    },
+    dietaryAdvice: {
+      type: String,
+      value: ''
+    },
     recordId: {
       type: String,
       value: ''
@@ -11,53 +28,56 @@ Component({
     editable: {
       type: Boolean,
       value: true
+    },
+    actionCompleted: {
+      type: Boolean,
+      value: false
     }
   },
 
   data: {
-    totalCalories: 0,
-    totalProtein: 0,
-    totalFat: 0,
-    totalCarb: 0,
-    proteinPercent: 0,
-    fatPercent: 0,
-    carbPercent: 0
+    scoreColor: '#4CAF50'
   },
 
   observers: {
+    'mealOverview.overallHealthScore': function(score) {
+      let color = '#4CAF50'
+      if (score < 40) {
+        color = '#F44336'
+      } else if (score < 60) {
+        color = '#FF9800'
+      } else if (score < 80) {
+        color = '#8BC34A'
+      }
+      this.setData({ scoreColor: color })
+    },
     'foods': function(foods) {
-      const totalCalories = foods.reduce((sum, f) => sum + (f.nutrients?.calories || 0), 0)
-      const totalProtein = foods.reduce((sum, f) => sum + (f.nutrients?.protein || 0), 0)
-      const totalFat = foods.reduce((sum, f) => sum + (f.nutrients?.fat || 0), 0)
-      const totalCarb = foods.reduce((sum, f) => sum + (f.nutrients?.carbohydrate || 0), 0)
-      
-      this.setData({
-        totalCalories,
-        totalProtein,
-        totalFat,
-        totalCarb,
-        proteinPercent: Math.min(totalProtein / 100 * 100, 100),
-        fatPercent: Math.min(totalFat / 80 * 100, 100),
-        carbPercent: Math.min(totalCarb / 300 * 100, 100)
-      })
+      if (foods && foods.length > 0) {
+        const processedFoods = foods.map(food => ({
+          ...food,
+          categoryIcon: this.getCategoryIcon(food.category),
+          estimatedWeight: food.estimatedWeight || (food.portionEstimation && food.portionEstimation.estimatedWeight) || 100,
+          displayCalories: (food.nutrients && food.nutrients.calories) || (food.nutrientsEstimation && food.nutrientsEstimation.calories) || 0
+        }))
+        this.setData({ foods: processedFoods })
+      }
     }
   },
 
   methods: {
     onConfirm: function() {
-      console.log('food-card onConfirm triggered')
-      console.log('foods:', this.properties.foods)
       this.triggerEvent('confirm', {
         foods: this.properties.foods,
+        mealOverview: this.properties.mealOverview,
+        dietaryAdvice: this.properties.dietaryAdvice,
         recordId: this.properties.recordId
       })
     },
 
     onEdit: function() {
-      console.log('food-card onEdit triggered')
-      console.log('foods:', this.properties.foods)
       this.triggerEvent('edit', {
-        foods: this.properties.foods
+        foods: this.properties.foods,
+        mealOverview: this.properties.mealOverview
       })
     },
 
@@ -77,9 +97,8 @@ Component({
         '肉类': '🍖',
         '蔬菜': '🥬',
         '水果': '🍎',
-        '乳制品': '🥛',
-        '饮品': '🥤',
-        '零食': '🍪',
+        '豆制品': '🫘',
+        '零食/甜点': '🍪',
         '其他': '🍽️'
       }
       return icons[category] || '🍽️'

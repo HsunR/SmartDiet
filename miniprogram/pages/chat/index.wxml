@@ -15,7 +15,7 @@
         <view class="avatar-placeholder avatar-ai">🤖</view>
       </view>
       
-      <view class="message-content">
+      <view class="message-content {{item.role === 'user' ? 'message-content-user' : ''}}">
         <view class="message-bubble {{item.role === 'user' ? 'bubble-user' : 'bubble-ai'}}">
           <text wx:if="{{item.type === 'text'}}" class="message-text">{{item.content}}</text>
           
@@ -31,10 +31,99 @@
           <food-card 
             wx:elif="{{item.type === 'food_card'}}" 
             foods="{{item.data.foods}}"
+            meal-overview="{{item.data.mealOverview}}"
+            dietary-advice="{{item.data.dietaryAdvice}}"
             record-id="{{item.data.recordId}}"
+            action-completed="{{item.data.actionCompleted}}"
             bindconfirm="onFoodCardConfirm"
             bindedit="onFoodCardEdit"
           ></food-card>
+          
+          <view wx:if="{{item.type === 'meal_type_picker' && !item.data.completed}}" class="meal-type-picker">
+            <text class="picker-title">{{item.content}}</text>
+            <view class="picker-wheel-container">
+              <picker-view 
+                class="meal-picker-view"
+                value="{{[pickerIndex]}}"
+                bindchange="onMealPickerChange"
+              >
+                <picker-view-column>
+                  <view class="picker-item" wx:for="{{item.data.mealTypes}}" wx:key="value">
+                    <text class="picker-icon">{{item.icon}}</text>
+                    <text class="picker-label">{{item.label}}</text>
+                  </view>
+                </picker-view-column>
+              </picker-view>
+            </view>
+            <button class="picker-confirm-btn" bindtap="onMealTypeConfirm" data-msg-id="{{item.id}}">
+              <text>确认</text>
+            </button>
+          </view>
+          
+          <view wx:if="{{item.type === 'feedback_input' && !item.data.completed}}" class="feedback-input">
+            <text class="feedback-title">{{item.content}}</text>
+            <textarea 
+              class="feedback-textarea" 
+              placeholder="例如：分量估算不对、漏识别了食物、烹饪方式判断错误..."
+              bindinput="onFeedbackInput"
+              data-msg-id="{{item.id}}"
+              value="{{feedbackValues[item.id] || ''}}"
+            ></textarea>
+            <button class="feedback-submit-btn" bindtap="onFeedbackSubmitBtn" data-msg-id="{{item.id}}">
+              <text>重新识别</text>
+            </button>
+          </view>
+          
+          <view wx:if="{{item.type === 'user_info_form' && !item.data.completed}}" class="user-info-form">
+            <text class="form-title">{{item.content}}</text>
+            <view class="form-fields">
+              <view class="form-field" wx:for="{{item.data.fields}}" wx:for-item="field" wx:key="key">
+                <text class="field-label">{{field.label}}</text>
+                <input 
+                  wx:if="{{field.type === 'number'}}"
+                  class="field-input"
+                  type="number"
+                  placeholder="{{field.placeholder}}"
+                  data-field="{{field.key}}"
+                  data-msg-id="{{item.id}}"
+                  bindinput="onFormFieldInput"
+                />
+                <picker 
+                  wx:elif="{{field.type === 'picker'}}"
+                  class="field-picker"
+                  range="{{field.options}}"
+                  data-field="{{field.key}}"
+                  data-msg-id="{{item.id}}"
+                  bindchange="onFormFieldPicker"
+                >
+                  <view class="picker-display">
+                    <text>{{formValues[field.key] || '请选择'}}</text>
+                    <text class="picker-arrow">▼</text>
+                  </view>
+                </picker>
+                <view 
+                  wx:elif="{{field.type === 'multiPicker'}}"
+                  class="field-multi-picker"
+                >
+                  <view 
+                    class="multi-option {{formValues[field.key] && formValues[field.key].indexOf(opt.value) >= 0 ? 'multi-selected' : ''}}"
+                    wx:for="{{field.options}}"
+                    wx:for-item="opt"
+                    wx:key="value"
+                    data-field="{{field.key}}"
+                    data-value="{{opt.value}}"
+                    data-msg-id="{{item.id}}"
+                    bindtap="onMultiPickerToggle"
+                  >
+                    <text>{{opt.label}}</text>
+                  </view>
+                </view>
+              </view>
+            </view>
+            <button class="form-submit-btn" bindtap="onUserInfoFormSubmit" data-msg-id="{{item.id}}">
+              <text>保存信息</text>
+            </button>
+          </view>
           
           <view wx:elif="{{item.type === 'quick_actions'}}" class="quick-actions">
             <text class="quick-actions-title">{{item.content}}</text>
@@ -47,7 +136,7 @@
                 bindtap="onQuickAction"
                 data-action="{{action.id}}"
               >
-                <text>{{action.label}}</text>
+                <text>{{action.icon}} {{action.label}}</text>
               </view>
             </view>
           </view>
@@ -89,10 +178,13 @@
     </view>
   </view>
   
-  <view class="input-area safe-area-bottom">
+  <view class="input-area">
     <view class="input-wrapper">
       <view class="camera-btn" bindtap="chooseImage">
-        <text class="iconfont icon-camera"></text>
+        <view class="camera-icon-svg">
+          <view class="camera-body"></view>
+          <view class="camera-lens"></view>
+        </view>
       </view>
       
       <input 
@@ -101,13 +193,16 @@
         placeholder="输入消息..."
         value="{{inputValue}}"
         bindinput="onInputChange"
-        bindconfirm="sendMessage"
         bindfocus="onInputFocus"
         bindblur="onInputBlur"
         confirm-type="send"
+        bindconfirm="sendMessage"
       />
       
-      <view class="send-btn {{inputValue ? 'send-btn-active' : ''}}" bindtap="sendMessage">
+      <view 
+        class="send-btn {{inputValue ? 'send-btn-active' : ''}}" 
+        bindtap="sendMessage"
+      >
         <text>发送</text>
       </view>
     </view>

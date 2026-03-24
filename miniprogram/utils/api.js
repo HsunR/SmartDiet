@@ -55,6 +55,11 @@ const api = {
       data: { imageUrl } 
     }),
     
+    recognizeWithFeedback: (imageUrl, userFeedback) => cloud.callFunction('aiGateway', { 
+      action: 'foodRecognition', 
+      data: { imageUrl, userFeedback } 
+    }),
+    
     analyzeNutrition: (foodInfo, userInfo) => cloud.callFunction('aiGateway', { 
       action: 'nutritionAnalysis', 
       data: { foodInfo, userInfo } 

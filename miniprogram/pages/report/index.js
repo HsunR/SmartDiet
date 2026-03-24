@@ -1,240 +1,150 @@
-const { formatDate, calculateProgress, getProgressStatus } = require('../../utils/util')
-const { MEAL_TYPES, calculateNutrientTargets } = require('../../utils/constants')
+const { formatDate } = require('../../utils/util')
 const { api, safeApiCall } = require('../../utils/api')
 
 Page({
   data: {
     currentDate: '',
-    records: [],
-    summary: {
-      calories: 0,
-      protein: 0,
-      fat: 0,
-      carbohydrate: 0
-    },
-    targets: {
-      calories: 2000,
-      protein: 75,
-      fat: 55,
-      carbohydrate: 300
-    },
-    progress: {
-      calories: 0,
-      protein: 0,
-      fat: 0,
-      carbohydrate: 0
-    },
-    progressColor: {
-      calories: '#4CAF50',
-      protein: '#4CAF50',
-      fat: '#4CAF50',
-      carbohydrate: '#4CAF50'
-    },
-    gaps: [],
-    loading: true,
-    activeTab: 'overview',
-    tabs: [
-      { key: 'overview', name: '概览' },
-      { key: 'detail', name: '详情' },
-      { key: 'trend', name: '趋势' }
-    ],
-    weekData: [],
+    weekRange: '',
+    weekDays: [],
+    calendarData: {},
     weekSummary: {
       totalCalories: 0,
       avgCalories: 0,
-      targetDays: 0
+      mealCount: 0
     },
-    mealRecords: {
-      breakfast: [],
-      lunch: [],
-      dinner: [],
-      snack: []
-    },
-    mealCalories: {
-      breakfast: 0,
-      lunch: 0,
-      dinner: 0,
-      snack: 0
-    }
+    loading: true,
+    scrollLeft: 0,
+    mealTypes: [
+      { type: 'breakfast', label: '早餐', icon: '🌅' },
+      { type: 'lunch', label: '午餐', icon: '☀️' },
+      { type: 'dinner', label: '晚餐', icon: '🌙' },
+      { type: 'snack', label: '其他', icon: '🍎' }
+    ]
   },
 
   onLoad: function() {
+    const today = new Date()
     this.setData({
-      currentDate: formatDate(new Date())
+      currentDate: formatDate(today)
     })
-    this.loadDailyReport()
+    this.initWeekDays(today)
+    this.loadWeekData()
   },
 
   onShow: function() {
-    this.loadDailyReport()
+    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+      this.getTabBar().setData({
+        selected: 1
+      })
+    }
+    this.loadWeekData()
   },
 
   onPullDownRefresh: function() {
-    this.loadDailyReport().then(() => {
+    this.loadWeekData().then(() => {
       wx.stopPullDownRefresh()
     })
   },
 
-  loadDailyReport: async function() {
-    this.setData({ loading: true })
+  initWeekDays: function(date) {
+    const weekDays = []
+    const dayNames = ['日', '一', '二', '三', '四', '五', '六']
+    const current = new Date(date)
+    const dayOfWeek = current.getDay()
+    const monday = new Date(current)
+    monday.setDate(current.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
     
-    try {
-      const { currentDate } = this.data
-      
-      const recordsResult = await safeApiCall(() => api.food.getRecords(currentDate))
-      
-      if (recordsResult.success) {
-        const records = recordsResult.data || []
-        const mealRecords = this.groupByMeal(records)
-        const summary = this.calculateSummary(records)
-        const progress = this.calculateProgress(summary)
-        const progressColor = this.getProgressColors(progress)
-        const mealCalories = this.calculateMealCalories(mealRecords)
-        
-        this.setData({
-          records,
-          mealRecords,
-          summary,
-          progress,
-          progressColor,
-          mealCalories
-        })
+    const startDate = formatDate(monday)
+    const endDate = new Date(monday)
+    endDate.setDate(monday.getDate() + 6)
+    
+    let todayIndex = 0
+    const todayStr = formatDate(new Date())
+    
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday)
+      d.setDate(monday.getDate() + i)
+      const dateStr = formatDate(d)
+      if (dateStr === todayStr) {
+        todayIndex = i
       }
-      
-      const gapsResult = await safeApiCall(() => api.report.analyzeGaps(currentDate))
-      
-      if (gapsResult.success && gapsResult.gaps) {
-        this.setData({
-          gaps: gapsResult.gaps
-        })
-      }
-      
-      await this.loadWeekData()
-      
-    } catch (error) {
-      console.error('Load report error:', error)
-    } finally {
-      this.setData({ loading: false })
-    }
-  },
-
-  groupByMeal: function(records) {
-    const mealRecords = {
-      breakfast: [],
-      lunch: [],
-      dinner: [],
-      snack: []
+      weekDays.push({
+        date: dateStr,
+        dayName: '周' + dayNames[d.getDay()],
+        dayNum: d.getDate(),
+        isToday: dateStr === todayStr
+      })
     }
     
-    records.forEach(record => {
-      const mealType = record.mealType || 'snack'
-      if (mealRecords[mealType]) {
-        record.foodsNames = (record.foods || []).map(f => f.name).join('、')
-        mealRecords[mealType].push(record)
-      }
+    const cellWidth = 120
+    const scrollLeft = Math.max(0, (todayIndex - 1) * cellWidth)
+    
+    this.setData({
+      weekDays,
+      weekRange: `${startDate.slice(5)} ~ ${formatDate(endDate).slice(5)}`,
+      scrollLeft
     })
-    
-    return mealRecords
-  },
-
-  calculateSummary: function(records) {
-    return records.reduce((sum, record) => {
-      const nutrients = record.nutrients || {}
-      return {
-        calories: sum.calories + (nutrients.calories || record.totalCalories || 0),
-        protein: sum.protein + (nutrients.protein || 0),
-        fat: sum.fat + (nutrients.fat || 0),
-        carbohydrate: sum.carbohydrate + (nutrients.carbohydrate || 0)
-      }
-    }, { calories: 0, protein: 0, fat: 0, carbohydrate: 0 })
-  },
-
-  calculateProgress: function(summary) {
-    const { targets } = this.data
-    return {
-      calories: Math.min(Math.round((summary.calories / targets.calories) * 100), 150),
-      protein: Math.min(Math.round((summary.protein / targets.protein) * 100), 150),
-      fat: Math.min(Math.round((summary.fat / targets.fat) * 100), 150),
-      carbohydrate: Math.min(Math.round((summary.carbohydrate / targets.carbohydrate) * 100), 150)
-    }
-  },
-
-  getProgressColors: function(progress) {
-    const getColor = (percent) => {
-      if (percent < 50) return '#FF9800'
-      if (percent <= 100) return '#4CAF50'
-      if (percent <= 110) return '#FF9800'
-      return '#F44336'
-    }
-    return {
-      calories: getColor(progress.calories),
-      protein: getColor(progress.protein),
-      fat: getColor(progress.fat),
-      carbohydrate: getColor(progress.carbohydrate)
-    }
-  },
-
-  calculateMealCalories: function(mealRecords) {
-    return {
-      breakfast: mealRecords.breakfast.reduce((sum, r) => sum + (r.totalCalories || 0), 0),
-      lunch: mealRecords.lunch.reduce((sum, r) => sum + (r.totalCalories || 0), 0),
-      dinner: mealRecords.dinner.reduce((sum, r) => sum + (r.totalCalories || 0), 0),
-      snack: mealRecords.snack.reduce((sum, r) => sum + (r.totalCalories || 0), 0)
-    }
   },
 
   loadWeekData: async function() {
-    const weekData = []
-    const today = new Date()
+    this.setData({ loading: true })
     
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date(today)
-      date.setDate(date.getDate() - i)
-      const dateStr = formatDate(date)
+    try {
+      const { weekDays } = this.data
+      const calendarData = {}
+      let totalCalories = 0
+      let mealCount = 0
       
-      try {
-        const result = await safeApiCall(() => api.food.getRecords(dateStr))
-        const records = result.success ? (result.data || []) : []
-        const summary = this.calculateSummary(records)
-        const percent = Math.round((summary.calories / this.data.targets.calories) * 100)
+      for (const day of weekDays) {
+        calendarData[day.date] = {
+          breakfast: null,
+          lunch: null,
+          dinner: null,
+          snack: null
+        }
         
-        weekData.push({
-          date: dateStr,
-          day: this.getDayName(date),
-          calories: summary.calories,
-          target: this.data.targets.calories,
-          percent: percent,
-          barColor: (percent >= 80 && percent <= 110) ? '#4CAF50' : '#FF9800'
-        })
-      } catch (error) {
-        weekData.push({
-          date: dateStr,
-          day: this.getDayName(date),
-          calories: 0,
-          target: this.data.targets.calories,
-          percent: 0,
-          barColor: '#FF9800'
-        })
+        try {
+          const result = await safeApiCall(() => api.food.getRecords(day.date))
+          
+          if (result.success && result.data) {
+            const records = result.data
+            
+            records.forEach(record => {
+              const mealType = record.mealType || 'snack'
+              const mealOverview = record.mealOverview || {}
+              
+              calendarData[day.date][mealType] = {
+                imageUrl: record.imageUrl || (record.foods && record.foods[0]?.imageUrl),
+                foods: record.foods || [],
+                totalCalories: record.totalCalories || 0,
+                healthTags: mealOverview.healthTags || { positive: [], warning: [] }
+              }
+              
+              totalCalories += record.totalCalories || 0
+              mealCount++
+            })
+          }
+        } catch (e) {
+          console.error('Load records error:', e)
+        }
       }
+      
+      const avgCalories = mealCount > 0 ? Math.round(totalCalories / 7) : 0
+      
+      this.setData({
+        calendarData,
+        weekSummary: {
+          totalCalories,
+          avgCalories,
+          mealCount
+        }
+      })
+      
+    } catch (error) {
+      console.error('Load week data error:', error)
+    } finally {
+      this.setData({ loading: false })
     }
-    
-    const totalCalories = weekData.reduce((sum, d) => sum + d.calories, 0)
-    const avgCalories = Math.round(totalCalories / 7)
-    const targetDays = weekData.filter(d => d.percent >= 80 && d.percent <= 110).length
-    
-    this.setData({ 
-      weekData,
-      weekSummary: {
-        totalCalories,
-        avgCalories,
-        targetDays
-      }
-    })
-  },
-
-  getDayName: function(date) {
-    const days = ['日', '一', '二', '三', '四', '五', '六']
-    return '周' + days[date.getDay()]
   },
 
   onDateChange: function(e) {
@@ -242,134 +152,67 @@ Page({
     this.setData({
       currentDate: date
     })
-    this.loadDailyReport()
+    this.initWeekDays(new Date(date))
+    this.loadWeekData()
   },
 
-  onPrevDay: function() {
+  onPrevWeek: function() {
     const current = new Date(this.data.currentDate)
-    current.setDate(current.getDate() - 1)
+    current.setDate(current.getDate() - 7)
     this.setData({
       currentDate: formatDate(current)
     })
-    this.loadDailyReport()
+    this.initWeekDays(current)
+    this.loadWeekData()
   },
 
-  onNextDay: function() {
+  onNextWeek: function() {
     const current = new Date(this.data.currentDate)
-    current.setDate(current.getDate() + 1)
-    if (current <= new Date()) {
+    current.setDate(current.getDate() + 7)
+    if (current <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)) {
       this.setData({
         currentDate: formatDate(current)
       })
-      this.loadDailyReport()
+      this.initWeekDays(current)
+      this.loadWeekData()
     }
   },
 
-  onTabChange: function(e) {
-    const { tab } = e.currentTarget.dataset
-    this.setData({ activeTab: tab })
-  },
-
-  onRecordTap: function(e) {
-    const { record } = e.currentTarget.dataset
-    wx.showActionSheet({
-      itemList: ['查看详情', '编辑', '删除'],
-      success: (res) => {
-        switch (res.tapIndex) {
-          case 0:
-            this.showRecordDetail(record)
-            break
-          case 1:
-            this.editRecord(record)
-            break
-          case 2:
-            this.deleteRecord(record._id)
-            break
-        }
-      }
-    })
-  },
-
-  showRecordDetail: function(record) {
-    const foods = record.foods || []
-    let content = `食物：\n`
-    foods.forEach(f => {
-      content += `• ${f.name} ${f.estimatedWeight}g\n`
-    })
-    content += `\n热量：${record.totalCalories} kcal`
+  onCellTap: function(e) {
+    const { date, meal } = e.currentTarget.dataset
+    const { calendarData } = this.data
+    const cellData = calendarData[date]?.[meal]
     
-    wx.showModal({
-      title: '记录详情',
-      content: content,
-      showCancel: false
-    })
-  },
-
-  editRecord: function(record) {
-    wx.navigateTo({
-      url: `/pages/recognize/index?recordId=${record._id}`
-    })
-  },
-
-  deleteRecord: async function(recordId) {
-    wx.showModal({
-      title: '确认删除',
-      content: '确定要删除这条记录吗？',
-      success: async (res) => {
-        if (res.confirm) {
-          const result = await safeApiCall(() => api.food.deleteRecord(recordId))
-          if (result.success) {
-            wx.showToast({
-              title: '删除成功',
-              icon: 'success'
+    if (cellData) {
+      let content = `食物：\n`
+      cellData.foods.forEach(f => {
+        content += `• ${f.name}\n`
+      })
+      content += `\n热量：${cellData.totalCalories} kcal`
+      
+      wx.showModal({
+        title: this.data.mealTypes.find(m => m.type === meal)?.label || '详情',
+        content: content,
+        showCancel: false
+      })
+    } else {
+      wx.showModal({
+        title: '添加记录',
+        content: '是否要添加该餐次的饮食记录？',
+        success: (res) => {
+          if (res.confirm) {
+            wx.switchTab({
+              url: '/pages/chat/index'
             })
-            this.loadDailyReport()
           }
         }
-      }
-    })
-  },
-
-  getRecommendation: async function() {
-    wx.showLoading({ title: '获取建议中...' })
-    
-    try {
-      const { gaps } = this.data
-      const result = await safeApiCall(() => api.recommend.getFoodRecommendation(gaps, {}))
-      
-      wx.hideLoading()
-      
-      if (result.success && result.suggestions) {
-        let content = '饮食建议：\n\n'
-        result.suggestions.forEach(s => {
-          content += `• ${s.reason}\n`
-          content += `  推荐：${s.foods.join('、')}\n\n`
-        })
-        
-        wx.showModal({
-          title: '个性化建议',
-          content: content,
-          showCancel: false
-        })
-      }
-    } catch (error) {
-      wx.hideLoading()
-      wx.showToast({
-        title: '获取建议失败',
-        icon: 'none'
       })
     }
-  },
-
-  onAddFood: function() {
-    wx.switchTab({
-      url: '/pages/recognize/index'
-    })
   },
 
   onShareAppMessage: function() {
     return {
-      title: 'AI营养师 - 今日报告',
+      title: 'AI营养师 - 本周报告',
       path: '/pages/report/index'
     }
   }
