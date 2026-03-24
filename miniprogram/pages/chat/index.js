@@ -54,6 +54,11 @@ Page({
   },
 
   checkUserProfile: async function() {
+    const hasCompletedOnboarding = wx.getStorageSync('hasCompletedOnboarding')
+    if (hasCompletedOnboarding) {
+      return
+    }
+    
     try {
       const result = await safeApiCall(() => api.user.getProfile())
       

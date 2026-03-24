@@ -1,9 +1,11 @@
 .onboarding-container {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   background: linear-gradient(180deg, #E8F5E9 0%, #FFFFFF 100%);
   padding: 80rpx 48rpx 48rpx;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .progress-bar {

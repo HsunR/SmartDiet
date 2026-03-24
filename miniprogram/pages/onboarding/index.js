@@ -104,9 +104,20 @@ Page({
     this.setData({
       'profile.gender': gender
     })
+    setTimeout(() => {
+      this.onNextStep()
+    }, 300)
   },
 
   onSliderChange: function(e) {
+    const field = e.currentTarget.dataset.field
+    const value = e.detail.value
+    this.setData({
+      [`profile.${field}`]: value
+    })
+  },
+
+  onSliderChanging: function(e) {
     const field = e.currentTarget.dataset.field
     const value = e.detail.value
     this.setData({
@@ -162,10 +173,12 @@ Page({
         
         app.globalData.userInfo = {
           ...app.globalData.userInfo,
-          ...profile
+          ...profile,
+          hasCompletedOnboarding: true
         }
         
         wx.setStorageSync('userInfo', app.globalData.userInfo)
+        wx.setStorageSync('hasCompletedOnboarding', true)
         
         wx.showToast({
           title: '保存成功',

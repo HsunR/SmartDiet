@@ -47,6 +47,7 @@
           backgroundColor="#E8F5E9"
           data-field="{{steps[currentStep].field}}"
           bindchange="onSliderChange"
+          bindchanging="onSliderChanging"
         />
         <view class="slider-labels">
           <text>{{steps[currentStep].min}}</text>
