@@ -7,7 +7,7 @@
   <view class="progress-bar">
     <view 
       class="progress-fill {{status}}" 
-      style="width: {{percent}}%"
+      style="width: {{percent}}"
     ></view>
   </view>
   

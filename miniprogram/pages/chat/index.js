@@ -25,8 +25,14 @@ Page({
     formValues: {},
     feedbackValues: {},
     pickerIndex: 0,
-    selectedMealType: 'breakfast'
+    selectedMealType: 'breakfast',
+    currentImageUrl: '',
+    currentFoods: [],
+    currentMealOverview: {},
+    editingFoodCardIndex: -1
   },
+
+  STORAGE_KEY: 'chat_messages',
 
   onLoad: function(options) {
     this.checkLogin()
@@ -42,15 +48,50 @@ Page({
     this.checkUserProfile()
   },
 
+  onUnload: function() {
+    this.saveChatMessages()
+  },
+
+  onHide: function() {
+    this.saveChatMessages()
+  },
+
   checkLogin: function() {
     const app = getApp()
     if (!app.globalData.hasLogin) {
-      wx.navigateTo({
+      wx.redirectTo({
         url: '/pages/login/index'
       })
     } else {
       this.initChat()
     }
+  },
+
+  saveChatMessages: function() {
+    try {
+      const messages = this.data.messages
+      if (messages && messages.length > 0) {
+        wx.setStorageSync(this.STORAGE_KEY, messages)
+      }
+    } catch (e) {
+      console.error('保存聊天记录失败:', e)
+    }
+  },
+
+  loadChatMessages: function() {
+    try {
+      const messages = wx.getStorageSync(this.STORAGE_KEY)
+      if (messages && messages.length > 0) {
+        this.setData({ 
+          messages: messages,
+          hasInitialized: true
+        })
+        return true
+      }
+    } catch (e) {
+      console.error('读取聊天记录失败:', e)
+    }
+    return false
   },
 
   checkUserProfile: async function() {
@@ -91,17 +132,21 @@ Page({
   },
 
   initChat: function() {
-    const welcomeMessage = createTextMessage(
-      MESSAGE_ROLES.ASSISTANT,
-      '您好！我是您的AI营养师 🧑‍⚕️\n\n我可以帮您：\n• 📷 拍照识别食物并计算营养\n• 📊 查看每日饮食报告\n• 💡 获取个性化饮食建议\n\n点击下方相机按钮开始记录今天的美餐吧！'
-    )
-    
-    const quickActions = createQuickActionsMessage()
-    
-    this.setData({
-      messages: [welcomeMessage, quickActions],
-      hasInitialized: true
-    })
+    if (!this.loadChatMessages()) {
+      const welcomeMessage = createTextMessage(
+        MESSAGE_ROLES.ASSISTANT,
+        '您好！我是您的AI营养师 🧑‍⚕️\n\n我可以帮您：\n• 📷 拍照识别食物并计算营养\n• 📊 查看每日饮食报告\n• 💡 获取个性化饮食建议\n\n点击下方相机按钮开始记录今天的美餐吧！'
+      )
+      
+      const quickActions = createQuickActionsMessage()
+      
+      this.setData({
+        messages: [welcomeMessage, quickActions],
+        hasInitialized: true
+      })
+    } else {
+      this.scrollToBottom()
+    }
   },
 
   updateDailyProgress: async function() {
@@ -139,6 +184,7 @@ Page({
       isLoading: true
     })
     
+    this.saveChatMessages()
     this.scrollToBottom()
     
     try {
@@ -151,6 +197,7 @@ Page({
         this.setData({
           messages: [...this.data.messages, aiMessage]
         })
+        this.saveChatMessages()
       } else {
         const errorMsg = result.error || result.message || 'AI回复失败，请稍后重试'
         this.showErrorMessage(errorMsg)
@@ -191,6 +238,7 @@ Page({
         isLoading: true
       })
       
+      this.saveChatMessages()
       this.scrollToBottom()
       
       const compressedPath = await compressImage(tempFilePath, 80)
@@ -217,6 +265,7 @@ Page({
         const dietaryAdvice = recognizeResult.dietaryAdvice || ''
         
         const foodCardMessage = createFoodCardMessage(foods, mealOverview, dietaryAdvice, generateId())
+        foodCardMessage.data.imageUrl = tempUrl
         
         this.setData({
           messages: [...this.data.messages, foodCardMessage],
@@ -224,6 +273,7 @@ Page({
           currentFoods: foods,
           currentMealOverview: mealOverview
         })
+        this.saveChatMessages()
       } else {
         const errorMsg = recognizeResult.message || recognizeResult.error || '无法识别图片中的食物'
         this.showErrorMessage(errorMsg)
@@ -283,6 +333,7 @@ Page({
         this.setData({
           messages: [...this.data.messages, message]
         })
+        this.saveChatMessages()
       }
     } catch (error) {
       this.showErrorMessage('获取建议失败，请稍后重试')
@@ -314,24 +365,42 @@ Page({
       pendingFoods: foods,
       pendingMealOverview: mealOverview
     })
+    this.saveChatMessages()
     this.scrollToBottom()
   },
 
   onFoodCardEdit: function(e) {
     const { foods, mealOverview } = e.detail
     
-    const feedbackMessage = createFeedbackInputMessage(foods, mealOverview, this.data.currentImageUrl)
+    let foodCardIndex = -1
+    let foodCardMsg = null
     
-    const messages = this.data.messages.map(msg => {
-      if (msg.type === MESSAGE_TYPES.FOOD_CARD && msg.data.foods === foods) {
+    for (let i = this.data.messages.length - 1; i >= 0; i--) {
+      const msg = this.data.messages[i]
+      if (msg.type === MESSAGE_TYPES.FOOD_CARD) {
+        foodCardIndex = i
+        foodCardMsg = msg
+        break
+      }
+    }
+    
+    const imageUrl = foodCardMsg?.data?.imageUrl || this.data.currentImageUrl
+    
+    const feedbackMessage = createFeedbackInputMessage(foods, mealOverview, imageUrl)
+    
+    const messages = this.data.messages.map((msg, index) => {
+      if (index === foodCardIndex) {
         return { ...msg, data: { ...msg.data, actionCompleted: true } }
       }
       return msg
     })
     
     this.setData({
-      messages: [...messages, feedbackMessage]
+      messages: [...messages, feedbackMessage],
+      currentImageUrl: imageUrl,
+      editingFoodCardIndex: foodCardIndex
     })
+    this.saveChatMessages()
     this.scrollToBottom()
   },
 
@@ -384,6 +453,7 @@ Page({
           pendingFoods: null,
           pendingMealOverview: null
         })
+        this.saveChatMessages()
         this.updateDailyProgress()
       } else {
         this.showErrorMessage(result.error || '保存记录失败')
@@ -401,6 +471,7 @@ Page({
     const { feedback } = e.detail
     const feedbackMsg = this.data.messages.find(m => m.type === MESSAGE_TYPES.FEEDBACK_INPUT)
     const { foods, mealOverview, imageUrl } = feedbackMsg?.data || {}
+    const { editingFoodCardIndex } = this.data
     
     if (!imageUrl) {
       this.showErrorMessage('请重新上传图片')
@@ -422,21 +493,38 @@ Page({
         const newDietaryAdvice = recognizeResult.dietaryAdvice || ''
         
         const foodCardMessage = createFoodCardMessage(newFoods, newMealOverview, newDietaryAdvice, generateId())
-        
-        const messages = this.data.messages.map(msg => {
-          if (msg.type === MESSAGE_TYPES.FEEDBACK_INPUT) {
-            return { ...msg, data: { ...msg.data, completed: true } }
-          }
-          return msg
-        })
+        foodCardMessage.data.imageUrl = imageUrl
         
         const feedbackText = createTextMessage(MESSAGE_ROLES.USER, `反馈：${feedback}`)
         
+        const newMessages = []
+        let foundFeedback = false
+        
+        for (let i = 0; i < this.data.messages.length; i++) {
+          const msg = this.data.messages[i]
+          
+          if (i === editingFoodCardIndex) {
+            continue
+          }
+          
+          if (msg.type === MESSAGE_TYPES.FEEDBACK_INPUT && !foundFeedback) {
+            foundFeedback = true
+            newMessages.push(feedbackText)
+            newMessages.push(foodCardMessage)
+            continue
+          }
+          
+          newMessages.push(msg)
+        }
+        
         this.setData({
-          messages: [...messages, feedbackText, foodCardMessage],
+          messages: newMessages,
           currentFoods: newFoods,
-          currentMealOverview: newMealOverview
+          currentMealOverview: newMealOverview,
+          currentImageUrl: imageUrl,
+          editingFoodCardIndex: -1
         })
+        this.saveChatMessages()
       } else {
         this.showErrorMessage('重新识别失败，请重试')
       }
@@ -474,6 +562,7 @@ Page({
           messages: [...messages, successMessage],
           userProfile: formData
         })
+        this.saveChatMessages()
       } else {
         this.showErrorMessage('保存失败，请重试')
       }
@@ -600,6 +689,7 @@ Page({
     this.setData({
       messages: [...this.data.messages, errorMessage]
     })
+    this.saveChatMessages()
   },
 
   scrollToBottom: function() {
