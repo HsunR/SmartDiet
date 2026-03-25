@@ -3,6 +3,8 @@ const {
   createImageMessage, 
   createFoodCardMessage, 
   createMealTypePickerMessage,
+  createMealTypeSelectMessage,
+  createRatingSelectMessage,
   createFeedbackInputMessage,
   createUserInfoFormMessage,
   createQuickActionsMessage,
@@ -27,9 +29,11 @@ Page({
     pickerIndex: 0,
     selectedMealType: 'breakfast',
     currentImageUrl: '',
+    currentCloudFileId: '',
     currentFoods: [],
     currentMealOverview: {},
-    editingFoodCardIndex: -1
+    editingFoodCardIndex: -1,
+    recognizingTasks: {}
   },
 
   STORAGE_KEY: 'chat_messages',
@@ -234,8 +238,7 @@ Page({
       
       const userMessage = createImageMessage(MESSAGE_ROLES.USER, tempFilePath)
       this.setData({
-        messages: [...this.data.messages, userMessage],
-        isLoading: true
+        messages: [...this.data.messages, userMessage]
       })
       
       this.saveChatMessages()
@@ -246,45 +249,138 @@ Page({
       const cloudPath = `food_images/${generateId()}.jpg`
       const { fileID, tempUrl } = await uploadAndGetUrl(cloudPath, compressedPath)
       
-      const recognizeResult = await safeApiCall(() => api.food.recognize(tempUrl))
+      const mealTypeMessage = createMealTypeSelectMessage(tempUrl, fileID)
       
-      if (recognizeResult.success && recognizeResult.foods) {
-        const foods = recognizeResult.foods
-        foods.forEach(food => {
-          food.imageUrl = fileID
-        })
-        
-        const mealOverview = recognizeResult.mealOverview || {
-          mealType: this.getCurrentMealTypeLabel(),
-          totalCalories: foods.reduce((sum, f) => sum + (f.nutrients?.calories || f.nutrientsEstimation?.calories || 0), 0),
-          overallHealthScore: 60,
-          healthTags: { positive: [], warning: [] },
-          summary: '识别成功'
-        }
-        
-        const dietaryAdvice = recognizeResult.dietaryAdvice || ''
-        
-        const foodCardMessage = createFoodCardMessage(foods, mealOverview, dietaryAdvice, generateId())
-        foodCardMessage.data.imageUrl = tempUrl
-        
-        this.setData({
-          messages: [...this.data.messages, foodCardMessage],
-          currentImageUrl: tempUrl,
-          currentFoods: foods,
-          currentMealOverview: mealOverview
-        })
-        this.saveChatMessages()
-      } else {
-        const errorMsg = recognizeResult.message || recognizeResult.error || '无法识别图片中的食物'
-        this.showErrorMessage(errorMsg)
-      }
+      this.setData({
+        messages: [...this.data.messages, mealTypeMessage],
+        currentImageUrl: tempUrl,
+        currentCloudFileId: fileID
+      })
+      this.saveChatMessages()
+      this.scrollToBottom()
+      
+      this.startRecognition(tempUrl, fileID, mealTypeMessage.id)
+      
     } catch (error) {
       console.error('Image process error:', error)
       this.showErrorMessage('图片处理失败，请重试')
-    } finally {
       this.setData({ isLoading: false })
       this.scrollToBottom()
     }
+  },
+
+  startRecognition: async function(imageUrl, cloudFileId, mealTypeMsgId) {
+    const recognitionTask = {
+      imageUrl,
+      cloudFileId,
+      mealTypeMsgId,
+      startTime: Date.now()
+    }
+    
+    this.setData({
+      recognizingTasks: {
+        ...this.data.recognizingTasks,
+        [imageUrl]: recognitionTask
+      }
+    })
+    
+    try {
+      const recognizeResult = await safeApiCall(() => api.food.recognize(imageUrl))
+      
+      const task = this.data.recognizingTasks[imageUrl]
+      if (task) {
+        task.result = recognizeResult
+        task.completed = true
+        this.setData({
+          recognizingTasks: {
+            ...this.data.recognizingTasks,
+            [imageUrl]: task
+          }
+        })
+        
+        this.checkAndShowResult(imageUrl)
+      }
+    } catch (error) {
+      console.error('Recognition error:', error)
+      const task = this.data.recognizingTasks[imageUrl]
+      if (task) {
+        task.error = error
+        task.completed = true
+        this.setData({
+          recognizingTasks: {
+            ...this.data.recognizingTasks,
+            [imageUrl]: task
+          }
+        })
+      }
+    }
+  },
+
+  checkAndShowResult: function(imageUrl) {
+    const task = this.data.recognizingTasks[imageUrl]
+    if (!task || !task.completed || !task.selectedMealType || task.selectedRating === null || task.resultShown) {
+      return
+    }
+    
+    const recognizeResult = task.result
+    if (!recognizeResult.success || !recognizeResult.foods) {
+      this.showErrorMessage(recognizeResult.message || recognizeResult.error || '无法识别图片中的食物')
+      return
+    }
+    
+    const foods = recognizeResult.foods
+    foods.forEach(food => {
+      food.imageUrl = task.cloudFileId
+    })
+    
+    const mealOverview = recognizeResult.mealOverview || {
+      totalCalories: foods.reduce((sum, f) => sum + (f.nutrients?.calories || f.nutrientsEstimation?.calories || 0), 0),
+      overallHealthScore: 60,
+      healthTags: { positive: [], warning: [] },
+      summary: '识别成功'
+    }
+    
+    const dietaryAdvice = recognizeResult.dietaryAdvice || ''
+    
+    const record = {
+      date: formatDate(new Date()),
+      mealType: task.selectedMealType,
+      rating: task.selectedRating,
+      foods: foods,
+      totalCalories: mealOverview.totalCalories,
+      imageUrl: task.cloudFileId,
+      mealOverview: mealOverview
+    }
+    
+    safeApiCall(() => api.food.addRecord(record)).then(saveResult => {
+      const foodCardMessage = createFoodCardMessage(foods, mealOverview, dietaryAdvice, saveResult?.recordId || generateId())
+      foodCardMessage.data.imageUrl = imageUrl
+      foodCardMessage.data.mealType = task.selectedMealType
+      foodCardMessage.data.rating = task.selectedRating
+      foodCardMessage.data.recordSaved = true
+      foodCardMessage.data.actionCompleted = true
+      
+      const successMessage = createTextMessage(
+        MESSAGE_ROLES.ASSISTANT,
+        `✅ 已记录为${this.getMealTypeLabel(task.selectedMealType)}！\n\n本餐热量：${mealOverview.totalCalories} kcal\n健康评分：${mealOverview.overallHealthScore || 60}分\n您的评分：${task.selectedRating === 0 ? '待定' : task.selectedRating + '星'}`
+      )
+      
+      this.setData({
+        messages: [...this.data.messages, foodCardMessage, successMessage],
+        currentFoods: foods,
+        currentMealOverview: mealOverview
+      })
+      this.saveChatMessages()
+      this.updateDailyProgress()
+    })
+    
+    task.resultShown = true
+    this.setData({
+      recognizingTasks: {
+        ...this.data.recognizingTasks,
+        [imageUrl]: task
+      }
+    })
   },
 
   onQuickAction: function(e) {
@@ -340,6 +436,89 @@ Page({
     } finally {
       this.setData({ isLoading: false })
       this.scrollToBottom()
+    }
+  },
+
+  onMealTypeSelect: function(e) {
+    const { value, msgId } = e.currentTarget.dataset
+    const messages = this.data.messages.map(msg => {
+      if (msg.id === msgId) {
+        return { 
+          ...msg, 
+          data: { 
+            ...msg.data, 
+            selectedMealType: value,
+            collapsed: true
+          } 
+        }
+      }
+      return msg
+    })
+    
+    const mealTypeMsg = messages.find(m => m.id === msgId)
+    const { imageUrl, cloudFileId } = mealTypeMsg.data
+    
+    const ratingMessage = createRatingSelectMessage(imageUrl, cloudFileId, value)
+    
+    this.setData({ 
+      messages: [...messages, ratingMessage],
+      selectedMealType: value 
+    })
+    this.saveChatMessages()
+    
+    setTimeout(() => {
+      this.scrollToBottom()
+    }, 300)
+  },
+
+  onRatingSelect: function(e) {
+    const { value, msgId } = e.currentTarget.dataset
+    const messages = this.data.messages.map(msg => {
+      if (msg.id === msgId) {
+        return { 
+          ...msg, 
+          data: { 
+            ...msg.data, 
+            selectedRating: value,
+            collapsed: true
+          } 
+        }
+      }
+      return msg
+    })
+    
+    const ratingMsg = messages.find(m => m.id === msgId)
+    const { imageUrl, selectedMealType } = ratingMsg.data
+    
+    const task = this.data.recognizingTasks[imageUrl]
+    if (task) {
+      task.selectedMealType = selectedMealType
+      task.selectedRating = value
+      this.setData({
+        messages,
+        recognizingTasks: {
+          ...this.data.recognizingTasks,
+          [imageUrl]: task
+        }
+      })
+      this.saveChatMessages()
+      
+      if (task.completed && !task.resultShown) {
+        this.checkAndShowResult(imageUrl)
+      } else if (!task.completed) {
+        const waitingMessage = createTextMessage(
+          MESSAGE_ROLES.ASSISTANT,
+          '⏳ AI正在识别中，请稍候...'
+        )
+        this.setData({
+          messages: [...messages, waitingMessage]
+        })
+        this.saveChatMessages()
+        this.scrollToBottom()
+      }
+    } else {
+      this.setData({ messages })
+      this.saveChatMessages()
     }
   },
 
@@ -478,7 +657,21 @@ Page({
       return
     }
     
-    this.setData({ isLoading: true })
+    const messages = this.data.messages.map(msg => {
+      if (msg.type === MESSAGE_TYPES.FEEDBACK_INPUT) {
+        return { ...msg, data: { ...msg.data, completed: true } }
+      }
+      return msg
+    })
+    
+    const feedbackText = createTextMessage(MESSAGE_ROLES.USER, `反馈：${feedback}`)
+    
+    this.setData({ 
+      messages: [...messages, feedbackText],
+      isLoading: true 
+    })
+    this.saveChatMessages()
+    this.scrollToBottom()
     
     try {
       const recognizeResult = await safeApiCall(() => api.food.recognizeWithFeedback(imageUrl, feedback))
@@ -495,30 +688,8 @@ Page({
         const foodCardMessage = createFoodCardMessage(newFoods, newMealOverview, newDietaryAdvice, generateId())
         foodCardMessage.data.imageUrl = imageUrl
         
-        const feedbackText = createTextMessage(MESSAGE_ROLES.USER, `反馈：${feedback}`)
-        
-        const newMessages = []
-        let foundFeedback = false
-        
-        for (let i = 0; i < this.data.messages.length; i++) {
-          const msg = this.data.messages[i]
-          
-          if (i === editingFoodCardIndex) {
-            continue
-          }
-          
-          if (msg.type === MESSAGE_TYPES.FEEDBACK_INPUT && !foundFeedback) {
-            foundFeedback = true
-            newMessages.push(feedbackText)
-            newMessages.push(foodCardMessage)
-            continue
-          }
-          
-          newMessages.push(msg)
-        }
-        
         this.setData({
-          messages: newMessages,
+          messages: [...this.data.messages, foodCardMessage],
           currentFoods: newFoods,
           currentMealOverview: newMealOverview,
           currentImageUrl: imageUrl,

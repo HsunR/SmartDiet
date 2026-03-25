@@ -9,7 +9,9 @@ const MESSAGE_TYPES = {
   FEEDBACK_INPUT: 'feedback_input',
   REPORT_CARD: 'report_card',
   RECOMMEND_CARD: 'recommend_card',
-  QUICK_ACTIONS: 'quick_actions'
+  QUICK_ACTIONS: 'quick_actions',
+  MEAL_TYPE_SELECT: 'meal_type_select',
+  RATING_SELECT: 'rating_select'
 }
 
 const MESSAGE_ROLES = {
@@ -121,6 +123,49 @@ const createMealTypePickerMessage = (mealOverview, foods) => ({
       { value: 'dinner', label: '晚餐', icon: '🌙' },
       { value: 'snack', label: '其他', icon: '🍎' }
     ]
+  },
+  timestamp: Date.now()
+})
+
+const createMealTypeSelectMessage = (imageUrl, cloudFileId) => ({
+  id: generateId(),
+  role: MESSAGE_ROLES.ASSISTANT,
+  type: MESSAGE_TYPES.MEAL_TYPE_SELECT,
+  content: '请选择餐次：',
+  data: {
+    imageUrl,
+    cloudFileId,
+    mealTypes: [
+      { value: 'breakfast', label: '早餐', icon: '🌅' },
+      { value: 'lunch', label: '午餐', icon: '☀️' },
+      { value: 'dinner', label: '晚餐', icon: '🌙' },
+      { value: 'snack', label: '其他', icon: '🍎' }
+    ],
+    selectedMealType: null,
+    collapsed: false
+  },
+  timestamp: Date.now()
+})
+
+const createRatingSelectMessage = (imageUrl, cloudFileId, selectedMealType) => ({
+  id: generateId(),
+  role: MESSAGE_ROLES.ASSISTANT,
+  type: MESSAGE_TYPES.RATING_SELECT,
+  content: '给这餐打分：',
+  data: {
+    imageUrl,
+    cloudFileId,
+    selectedMealType,
+    ratings: [
+      { value: 5, label: '五星', icon: '⭐⭐⭐⭐⭐' },
+      { value: 4, label: '四星', icon: '⭐⭐⭐⭐' },
+      { value: 3, label: '三星', icon: '⭐⭐⭐' },
+      { value: 2, label: '二星', icon: '⭐⭐' },
+      { value: 1, label: '一星', icon: '⭐' },
+      { value: 0, label: '待定', icon: '❓' }
+    ],
+    selectedRating: null,
+    collapsed: false
   },
   timestamp: Date.now()
 })
@@ -264,6 +309,8 @@ module.exports = {
   createImageMessage,
   createFoodCardMessage,
   createMealTypePickerMessage,
+  createMealTypeSelectMessage,
+  createRatingSelectMessage,
   createFeedbackInputMessage,
   createUserInfoFormMessage,
   createQuickActionsMessage,

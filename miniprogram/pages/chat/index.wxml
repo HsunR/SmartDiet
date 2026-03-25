@@ -60,6 +60,50 @@
             </button>
           </view>
           
+          <view wx:if="{{item.type === 'meal_type_select' && !item.data.collapsed}}" class="meal-type-select-container message-animate-in">
+            <text class="select-title">{{item.content}}</text>
+            <view class="meal-type-grid">
+              <view 
+                wx:for="{{item.data.mealTypes}}" 
+                wx:for-item="mealType"
+                wx:key="value"
+                class="meal-type-option {{item.data.selectedMealType === mealType.value ? 'meal-type-selected' : ''}}"
+                bindtap="onMealTypeSelect"
+                data-value="{{mealType.value}}"
+                data-msg-id="{{item.id}}"
+              >
+                <text class="meal-type-icon">{{mealType.icon}}</text>
+                <text class="meal-type-text">{{mealType.label}}</text>
+              </view>
+            </view>
+          </view>
+          
+          <view wx:if="{{item.type === 'meal_type_select' && item.data.collapsed}}" class="meal-type-collapsed message-animate-out">
+            <text class="collapsed-text">已选择：{{item.data.selectedMealType === 'breakfast' ? '🌅 早餐' : item.data.selectedMealType === 'lunch' ? '☀️ 午餐' : item.data.selectedMealType === 'dinner' ? '🌙 晚餐' : '🍎 其他'}}</text>
+          </view>
+          
+          <view wx:if="{{item.type === 'rating_select' && !item.data.collapsed}}" class="rating-select-container message-animate-in">
+            <text class="select-title">{{item.content}}</text>
+            <view class="rating-grid">
+              <view 
+                wx:for="{{item.data.ratings}}" 
+                wx:for-item="rating"
+                wx:key="value"
+                class="rating-option {{item.data.selectedRating === rating.value ? 'rating-selected' : ''}}"
+                bindtap="onRatingSelect"
+                data-value="{{rating.value}}"
+                data-msg-id="{{item.id}}"
+              >
+                <text class="rating-icon">{{rating.icon}}</text>
+                <text class="rating-text">{{rating.label}}</text>
+              </view>
+            </view>
+          </view>
+          
+          <view wx:if="{{item.type === 'rating_select' && item.data.collapsed}}" class="rating-collapsed message-animate-out">
+            <text class="collapsed-text">评分：{{item.data.selectedRating === 0 ? '❓ 待定' : item.data.selectedRating + '星'}}</text>
+          </view>
+          
           <view wx:if="{{item.type === 'feedback_input' && !item.data.completed}}" class="feedback-input">
             <text class="feedback-title">{{item.content}}</text>
             <textarea 

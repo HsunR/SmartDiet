@@ -26,7 +26,6 @@ const PROMPT_TEMPLATES = {
 {
   "success": true,
   "mealOverview": {
-    "mealType": "午餐",
     "totalCalories": 595,
     "overallHealthScore": 65,
     "healthTags": {"positive": ["高蛋白"], "warning": ["高钠"]},

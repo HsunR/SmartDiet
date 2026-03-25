@@ -77,7 +77,8 @@ Page({
     }
     
     const cellWidth = 200
-    const scrollLeft = Math.max(0, (todayIndex - 1) * cellWidth)
+    const visibleWidth = 630
+    const scrollLeft = Math.max(0, todayIndex * cellWidth - visibleWidth / 2 + cellWidth / 2)
     
     this.setData({
       weekDays,

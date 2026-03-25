@@ -52,7 +52,7 @@ Page({
       }
     ],
     profile: {
-      gender: 1,
+      gender: null,
       age: 25,
       height: 170,
       weight: 65,
