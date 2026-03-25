@@ -1,0 +1,18 @@
+var formatTime = function(timestamp) {
+  if (!timestamp) {
+    return ''
+  }
+  
+  var date = getDate(timestamp)
+  var hour = date.getHours()
+  var minute = date.getMinutes()
+  
+  var hourStr = hour < 10 ? '0' + hour : hour
+  var minuteStr = minute < 10 ? '0' + minute : minute
+  
+  return hourStr + ':' + minuteStr
+}
+
+module.exports = {
+  formatTime: formatTime
+}

@@ -1,7 +1,9 @@
+<wxs src="../../utils/utils.wxs" module="utils" />
 <view class="chat-container">
   <scroll-view 
     class="message-list" 
     scroll-y 
+    scroll-top="{{scrollTop}}"
     scroll-into-view="{{scrollToView}}"
     scroll-with-animation
   >
@@ -9,6 +11,7 @@
       wx:for="{{messages}}" 
       wx:key="id" 
       id="msg-{{item.id}}"
+      wx:if="{{!(item.type === 'feedback_input' && item.data.completed)}}"
       class="message-item {{item.role === 'user' ? 'message-user' : 'message-ai'}}"
     >
       <view class="message-avatar" wx:if="{{item.role === 'assistant'}}">
@@ -187,7 +190,7 @@
         </view>
         
         <view class="message-time" wx:if="{{item.timestamp}}">
-          <text>{{item.timestamp}}</text>
+          <text>{{utils.formatTime(item.timestamp)}}</text>
         </view>
       </view>
       
@@ -210,6 +213,8 @@
         </view>
       </view>
     </view>
+    
+    <view class="scroll-bottom-placeholder"></view>
   </scroll-view>
   
   <view class="input-area">

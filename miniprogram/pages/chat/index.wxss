@@ -7,6 +7,7 @@
 
 .message-list {
   flex: 1;
+  height: 0;
   padding: 24rpx;
   padding-bottom: 280rpx;
 }
@@ -649,4 +650,9 @@
 .collapsed-text {
   font-size: 24rpx;
   color: #757575;
+}
+
+.scroll-bottom-placeholder {
+  height: 100rpx;
+  width: 100%;
 }

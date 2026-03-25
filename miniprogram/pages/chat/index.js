@@ -20,6 +20,7 @@ Page({
     inputValue: '',
     isLoading: false,
     scrollToView: '',
+    scrollTop: 0,
     inputFocus: false,
     dailyCalories: 0,
     userProfile: null,
@@ -342,37 +343,19 @@ Page({
     
     const dietaryAdvice = recognizeResult.dietaryAdvice || ''
     
-    const record = {
-      date: formatDate(new Date()),
-      mealType: task.selectedMealType,
-      rating: task.selectedRating,
-      foods: foods,
-      totalCalories: mealOverview.totalCalories,
-      imageUrl: task.cloudFileId,
-      mealOverview: mealOverview
-    }
+    const foodCardMessage = createFoodCardMessage(foods, mealOverview, dietaryAdvice, generateId())
+    foodCardMessage.data.imageUrl = imageUrl
+    foodCardMessage.data.mealType = task.selectedMealType
+    foodCardMessage.data.rating = task.selectedRating
+    foodCardMessage.data.cloudFileId = task.cloudFileId
     
-    safeApiCall(() => api.food.addRecord(record)).then(saveResult => {
-      const foodCardMessage = createFoodCardMessage(foods, mealOverview, dietaryAdvice, saveResult?.recordId || generateId())
-      foodCardMessage.data.imageUrl = imageUrl
-      foodCardMessage.data.mealType = task.selectedMealType
-      foodCardMessage.data.rating = task.selectedRating
-      foodCardMessage.data.recordSaved = true
-      foodCardMessage.data.actionCompleted = true
-      
-      const successMessage = createTextMessage(
-        MESSAGE_ROLES.ASSISTANT,
-        `✅ 已记录为${this.getMealTypeLabel(task.selectedMealType)}！\n\n本餐热量：${mealOverview.totalCalories} kcal\n健康评分：${mealOverview.overallHealthScore || 60}分\n您的评分：${task.selectedRating === 0 ? '待定' : task.selectedRating + '星'}`
-      )
-      
-      this.setData({
-        messages: [...this.data.messages, foodCardMessage, successMessage],
-        currentFoods: foods,
-        currentMealOverview: mealOverview
-      })
-      this.saveChatMessages()
-      this.updateDailyProgress()
+    this.setData({
+      messages: [...this.data.messages, foodCardMessage],
+      currentFoods: foods,
+      currentMealOverview: mealOverview
     })
+    this.saveChatMessages()
+    this.scrollToBottom()
     
     task.resultShown = true
     this.setData({
@@ -522,30 +505,91 @@ Page({
     }
   },
 
-  onFoodCardConfirm: function(e) {
+  onFoodCardConfirm: async function(e) {
     const { foods, mealOverview, dietaryAdvice } = e.detail
     
-    const defaultMealType = this.getCurrentMealType()
-    const defaultIndex = ['breakfast', 'lunch', 'dinner', 'snack'].indexOf(defaultMealType)
+    let foodCardIndex = -1
+    let foodCardMsg = null
     
-    const pickerMessage = createMealTypePickerMessage(mealOverview, foods)
+    for (let i = this.data.messages.length - 1; i >= 0; i--) {
+      const msg = this.data.messages[i]
+      if (msg.type === MESSAGE_TYPES.FOOD_CARD) {
+        foodCardIndex = i
+        foodCardMsg = msg
+        break
+      }
+    }
     
-    const messages = this.data.messages.map(msg => {
-      if (msg.type === MESSAGE_TYPES.FOOD_CARD && msg.data.foods === foods) {
-        return { ...msg, data: { ...msg.data, actionCompleted: true } }
+    const mealType = foodCardMsg?.data?.mealType || this.getCurrentMealType()
+    const rating = foodCardMsg?.data?.rating || 0
+    const imageUrl = foodCardMsg?.data?.imageUrl || foodCardMsg?.data?.cloudFileId || this.data.currentImageUrl
+    
+    const messages = this.data.messages.map((msg, index) => {
+      if (index === foodCardIndex) {
+        return { 
+          ...msg, 
+          data: { 
+            ...msg.data, 
+            actionCompleted: true
+          } 
+        }
       }
       return msg
     })
     
-    this.setData({
-      messages: [...messages, pickerMessage],
-      pickerIndex: defaultIndex >= 0 ? defaultIndex : 0,
-      selectedMealType: defaultMealType,
-      pendingFoods: foods,
-      pendingMealOverview: mealOverview
+    this.setData({ 
+      messages: messages,
+      isLoading: true 
     })
     this.saveChatMessages()
     this.scrollToBottom()
+    
+    const record = {
+      date: formatDate(new Date()),
+      mealType: mealType,
+      rating: rating,
+      foods: foods,
+      totalCalories: mealOverview.totalCalories,
+      imageUrl: imageUrl,
+      mealOverview: mealOverview
+    }
+    
+    try {
+      const saveResult = await safeApiCall(() => api.food.addRecord(record))
+      
+      const updatedMessages = this.data.messages.map((msg, index) => {
+        if (index === foodCardIndex) {
+          return { 
+            ...msg, 
+            data: { 
+              ...msg.data, 
+              recordSaved: true,
+              recordId: saveResult?.recordId
+            } 
+          }
+        }
+        return msg
+      })
+      
+      const successMessage = createTextMessage(
+        MESSAGE_ROLES.ASSISTANT,
+        `✅ 已记录为${this.getMealTypeLabel(mealType)}！\n\n本餐热量：${mealOverview.totalCalories} kcal\n健康评分：${mealOverview.overallHealthScore || 60}分\n您的评分：${rating === 0 ? '待定' : rating + '星'}`
+      )
+      
+      this.setData({
+        messages: [...updatedMessages, successMessage],
+        currentFoods: foods,
+        currentMealOverview: mealOverview
+      })
+      this.saveChatMessages()
+      this.updateDailyProgress()
+      this.scrollToBottom()
+    } catch (error) {
+      console.error('Save record error:', error)
+      this.showErrorMessage('保存记录失败，请重试')
+    } finally {
+      this.setData({ isLoading: false })
+    }
   },
 
   onFoodCardEdit: function(e) {
@@ -867,16 +911,22 @@ Page({
     const messages = this.data.messages
     if (messages.length > 0) {
       const lastMsgId = `msg-${messages[messages.length - 1].id}`
+      
       this.setData({
+        scrollTop: 999999,
         scrollToView: lastMsgId
       })
+      
       setTimeout(() => {
         this.setData({
+          scrollTop: 999999,
           scrollToView: lastMsgId
         })
       }, 100)
+      
       setTimeout(() => {
         this.setData({
+          scrollTop: 999999,
           scrollToView: lastMsgId
         })
       }, 300)
