@@ -201,8 +201,10 @@ Page({
   },
 
   editRecord: function(record) {
-    wx.navigateTo({
-      url: `/pages/recognize/index?recordId=${record._id}`
+    wx.showModal({
+      title: '提示',
+      content: '暂不支持编辑记录，请删除后重新添加',
+      showCancel: false
     })
   },
 
@@ -231,7 +233,7 @@ Page({
 
   onAddFood: function() {
     wx.switchTab({
-      url: '/pages/recognize/index'
+      url: '/pages/chat/index'
     })
   },
 

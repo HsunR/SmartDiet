@@ -81,6 +81,35 @@
             </view>
           </view>
           
+          <view wx:if="{{item.type === 'date_select' && !item.data.collapsed}}" class="date-select-container message-animate-in">
+            <text class="select-title">{{item.content}}</text>
+            <view class="date-picker-wrapper">
+              <picker 
+                mode="date" 
+                value="{{item.data.selectedDate}}" 
+                bindchange="onDateSelect"
+                data-msg-id="{{item.id}}"
+                class="date-picker"
+              >
+                <view class="date-picker-display">
+                  <text class="date-picker-icon">📅</text>
+                  <text class="date-picker-value">{{item.data.selectedDate}}</text>
+                  <text class="date-picker-arrow">▼</text>
+                </view>
+              </picker>
+            </view>
+            <view wx:if="{{item.data.selectedMealType}}" class="date-meal-type-hint">
+              <text>餐次：{{item.data.selectedMealType === 'breakfast' ? '🌅 早餐' : item.data.selectedMealType === 'lunch' ? '☀️ 午餐' : item.data.selectedMealType === 'dinner' ? '🌙 晚餐' : '🍎 其他'}}</text>
+            </view>
+            <button class="date-confirm-btn" bindtap="onDateConfirm" data-msg-id="{{item.id}}">
+              <text>确认</text>
+            </button>
+          </view>
+          
+          <view wx:if="{{item.type === 'date_select' && item.data.collapsed}}" class="date-collapsed message-animate-out">
+            <text class="collapsed-text">日期：{{item.data.selectedDate}}{{item.data.selectedMealType ? ' | ' + (item.data.selectedMealType === 'breakfast' ? '🌅 早餐' : item.data.selectedMealType === 'lunch' ? '☀️ 午餐' : item.data.selectedMealType === 'dinner' ? '🌙 晚餐' : '🍎 其他') : ''}}</text>
+          </view>
+          
           <view wx:if="{{item.type === 'meal_type_select' && item.data.collapsed}}" class="meal-type-collapsed message-animate-out">
             <text class="collapsed-text">已选择：{{item.data.selectedMealType === 'breakfast' ? '🌅 早餐' : item.data.selectedMealType === 'lunch' ? '☀️ 午餐' : item.data.selectedMealType === 'dinner' ? '🌙 晚餐' : '🍎 其他'}}</text>
           </view>

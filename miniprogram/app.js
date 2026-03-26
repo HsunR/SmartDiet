@@ -24,6 +24,7 @@ App({
     userInfo: null,
     hasLogin: false,
     openid: null,
-    systemInfo: null
+    systemInfo: null,
+    pendingRecord: null
   }
 })

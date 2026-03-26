@@ -17,9 +17,9 @@ const PROMPT_TEMPLATES = {
 
 # Task
 1. 识别图中所有食物成分
-2. 推断烹饪方式（清蒸、红烧、油炸、爆炒、凉拌等）
-3. 估算每种食物重量（克）和置信度
-4. 计算营养数值：热量(kcal)、蛋白质(g)、脂肪(g)、碳水(g)、纤维(g)、糖(g)、钠(mg)
+2. 估算每种食物重量（克）和置信度
+3. nutrientsEstimation字段为估算营养水平 0-100
+4. 结合用户对上一次识别的反馈
 
 # Output Format
 仅返回JSON，无markdown标记：
@@ -29,17 +29,45 @@ const PROMPT_TEMPLATES = {
     "totalCalories": 595,
     "overallHealthScore": 65,
     "healthTags": {"positive": ["高蛋白"], "warning": ["高钠"]},
-    "summary": "简短描述"
+    "summary": "结构——简短菜名：对这道菜进行精准描述"
   },
   "foods": [
     {
       "id": "food_001",
       "name": "宫保鸡丁",
-      "category": "肉类",
-      "ingredientsDetected": ["鸡肉", "花生"],
-      "cookingMethod": {"technique": "爆炒", "oilLevel": "high"},
+      "category": "主食",
+      "totalCalories": 350,
       "portionEstimation": {"estimatedWeight": 135, "confidence": 0.85},
-      "nutrientsEstimation": {"calories": 240, "protein": 18.5, "fat": 14.0, "carbohydrate": 8.0, "fiber": 1.2, "sugar": 4.5, "sodium": 480}
+      "nutrientsEstimation": {
+        "energy": 75,
+        "protein": 85,
+        "carbohydrate": 60,
+        "saturatedFat": 30,
+        "unsaturatedFat": 70,
+        "transFat": 10,
+        "cholesterol": 40,
+        "sugar": 25,
+        "sodium": 35,
+        "dietaryFiber": 80,
+        "vitamins": {
+          "folate": 65,
+          "vitaminC": 75,
+          "vitaminB": 70,
+          "vitaminD": 55,
+          "vitaminA": 60,
+          "vitaminB12": 50,
+          "vitaminE": 65
+        },
+        "minerals": {
+          "calcium": 70,
+          "iron": 60,
+          "zinc": 55,
+          "potassium": 75,
+          "magnesium": 65,
+          "selenium": 45,
+          "iodine": 40
+        }
+      }
     }
   ],
   "dietaryAdvice": "简短建议"
@@ -199,6 +227,7 @@ async function handleFoodRecognition(openid, data) {
         id: food.id || `food_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         name: food.name || '未知食物',
         category: food.category || '其他',
+        totalCalories: food.totalCalories || 0,
         ingredientsDetected: food.ingredientsDetected || [],
         cookingMethod: food.cookingMethod || {},
         portionEstimation: food.portionEstimation || { estimatedWeight: 100 },
@@ -206,22 +235,22 @@ async function handleFoodRecognition(openid, data) {
         estimatedWeight: food.portionEstimation?.estimatedWeight || 100,
         confidence: food.portionEstimation?.confidence || 0.8,
         nutrients: {
-          calories: food.nutrientsEstimation?.calories || 0,
+          calories: food.totalCalories || 0,
           protein: food.nutrientsEstimation?.protein || 0,
-          fat: food.nutrientsEstimation?.fat || 0,
+          fat: food.nutrientsEstimation?.saturatedFat || 0,
           carbohydrate: food.nutrientsEstimation?.carbohydrate || 0,
-          fiber: food.nutrientsEstimation?.fiber || 0,
+          fiber: food.nutrientsEstimation?.dietaryFiber || 0,
           sugar: food.nutrientsEstimation?.sugar || 0,
           sodium: food.nutrientsEstimation?.sodium || 0,
           saturatedFat: food.nutrientsEstimation?.saturatedFat || 0,
-          addedOilEstimate: food.nutrientsEstimation?.addedOilEstimate || 0
+          addedOilEstimate: 0
         }
       }))
     }
     
     if (result.mealOverview) {
       result.mealOverview.totalCalories = result.mealOverview.totalCalories || 
-        (result.foods || []).reduce((sum, f) => sum + (f.nutrients?.calories || 0), 0)
+        (result.foods || []).reduce((sum, f) => sum + (f.totalCalories || 0), 0)
     }
     
     return result

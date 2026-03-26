@@ -19,7 +19,14 @@ Page({
       { type: 'lunch', label: '午餐', icon: '☀️' },
       { type: 'dinner', label: '晚餐', icon: '🌙' },
       { type: 'snack', label: '其他', icon: '🍎' }
-    ]
+    ],
+    showDetailModal: false,
+    detailData: null,
+    detailDate: '',
+    detailMealType: '',
+    currentRecordIndex: 0,
+    totalRecords: 1,
+    currentRecords: []
   },
 
   onLoad: function() {
@@ -98,10 +105,10 @@ Page({
       
       for (const day of weekDays) {
         calendarData[day.date] = {
-          breakfast: null,
-          lunch: null,
-          dinner: null,
-          snack: null
+          breakfast: [],
+          lunch: [],
+          dinner: [],
+          snack: []
         }
         
         try {
@@ -114,12 +121,18 @@ Page({
               const mealType = record.mealType || 'snack'
               const mealOverview = record.mealOverview || {}
               
-              calendarData[day.date][mealType] = {
+              const recordData = {
+                _id: record._id,
                 imageUrl: record.imageUrl || (record.foods && record.foods[0]?.imageUrl),
                 foods: record.foods || [],
                 totalCalories: record.totalCalories || 0,
-                healthTags: mealOverview.healthTags || { positive: [], warning: [] }
+                healthTags: mealOverview.healthTags || { positive: [], warning: [] },
+                rating: record.rating || 0,
+                mealOverview: mealOverview,
+                dietaryAdvice: record.dietaryAdvice || ''
               }
+              
+              calendarData[day.date][mealType].push(recordData)
               
               totalCalories += record.totalCalories || 0
               mealCount++
@@ -179,38 +192,101 @@ Page({
     }
   },
 
-
+  getRatingStars: function(rating) {
+    if (rating === 0) return '❓'
+    return '⭐'.repeat(rating)
+  },
 
   onCellTap: function(e) {
     const { date, meal } = e.currentTarget.dataset
     const { calendarData } = this.data
-    const cellData = calendarData[date]?.[meal]
+    const cellRecords = calendarData[date]?.[meal]
     
-    if (cellData) {
-      let content = `食物：\n`
-      cellData.foods.forEach(f => {
-        content += `• ${f.name}\n`
-      })
-      content += `\n热量：${cellData.totalCalories} kcal`
-      
-      wx.showModal({
-        title: this.data.mealTypes.find(m => m.type === meal)?.label || '详情',
-        content: content,
-        showCancel: false
-      })
+    if (cellRecords && cellRecords.length > 0) {
+      this.showRecordDetail(date, meal, cellRecords)
     } else {
-      wx.showModal({
-        title: '添加记录',
-        content: '是否要添加该餐次的饮食记录？',
-        success: (res) => {
-          if (res.confirm) {
-            wx.switchTab({
-              url: '/pages/chat/index'
-            })
-          }
-        }
+      this.promptAddRecord(date, meal)
+    }
+  },
+
+  showRecordDetail: function(date, meal, records) {
+    const mealTypeLabel = this.data.mealTypes.find(m => m.type === meal)?.label || '详情'
+    
+    this.setData({
+      showDetailModal: true,
+      detailData: records[0],
+      detailDate: date,
+      detailMealType: mealTypeLabel,
+      currentRecordIndex: 0,
+      totalRecords: records.length,
+      currentRecords: records
+    })
+  },
+
+  onPrevRecord: function() {
+    const { currentRecordIndex, currentRecords } = this.data
+    if (currentRecordIndex > 0) {
+      this.setData({
+        currentRecordIndex: currentRecordIndex - 1,
+        detailData: currentRecords[currentRecordIndex - 1]
       })
     }
+  },
+
+  onNextRecord: function() {
+    const { currentRecordIndex, currentRecords } = this.data
+    if (currentRecordIndex < currentRecords.length - 1) {
+      this.setData({
+        currentRecordIndex: currentRecordIndex + 1,
+        detailData: currentRecords[currentRecordIndex + 1]
+      })
+    }
+  },
+
+  closeDetailModal: function() {
+    this.setData({
+      showDetailModal: false,
+      detailData: null,
+      currentRecords: []
+    })
+  },
+
+  onDetailSwiperChange: function(e) {
+    this.setData({
+      currentRecordIndex: e.detail.current
+    })
+  },
+
+  promptAddRecord: function(date, meal) {
+    const mealTypeLabel = this.data.mealTypes.find(m => m.type === meal)?.label || '餐次'
+    const today = formatDate(new Date())
+    const isToday = date === today
+    
+    wx.showModal({
+      title: '添加记录',
+      content: `是否要添加${date}的${mealTypeLabel}记录？`,
+      success: (res) => {
+        if (res.confirm) {
+          this.navigateToChatWithParams(date, meal)
+        }
+      }
+    })
+  },
+
+  navigateToChatWithParams: function(date, meal) {
+    const app = getApp()
+    app.globalData.pendingRecord = {
+      date: date,
+      mealType: meal
+    }
+    
+    wx.switchTab({
+      url: '/pages/chat/index'
+    })
+  },
+
+  preventTouchMove: function() {
+    return false
   },
 
   onShareAppMessage: function() {

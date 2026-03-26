@@ -1,3 +1,4 @@
+<wxs src="../../utils/utils.wxs" module="utils" />
 <view class="report-container">
   <view class="date-header">
     <view class="date-nav" bindtap="onPrevWeek">
@@ -57,19 +58,25 @@
                   data-meal="{{item.type}}"
                   bindtap="onCellTap"
                 >
-                  <view wx:if="{{calendarData[day.date][item.type]}}" class="cell-content">
+                  <view wx:if="{{calendarData[day.date][item.type].length > 0}}" class="cell-content">
                     <image 
-                      wx:if="{{calendarData[day.date][item.type].imageUrl}}" 
-                      src="{{calendarData[day.date][item.type].imageUrl}}" 
+                      wx:if="{{calendarData[day.date][item.type][0].imageUrl}}" 
+                      src="{{calendarData[day.date][item.type][0].imageUrl}}" 
                       class="cell-image"
                       mode="aspectFill"
                     ></image>
                     <view class="cell-foods">
-                      <text class="food-name" wx:for="{{calendarData[day.date][item.type].foods}}" wx:for-item="food" wx:key="name">{{food.name}}</text>
+                      <text class="food-name" wx:for="{{calendarData[day.date][item.type][0].foods}}" wx:for-item="food" wx:key="name">{{food.name}}</text>
+                    </view>
+                    <view class="cell-rating" wx:if="{{calendarData[day.date][item.type][0].rating !== undefined}}">
+                      <text class="rating-stars">{{utils.getRatingStars(calendarData[day.date][item.type][0].rating)}}</text>
                     </view>
                     <view class="cell-tags">
-                      <text class="tag-positive" wx:for="{{calendarData[day.date][item.type].healthTags.positive}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
-                      <text class="tag-warning" wx:for="{{calendarData[day.date][item.type].healthTags.warning}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+                      <text class="tag-positive" wx:for="{{calendarData[day.date][item.type][0].healthTags.positive}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+                      <text class="tag-warning" wx:for="{{calendarData[day.date][item.type][0].healthTags.warning}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+                    </view>
+                    <view wx:if="{{calendarData[day.date][item.type].length > 1}}" class="record-count">
+                      <text>+{{calendarData[day.date][item.type].length - 1}}</text>
                     </view>
                   </view>
                   <view wx:else class="cell-empty">
@@ -102,5 +109,77 @@
         </view>
       </view>
     </view>
+  </view>
+</view>
+
+<view class="detail-modal {{showDetailModal ? 'show' : ''}}" catchtouchmove="preventTouchMove">
+  <view class="modal-mask" bindtap="closeDetailModal"></view>
+  <view class="modal-content">
+    <view class="modal-header">
+      <view class="modal-title-row">
+        <text class="modal-title">{{detailMealType}}</text>
+        <text class="modal-date">{{detailDate}}</text>
+      </view>
+      <view class="modal-close" bindtap="closeDetailModal">
+        <text>✕</text>
+      </view>
+    </view>
+    
+    <view class="modal-pagination" wx:if="{{totalRecords > 1}}">
+      <view class="pagination-btn {{currentRecordIndex === 0 ? 'disabled' : ''}}" bindtap="onPrevRecord">
+        <text>‹</text>
+      </view>
+      <text class="pagination-info">{{currentRecordIndex + 1}} / {{totalRecords}}</text>
+      <view class="pagination-btn {{currentRecordIndex === totalRecords - 1 ? 'disabled' : ''}}" bindtap="onNextRecord">
+        <text>›</text>
+      </view>
+    </view>
+    
+    <scroll-view scroll-y class="modal-body" wx:if="{{detailData}}">
+      <view class="detail-card">
+        <image wx:if="{{detailData.imageUrl}}" src="{{detailData.imageUrl}}" class="detail-image" mode="aspectFill"></image>
+        
+        <view class="detail-score-section">
+          <view class="detail-score-circle" style="background: conic-gradient(#4CAF50 {{detailData.mealOverview.overallHealthScore || 60}}%, #E8E8E8 {{detailData.mealOverview.overallHealthScore || 60}}%)">
+            <view class="detail-score-inner">
+              <text class="detail-score-number">{{detailData.mealOverview.overallHealthScore || 60}}</text>
+              <text class="detail-score-label">健康评分</text>
+            </view>
+          </view>
+        </view>
+        
+        <view class="detail-info-row">
+          <view class="detail-info-item">
+            <text class="detail-info-value">{{detailData.totalCalories}}</text>
+            <text class="detail-info-label">热量(kcal)</text>
+          </view>
+          <view class="detail-info-item">
+            <text class="detail-info-value">{{detailData.rating === 0 ? '待定' : detailData.rating + '星'}}</text>
+            <text class="detail-info-label">评分</text>
+          </view>
+        </view>
+        
+        <view class="detail-foods-section">
+          <text class="detail-section-title">食物列表</text>
+          <view class="detail-food-item" wx:for="{{detailData.foods}}" wx:key="name">
+            <text class="detail-food-name">{{item.name}}</text>
+            <text class="detail-food-weight">{{item.estimatedWeight || (item.portionEstimation && item.portionEstimation.estimatedWeight) || 100}}g</text>
+          </view>
+        </view>
+        
+        <view class="detail-tags-section" wx:if="{{detailData.healthTags.positive.length > 0 || detailData.healthTags.warning.length > 0}}">
+          <text class="detail-section-title">健康标签</text>
+          <view class="detail-tags">
+            <text class="detail-tag detail-tag-positive" wx:for="{{detailData.healthTags.positive}}" wx:key="*this">✓ {{item}}</text>
+            <text class="detail-tag detail-tag-warning" wx:for="{{detailData.healthTags.warning}}" wx:key="*this">! {{item}}</text>
+          </view>
+        </view>
+        
+        <view class="detail-advice-section" wx:if="{{detailData.dietaryAdvice}}">
+          <text class="detail-section-title">饮食建议</text>
+          <text class="detail-advice">{{detailData.dietaryAdvice}}</text>
+        </view>
+      </view>
+    </scroll-view>
   </view>
 </view>

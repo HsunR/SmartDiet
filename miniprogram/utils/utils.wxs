@@ -13,6 +13,26 @@ var formatTime = function(timestamp) {
   return hourStr + ':' + minuteStr
 }
 
+var repeat = function(str, count) {
+  if (!str || count <= 0) {
+    return ''
+  }
+  var result = ''
+  for (var i = 0; i < count; i++) {
+    result += str
+  }
+  return result
+}
+
+var getRatingStars = function(rating) {
+  if (rating === 0) {
+    return '❓'
+  }
+  return repeat('⭐', rating)
+}
+
 module.exports = {
-  formatTime: formatTime
+  formatTime: formatTime,
+  repeat: repeat,
+  getRatingStars: getRatingStars
 }

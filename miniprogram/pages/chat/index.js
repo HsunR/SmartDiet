@@ -5,6 +5,7 @@ const {
   createMealTypePickerMessage,
   createMealTypeSelectMessage,
   createRatingSelectMessage,
+  createDateSelectMessage,
   createFeedbackInputMessage,
   createUserInfoFormMessage,
   createQuickActionsMessage,
@@ -29,12 +30,14 @@ Page({
     feedbackValues: {},
     pickerIndex: 0,
     selectedMealType: 'breakfast',
+    selectedDate: '',
     currentImageUrl: '',
     currentCloudFileId: '',
     currentFoods: [],
     currentMealOverview: {},
     editingFoodCardIndex: -1,
-    recognizingTasks: {}
+    recognizingTasks: {},
+    pendingRecord: null
   },
 
   STORAGE_KEY: 'chat_messages',
@@ -49,6 +52,21 @@ Page({
         selected: 0
       })
     }
+    
+    const app = getApp()
+    if (app.globalData.pendingRecord) {
+      const pendingRecord = app.globalData.pendingRecord
+      app.globalData.pendingRecord = null
+      
+      this.setData({
+        pendingRecord: pendingRecord
+      })
+      
+      setTimeout(() => {
+        this.chooseImage()
+      }, 500)
+    }
+    
     this.updateDailyProgress()
     this.checkUserProfile()
   },
@@ -250,17 +268,28 @@ Page({
       const cloudPath = `food_images/${generateId()}.jpg`
       const { fileID, tempUrl } = await uploadAndGetUrl(cloudPath, compressedPath)
       
-      const mealTypeMessage = createMealTypeSelectMessage(tempUrl, fileID)
+      const { pendingRecord } = this.data
+      const today = new Date()
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+      
+      const dateMessage = createDateSelectMessage(
+        tempUrl, 
+        fileID, 
+        pendingRecord?.date || todayStr,
+        pendingRecord?.mealType || null
+      )
       
       this.setData({
-        messages: [...this.data.messages, mealTypeMessage],
+        messages: [...this.data.messages, dateMessage],
         currentImageUrl: tempUrl,
-        currentCloudFileId: fileID
+        currentCloudFileId: fileID,
+        selectedDate: pendingRecord?.date || todayStr,
+        pendingRecord: null
       })
       this.saveChatMessages()
       this.scrollToBottom()
       
-      this.startRecognition(tempUrl, fileID, mealTypeMessage.id)
+      this.startRecognition(tempUrl, fileID, dateMessage.id)
       
     } catch (error) {
       console.error('Image process error:', error)
@@ -275,7 +304,10 @@ Page({
       imageUrl,
       cloudFileId,
       mealTypeMsgId,
-      startTime: Date.now()
+      startTime: Date.now(),
+      selectedDate: null,
+      selectedMealType: null,
+      selectedRating: null
     }
     
     this.setData({
@@ -319,7 +351,7 @@ Page({
 
   checkAndShowResult: function(imageUrl) {
     const task = this.data.recognizingTasks[imageUrl]
-    if (!task || !task.completed || !task.selectedMealType || task.selectedRating === null || task.resultShown) {
+    if (!task || !task.completed || !task.selectedMealType || task.selectedRating === null || !task.selectedDate || task.resultShown) {
       return
     }
     
@@ -335,7 +367,7 @@ Page({
     })
     
     const mealOverview = recognizeResult.mealOverview || {
-      totalCalories: foods.reduce((sum, f) => sum + (f.nutrients?.calories || f.nutrientsEstimation?.calories || 0), 0),
+      totalCalories: foods.reduce((sum, f) => sum + (f.totalCalories || 0), 0),
       overallHealthScore: 60,
       healthTags: { positive: [], warning: [] },
       summary: '识别成功'
@@ -348,6 +380,7 @@ Page({
     foodCardMessage.data.mealType = task.selectedMealType
     foodCardMessage.data.rating = task.selectedRating
     foodCardMessage.data.cloudFileId = task.cloudFileId
+    foodCardMessage.data.selectedDate = task.selectedDate || this.data.selectedDate
     
     this.setData({
       messages: [...this.data.messages, foodCardMessage],
@@ -439,14 +472,82 @@ Page({
     })
     
     const mealTypeMsg = messages.find(m => m.id === msgId)
-    const { imageUrl, cloudFileId } = mealTypeMsg.data
+    const { imageUrl, cloudFileId, selectedDate } = mealTypeMsg.data
     
     const ratingMessage = createRatingSelectMessage(imageUrl, cloudFileId, value)
+    ratingMessage.data.selectedDate = selectedDate
     
     this.setData({ 
       messages: [...messages, ratingMessage],
-      selectedMealType: value 
+      selectedMealType: value,
+      selectedDate: selectedDate
     })
+    this.saveChatMessages()
+    
+    setTimeout(() => {
+      this.scrollToBottom()
+    }, 300)
+  },
+
+  onDateSelect: function(e) {
+    const { msgId } = e.currentTarget.dataset
+    const date = e.detail.value
+    
+    const messages = this.data.messages.map(msg => {
+      if (msg.id === msgId) {
+        return { 
+          ...msg, 
+          data: { 
+            ...msg.data, 
+            selectedDate: date
+          } 
+        }
+      }
+      return msg
+    })
+    
+    this.setData({ 
+      messages,
+      selectedDate: date
+    })
+    this.saveChatMessages()
+  },
+
+  onDateConfirm: function(e) {
+    const { msgId } = e.currentTarget.dataset
+    const messages = this.data.messages.map(msg => {
+      if (msg.id === msgId) {
+        return { 
+          ...msg, 
+          data: { 
+            ...msg.data, 
+            collapsed: true
+          } 
+        }
+      }
+      return msg
+    })
+    
+    const dateMsg = messages.find(m => m.id === msgId)
+    const { imageUrl, cloudFileId, selectedDate, selectedMealType } = dateMsg.data
+    
+    if (selectedMealType) {
+      const ratingMessage = createRatingSelectMessage(imageUrl, cloudFileId, selectedMealType)
+      ratingMessage.data.selectedDate = selectedDate
+      this.setData({ 
+        messages: [...messages, ratingMessage],
+        selectedMealType: selectedMealType,
+        selectedDate: selectedDate
+      })
+    } else {
+      const mealTypeMessage = createMealTypeSelectMessage(imageUrl, cloudFileId)
+      mealTypeMessage.data.selectedDate = selectedDate
+      this.setData({ 
+        messages: [...messages, mealTypeMessage],
+        selectedDate: selectedDate
+      })
+    }
+    
     this.saveChatMessages()
     
     setTimeout(() => {
@@ -471,12 +572,13 @@ Page({
     })
     
     const ratingMsg = messages.find(m => m.id === msgId)
-    const { imageUrl, selectedMealType } = ratingMsg.data
+    const { imageUrl, selectedMealType, selectedDate } = ratingMsg.data
     
     const task = this.data.recognizingTasks[imageUrl]
     if (task) {
       task.selectedMealType = selectedMealType
       task.selectedRating = value
+      task.selectedDate = selectedDate || this.data.selectedDate
       this.setData({
         messages,
         recognizingTasks: {
@@ -544,8 +646,10 @@ Page({
     this.saveChatMessages()
     this.scrollToBottom()
     
+    const selectedDate = foodCardMsg?.data?.selectedDate || this.data.selectedDate || formatDate(new Date())
+    
     const record = {
-      date: formatDate(new Date()),
+      date: selectedDate,
       mealType: mealType,
       rating: rating,
       foods: foods,

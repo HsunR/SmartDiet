@@ -11,7 +11,7 @@
   
   <view class="meal-overview">
     <view class="health-score-section">
-      <view class="score-circle" style="background: conic-gradient({{scoreColor}} {{mealOverview.overallHealthScore}}, #E8E8E8 {{mealOverview.overallHealthScore}})">
+      <view class="score-circle" style="background: conic-gradient({{scoreColor}} {{mealOverview.overallHealthScore}}%, #E8E8E8 {{mealOverview.overallHealthScore}}%)">
         <view class="score-inner">
           <text class="score-number">{{mealOverview.overallHealthScore}}</text>
           <text class="score-label">健康评分</text>
@@ -41,26 +41,52 @@
   
   <view class="food-list">
     <view 
-      class="food-item" 
+      class="food-item {{expandedFoodIndex === index ? 'food-item-expanded' : ''}}" 
       wx:for="{{processedFoods}}" 
       wx:key="id"
-      data-index="{{index}}"
-      bindtap="onFoodTap"
     >
-      <view class="food-icon">
-        <text>{{item.categoryIcon}}</text>
-      </view>
-      
-      <view class="food-info">
-        <view class="food-name">{{item.name}}</view>
-        <view class="food-meta">
-          <text class="food-category">{{item.category}}</text>
-          <text class="food-weight">{{item.estimatedWeight}}g</text>
+      <view class="food-main" data-index="{{index}}" bindtap="toggleNutrients">
+        <view class="food-icon">
+          <text>{{item.categoryIcon}}</text>
+        </view>
+        
+        <view class="food-info">
+          <view class="food-name">{{item.name}}</view>
+          <view class="food-meta">
+            <text class="food-category">{{item.category}}</text>
+            <text class="food-weight">{{item.estimatedWeight}}g</text>
+          </view>
+        </view>
+        
+        <view class="food-right">
+          <text class="nutrient-value">{{item.displayCalories}} kcal</text>
+          <text class="expand-icon {{expandedFoodIndex === index ? 'expanded' : ''}}">▼</text>
         </view>
       </view>
       
-      <view class="food-nutrients">
-        <text class="nutrient-value">{{item.displayCalories}} kcal</text>
+      <view class="nutrients-panel {{expandedFoodIndex === index ? 'nutrients-panel-show' : ''}}" wx:if="{{expandedFoodIndex === index && item.nutrientsList.length > 0}}">
+        <view class="nutrients-header">
+          <text class="nutrients-title">营养素评估</text>
+          <text class="nutrients-hint">点击⚠查看详情</text>
+        </view>
+        
+        <view class="nutrient-item" wx:for="{{item.nutrientsList}}" wx:for-item="nutrient" wx:key="key">
+          <view class="nutrient-label-row">
+            <text class="nutrient-label">{{nutrient.name}}</text>
+            <view class="nutrient-warning" wx:if="{{nutrient.showWarning}}" bindtap="onNutrientInfoTap" data-key="{{nutrient.key}}" data-name="{{nutrient.name}}" data-description="{{nutrient.description}}">
+              <text class="warning-icon">⚠</text>
+            </view>
+          </view>
+          <view class="nutrient-progress-wrapper">
+            <view class="nutrient-progress-bar">
+              <view 
+                class="nutrient-progress-fill" 
+                style="width: {{nutrient.level}}%; background-color: {{nutrient.goodHigh === false ? (nutrient.level >= 70 ? '#F44336' : nutrient.level >= 50 ? '#FF9800' : '#4CAF50') : (nutrient.goodHigh === true ? (nutrient.level >= 70 ? '#4CAF50' : nutrient.level >= 40 ? '#FF9800' : '#F44336') : '#4CAF50')}};"
+              ></view>
+            </view>
+            <text class="nutrient-level">{{nutrient.level}}</text>
+          </view>
+        </view>
       </view>
     </view>
   </view>

@@ -11,7 +11,8 @@ const MESSAGE_TYPES = {
   RECOMMEND_CARD: 'recommend_card',
   QUICK_ACTIONS: 'quick_actions',
   MEAL_TYPE_SELECT: 'meal_type_select',
-  RATING_SELECT: 'rating_select'
+  RATING_SELECT: 'rating_select',
+  DATE_SELECT: 'date_select'
 }
 
 const MESSAGE_ROLES = {
@@ -170,6 +171,26 @@ const createRatingSelectMessage = (imageUrl, cloudFileId, selectedMealType) => (
   timestamp: Date.now()
 })
 
+const createDateSelectMessage = (imageUrl, cloudFileId, defaultDate, defaultMealType) => {
+  const today = new Date()
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+  
+  return {
+    id: generateId(),
+    role: MESSAGE_ROLES.ASSISTANT,
+    type: MESSAGE_TYPES.DATE_SELECT,
+    content: '选择用餐日期：',
+    data: {
+      imageUrl,
+      cloudFileId,
+      selectedDate: defaultDate || todayStr,
+      selectedMealType: defaultMealType || null,
+      collapsed: false
+    },
+    timestamp: Date.now()
+  }
+}
+
 const createFeedbackInputMessage = (foods, mealOverview, imageUrl) => ({
   id: generateId(),
   role: MESSAGE_ROLES.ASSISTANT,
@@ -311,6 +332,7 @@ module.exports = {
   createMealTypePickerMessage,
   createMealTypeSelectMessage,
   createRatingSelectMessage,
+  createDateSelectMessage,
   createFeedbackInputMessage,
   createUserInfoFormMessage,
   createQuickActionsMessage,
