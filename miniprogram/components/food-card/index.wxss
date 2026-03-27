@@ -33,6 +33,27 @@
   font-weight: 600;
 }
 
+.rating-badge {
+  display: flex;
+  align-items: center;
+  padding: 4rpx 12rpx;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 12rpx;
+  margin-left: 8rpx;
+}
+
+.rating-label {
+  font-size: 20rpx;
+  color: #757575;
+}
+
+.rating-value {
+  font-size: 20rpx;
+  color: #FF9800;
+  font-weight: 600;
+  margin-left: 4rpx;
+}
+
 .card-calories {
   font-size: 26rpx;
   color: #4CAF50;

@@ -59,24 +59,58 @@
                   bindtap="onCellTap"
                 >
                   <view wx:if="{{calendarData[day.date][item.type].length > 0}}" class="cell-content">
-                    <image 
-                      wx:if="{{calendarData[day.date][item.type][0].imageUrl}}" 
-                      src="{{calendarData[day.date][item.type][0].imageUrl}}" 
-                      class="cell-image"
-                      mode="aspectFill"
-                    ></image>
-                    <view class="cell-foods">
-                      <text class="food-name" wx:for="{{calendarData[day.date][item.type][0].foods}}" wx:for-item="food" wx:key="name">{{food.name}}</text>
+                    <swiper 
+                      wx:if="{{calendarData[day.date][item.type].length > 1}}"
+                      class="cell-swiper"
+                      autoplay="{{true}}"
+                      interval="{{3000}}"
+                      duration="{{500}}"
+                      circular="{{true}}"
+                      indicator-dots="{{false}}"
+                    >
+                      <swiper-item wx:for="{{calendarData[day.date][item.type]}}" wx:for-item="record" wx:key="_id">
+                        <view class="swiper-record">
+                          <image 
+                            wx:if="{{record.imageUrl}}" 
+                            src="{{record.imageUrl}}" 
+                            class="cell-image"
+                            mode="aspectFill"
+                          ></image>
+                          <view class="cell-foods">
+                            <text class="food-name" wx:for="{{record.foods}}" wx:for-item="food" wx:key="name">{{food.name}}</text>
+                          </view>
+                          <view class="cell-rating" wx:if="{{record.rating !== undefined}}">
+                            <text class="rating-stars">{{utils.getRatingStars(record.rating)}}</text>
+                          </view>
+                          <view class="cell-tags">
+                            <text class="tag-positive" wx:for="{{record.healthTags.positive || []}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+                            <text class="tag-warning" wx:for="{{record.healthTags.warning || []}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+                          </view>
+                        </view>
+                      </swiper-item>
+                    </swiper>
+                    
+                    <view wx:else class="single-record">
+                      <image 
+                        wx:if="{{calendarData[day.date][item.type][0].imageUrl}}" 
+                        src="{{calendarData[day.date][item.type][0].imageUrl}}" 
+                        class="cell-image"
+                        mode="aspectFill"
+                      ></image>
+                      <view class="cell-foods">
+                        <text class="food-name" wx:for="{{calendarData[day.date][item.type][0].foods}}" wx:for-item="food" wx:key="name">{{food.name}}</text>
+                      </view>
+                      <view class="cell-rating" wx:if="{{calendarData[day.date][item.type][0].rating !== undefined}}">
+                        <text class="rating-stars">{{utils.getRatingStars(calendarData[day.date][item.type][0].rating)}}</text>
+                      </view>
+                      <view class="cell-tags">
+                        <text class="tag-positive" wx:for="{{calendarData[day.date][item.type][0].healthTags.positive || []}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+                        <text class="tag-warning" wx:for="{{calendarData[day.date][item.type][0].healthTags.warning || []}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+                      </view>
                     </view>
-                    <view class="cell-rating" wx:if="{{calendarData[day.date][item.type][0].rating !== undefined}}">
-                      <text class="rating-stars">{{utils.getRatingStars(calendarData[day.date][item.type][0].rating)}}</text>
-                    </view>
-                    <view class="cell-tags">
-                      <text class="tag-positive" wx:for="{{calendarData[day.date][item.type][0].healthTags.positive || []}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
-                      <text class="tag-warning" wx:for="{{calendarData[day.date][item.type][0].healthTags.warning || []}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
-                    </view>
+                    
                     <view wx:if="{{calendarData[day.date][item.type].length > 1}}" class="record-count">
-                      <text>+{{calendarData[day.date][item.type].length - 1}}</text>
+                      <text>{{calendarData[day.date][item.type].length}}条</text>
                     </view>
                   </view>
                   <view wx:else class="cell-empty">

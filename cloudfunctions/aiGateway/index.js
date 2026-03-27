@@ -23,7 +23,7 @@ AI营养师。分析图像，结合用户信息({userInfo})和反馈({userFeedba
    "summary": { 
      "calories": 595, 
      "score": 65, 
-     "tags": {"good": ["高蛋白"], "warn": ["高钠"]}, 
+     "tags": {"good": ["高蛋白"], "warn": ["高钠"]}
    }, 
 
 
@@ -33,12 +33,13 @@ AI营养师。分析图像，结合用户信息({userInfo})和反馈({userFeedba
        "name": "宫保鸡丁", 
        "category": "种类", 
        "calories": 350, 
-  #估算重量(g)和置信度(0-1)。 
        "weight": {"val": 135, "conf": 0.85}, 
        "tags": {"good": ["高蛋白"], "warn": ["高钠"]}, 
-    "advice": "简短建议" 
-  } 
-  错误返回：{"success": false, "message": "原因"}`,
+       "advice": "简短建议" 
+     } 
+   ] 
+ } 
+ 错误返回：{"success": false, "message": "原因"}`,
 
   chat: `你是AI营养师助手。帮助用户记录饮食、提供建议、解答问题。
 

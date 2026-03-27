@@ -84,8 +84,15 @@ Page({
     }
     
     const cellWidth = 200
-    const visibleWidth = 630
-    const scrollLeft = Math.max(0, todayIndex * cellWidth - visibleWidth / 2 + cellWidth / 2)
+    const mealTypeWidth = 120
+    const screenWidth = 750
+    const todayCellCenter = mealTypeWidth + todayIndex * cellWidth + cellWidth / 2
+    const targetPosition = (mealTypeWidth + screenWidth) / 2
+    let scrollLeft = todayCellCenter - targetPosition
+    
+    const totalWidth = mealTypeWidth + 7 * cellWidth
+    const maxScrollLeft = Math.max(0, totalWidth - screenWidth)
+    scrollLeft = Math.max(0, Math.min(scrollLeft, maxScrollLeft))
     
     this.setData({
       weekDays,

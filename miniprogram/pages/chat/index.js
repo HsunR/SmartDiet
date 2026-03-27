@@ -36,6 +36,9 @@ Page({
     currentFoods: [],
     currentMealOverview: {},
     editingFoodCardIndex: -1,
+    editingRating: 0,
+    editingMealType: '',
+    editingSelectedDate: '',
     recognizingTasks: {},
     pendingRecord: null
   },
@@ -712,6 +715,9 @@ Page({
     }
     
     const imageUrl = foodCardMsg?.data?.imageUrl || this.data.currentImageUrl
+    const originalRating = foodCardMsg?.data?.rating || 0
+    const originalMealType = foodCardMsg?.data?.mealType || ''
+    const originalSelectedDate = foodCardMsg?.data?.selectedDate || ''
     
     const feedbackMessage = createFeedbackInputMessage(foods, mealOverview, imageUrl)
     
@@ -725,7 +731,10 @@ Page({
     this.setData({
       messages: [...messages, feedbackMessage],
       currentImageUrl: imageUrl,
-      editingFoodCardIndex: foodCardIndex
+      editingFoodCardIndex: foodCardIndex,
+      editingRating: originalRating,
+      editingMealType: originalMealType,
+      editingSelectedDate: originalSelectedDate
     })
     this.saveChatMessages()
     this.scrollToBottom()
@@ -798,7 +807,7 @@ Page({
     const { feedback } = e.detail
     const feedbackMsg = this.data.messages.find(m => m.type === MESSAGE_TYPES.FEEDBACK_INPUT)
     const { foods, mealOverview, imageUrl } = feedbackMsg?.data || {}
-    const { editingFoodCardIndex } = this.data
+    const { editingFoodCardIndex, editingRating, editingMealType, editingSelectedDate } = this.data
     
     if (!imageUrl) {
       this.showErrorMessage('请重新上传图片')
@@ -835,13 +844,19 @@ Page({
         
         const foodCardMessage = createFoodCardMessage(newFoods, newMealOverview, newDietaryAdvice, generateId())
         foodCardMessage.data.imageUrl = imageUrl
+        foodCardMessage.data.rating = editingRating || 0
+        foodCardMessage.data.mealType = editingMealType || ''
+        foodCardMessage.data.selectedDate = editingSelectedDate || ''
         
         this.setData({
           messages: [...this.data.messages, foodCardMessage],
           currentFoods: newFoods,
           currentMealOverview: newMealOverview,
           currentImageUrl: imageUrl,
-          editingFoodCardIndex: -1
+          editingFoodCardIndex: -1,
+          editingRating: 0,
+          editingMealType: '',
+          editingSelectedDate: ''
         })
         this.saveChatMessages()
       } else {

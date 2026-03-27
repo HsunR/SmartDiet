@@ -30,13 +30,21 @@ async function callAIWithSystem(systemPrompt, userMessage, options = {}) {
 
 function parseJsonResponse(content) {
   try {
-    const jsonMatch = content.match(/\{[\s\S]*\}/)
+    let jsonStr = content.trim()
+    
+    jsonStr = jsonStr.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '')
+    
+    jsonStr = jsonStr.replace(/,\s*}/g, '}')
+    jsonStr = jsonStr.replace(/,\s*]/g, ']')
+    
+    const jsonMatch = jsonStr.match(/\{[\s\S]*\}/)
     if (jsonMatch) {
       return JSON.parse(jsonMatch[0])
     }
     return null
   } catch (error) {
     console.error('JSON parse error:', error)
+    console.error('Original content:', content)
     return null
   }
 }

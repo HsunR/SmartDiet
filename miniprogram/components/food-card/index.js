@@ -25,6 +25,10 @@ Component({
       type: String,
       value: ''
     },
+    rating: {
+      type: Number,
+      value: 0
+    },
     editable: {
       type: Boolean,
       value: true

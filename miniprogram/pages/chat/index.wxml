@@ -37,6 +37,7 @@
             meal-overview="{{item.data.mealOverview}}"
             dietary-advice="{{item.data.dietaryAdvice}}"
             record-id="{{item.data.recordId}}"
+            rating="{{item.data.rating}}"
             action-completed="{{item.data.actionCompleted}}"
             bindconfirm="onFoodCardConfirm"
             bindedit="onFoodCardEdit"

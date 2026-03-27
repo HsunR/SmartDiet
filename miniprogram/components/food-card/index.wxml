@@ -5,6 +5,10 @@
       <view class="score-badge" style="background-color: {{scoreColor}}">
         <text>{{mealOverview.overallHealthScore}}分</text>
       </view>
+      <view class="rating-badge">
+        <text class="rating-label">您的评分：</text>
+        <text class="rating-value">{{rating === 0 ? '待定' : rating + '星'}}</text>
+      </view>
     </view>
     <text class="card-calories">{{mealOverview.totalCalories || 0}} kcal</text>
   </view>
