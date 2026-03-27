@@ -151,11 +151,6 @@
   border-bottom: none;
 }
 
-.food-item-expanded {
-  background-color: #FAFAFA;
-  border-radius: 12rpx;
-}
-
 .food-main {
   display: flex;
   align-items: center;
@@ -203,6 +198,29 @@
   color: #BDBDBD;
 }
 
+.food-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+  margin-top: 8rpx;
+}
+
+.food-tag {
+  font-size: 20rpx;
+  padding: 4rpx 10rpx;
+  border-radius: 12rpx;
+}
+
+.food-tag.tag-positive {
+  background-color: #E8F5E9;
+  color: #2E7D32;
+}
+
+.food-tag.tag-warning {
+  background-color: #FFF3E0;
+  color: #E65100;
+}
+
 .food-right {
   display: flex;
   align-items: center;
@@ -215,104 +233,17 @@
   font-weight: 500;
 }
 
-.expand-icon {
-  font-size: 20rpx;
-  color: #9E9E9E;
-  transition: transform 0.3s ease;
-}
-
-.expand-icon.expanded {
-  transform: rotate(180deg);
-}
-
-.nutrients-panel {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease;
-  background-color: #FFFFFF;
+.food-advice {
+  padding: 12rpx 16rpx;
+  background-color: #FFF8E1;
+  border-radius: 8rpx;
   margin: 0 16rpx 16rpx 16rpx;
-  border-radius: 12rpx;
 }
 
-.nutrients-panel-show {
-  max-height: 2000rpx;
-  border: 1rpx solid #E8E8E8;
-  padding: 16rpx;
-}
-
-.nutrients-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16rpx;
-  padding-bottom: 12rpx;
-  border-bottom: 1rpx solid #EEEEEE;
-}
-
-.nutrients-title {
-  font-size: 26rpx;
-  font-weight: 600;
-  color: #212121;
-}
-
-.nutrients-hint {
-  font-size: 20rpx;
-  color: #9E9E9E;
-}
-
-.nutrient-item {
-  margin-bottom: 16rpx;
-}
-
-.nutrient-item:last-child {
-  margin-bottom: 0;
-}
-
-.nutrient-label-row {
-  display: flex;
-  align-items: center;
-  margin-bottom: 8rpx;
-}
-
-.nutrient-label {
+.advice-text {
   font-size: 24rpx;
-  color: #424242;
-}
-
-.nutrient-warning {
-  margin-left: 8rpx;
-  padding: 4rpx;
-}
-
-.warning-icon {
-  font-size: 24rpx;
-}
-
-.nutrient-progress-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-}
-
-.nutrient-progress-bar {
-  flex: 1;
-  height: 16rpx;
-  background-color: #F5F5F5;
-  border-radius: 8rpx;
-  overflow: hidden;
-}
-
-.nutrient-progress-fill {
-  height: 100%;
-  border-radius: 8rpx;
-  transition: width 0.3s ease;
-}
-
-.nutrient-level {
-  font-size: 22rpx;
-  color: #757575;
-  min-width: 40rpx;
-  text-align: right;
+  color: #F57C00;
+  line-height: 1.5;
 }
 
 .dietary-advice {

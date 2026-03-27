@@ -128,7 +128,12 @@ Page({
                 totalCalories: record.totalCalories || 0,
                 healthTags: mealOverview.healthTags || { positive: [], warning: [] },
                 rating: record.rating || 0,
-                mealOverview: mealOverview,
+                mealOverview: {
+                  overallHealthScore: mealOverview.overallHealthScore || 60,
+                  totalCalories: mealOverview.totalCalories || record.totalCalories || 0,
+                  healthTags: mealOverview.healthTags || { positive: [], warning: [] },
+                  summary: mealOverview.summary || ''
+                },
                 dietaryAdvice: record.dietaryAdvice || ''
               }
               

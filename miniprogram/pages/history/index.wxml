@@ -50,7 +50,6 @@
           <text class="record-foods">{{record.foodsNames}}</text>
           <view class="record-nutrients">
             <text class="nutrient-tag">{{record.totalCalories}} kcal</text>
-            <text class="nutrient-tag" wx:if="{{record.nutrients.protein}}">{{record.nutrients.protein}}g蛋白质</text>
           </view>
         </view>
         

@@ -9,71 +9,36 @@ const recordsCollection = db.collection('food_records')
 const usersCollection = db.collection('users')
 
 const PROMPT_TEMPLATES = {
-  foodRecognition: `# Role
-你是AI营养师助手，分析食物图像并提供营养评估。
+  foodRecognition: `### 角色 
+AI营养师。分析图像，结合用户信息({userInfo})和反馈({userFeedback})输出JSON。
+必须严格遵循下方JSON结构，无Markdown标记。 
 
-用户信息：{userInfo}
-用户对上一次识别的反馈：{userFeedback}
 
-# Task
-1. 识别图中所有食物成分
-2. 估算每种食物重量（克）和置信度
-3. nutrientsEstimation字段为估算营养水平 0-100
-4. 结合用户对上一次识别的反馈
+### JSON结构示例 
 
-# Output Format
-仅返回JSON，无markdown标记：
-{
-  "success": true,
-  "mealOverview": {
-    "totalCalories": 595,
-    "overallHealthScore": 65,
-    "healthTags": {"positive": ["高蛋白"], "warning": ["高钠"]},
-    "summary": "结构——简短菜名：对这道菜进行精准描述"
-  },
-  "foods": [
-    {
-      "id": "food_001",
-      "name": "宫保鸡丁",
-      "category": "主食",
-      "totalCalories": 350,
-      "portionEstimation": {"estimatedWeight": 135, "confidence": 0.85},
-      "nutrientsEstimation": {
-        "energy": 75,
-        "protein": 85,
-        "carbohydrate": 60,
-        "saturatedFat": 30,
-        "unsaturatedFat": 70,
-        "transFat": 10,
-        "cholesterol": 40,
-        "sugar": 25,
-        "sodium": 35,
-        "dietaryFiber": 80,
-        "vitamins": {
-          "folate": 65,
-          "vitaminC": 75,
-          "vitaminB": 70,
-          "vitaminD": 55,
-          "vitaminA": 60,
-          "vitaminB12": 50,
-          "vitaminE": 65
-        },
-        "minerals": {
-          "calcium": 70,
-          "iron": 60,
-          "zinc": 55,
-          "potassium": 75,
-          "magnesium": 65,
-          "selenium": 45,
-          "iodine": 40
-        }
-      }
-    }
-  ],
-  "dietaryAdvice": "简短建议"
-}
 
-错误时返回：{"success": false, "message": "原因"}`,
+#1. 识别食物，不能确定的成分不要记录 
+{ 
+   "success": true, 
+   "summary": { 
+     "calories": 595, 
+     "score": 65, 
+     "tags": {"good": ["高蛋白"], "warn": ["高钠"]}, 
+   }, 
+
+
+   "items": [ 
+     { 
+       "id": "food_001", 
+       "name": "宫保鸡丁", 
+       "category": "种类", 
+       "calories": 350, 
+  #估算重量(g)和置信度(0-1)。 
+       "weight": {"val": 135, "conf": 0.85}, 
+       "tags": {"good": ["高蛋白"], "warn": ["高钠"]}, 
+    "advice": "简短建议" 
+  } 
+  错误返回：{"success": false, "message": "原因"}`,
 
   chat: `你是AI营养师助手。帮助用户记录饮食、提供建议、解答问题。
 
@@ -222,35 +187,60 @@ async function handleFoodRecognition(openid, data) {
       }
     }
     
-    if (result.foods) {
-      result.foods = result.foods.map(food => ({
-        id: food.id || `food_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        name: food.name || '未知食物',
-        category: food.category || '其他',
-        totalCalories: food.totalCalories || 0,
-        ingredientsDetected: food.ingredientsDetected || [],
-        cookingMethod: food.cookingMethod || {},
-        portionEstimation: food.portionEstimation || { estimatedWeight: 100 },
-        nutrientsEstimation: food.nutrientsEstimation || {},
-        estimatedWeight: food.portionEstimation?.estimatedWeight || 100,
-        confidence: food.portionEstimation?.confidence || 0.8,
-        nutrients: {
-          calories: food.totalCalories || 0,
-          protein: food.nutrientsEstimation?.protein || 0,
-          fat: food.nutrientsEstimation?.saturatedFat || 0,
-          carbohydrate: food.nutrientsEstimation?.carbohydrate || 0,
-          fiber: food.nutrientsEstimation?.dietaryFiber || 0,
-          sugar: food.nutrientsEstimation?.sugar || 0,
-          sodium: food.nutrientsEstimation?.sodium || 0,
-          saturatedFat: food.nutrientsEstimation?.saturatedFat || 0,
-          addedOilEstimate: 0
+    if (result.items && Array.isArray(result.items)) {
+      result.foods = result.items.map(item => {
+        const itemTags = item.tags || {}
+        return {
+          id: item.id || `food_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          name: item.name || '未知食物',
+          category: item.category || '其他',
+          totalCalories: item.calories || 0,
+          estimatedWeight: item.weight?.val || 100,
+          confidence: item.weight?.conf || 0.8,
+          portionEstimation: {
+            estimatedWeight: item.weight?.val || 100,
+            confidence: item.weight?.conf || 0.8
+          },
+          tags: {
+            positive: itemTags.good || [],
+            warning: itemTags.warn || []
+          },
+          advice: item.advice || ''
         }
-      }))
+      })
     }
     
-    if (result.mealOverview) {
-      result.mealOverview.totalCalories = result.mealOverview.totalCalories || 
-        (result.foods || []).reduce((sum, f) => sum + (f.totalCalories || 0), 0)
+    if (result.summary) {
+      const tags = result.summary.tags || {}
+      const foodNames = (result.items || result.foods || []).map(f => f.name).filter(Boolean)
+      const summaryText = foodNames.length > 0 
+        ? `识别到：${foodNames.join('、')}` 
+        : '识别成功'
+      result.mealOverview = {
+        totalCalories: result.summary.calories || 0,
+        overallHealthScore: result.summary.score || 60,
+        healthTags: {
+          positive: tags.good || [],
+          warning: tags.warn || []
+        },
+        summary: summaryText
+      }
+    } else if (result.foods) {
+      const foodNames = result.foods.map(f => f.name).filter(Boolean)
+      const summaryText = foodNames.length > 0 
+        ? `识别到：${foodNames.join('、')}` 
+        : '识别成功'
+      result.mealOverview = {
+        totalCalories: result.foods.reduce((sum, f) => sum + (f.totalCalories || 0), 0),
+        overallHealthScore: 60,
+        healthTags: { positive: [], warning: [] },
+        summary: summaryText
+      }
+    }
+    
+    const advices = (result.foods || []).map(f => f.advice).filter(Boolean)
+    if (advices.length > 0) {
+      result.dietaryAdvice = advices.join('；')
     }
     
     return result

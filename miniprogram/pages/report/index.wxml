@@ -72,8 +72,8 @@
                       <text class="rating-stars">{{utils.getRatingStars(calendarData[day.date][item.type][0].rating)}}</text>
                     </view>
                     <view class="cell-tags">
-                      <text class="tag-positive" wx:for="{{calendarData[day.date][item.type][0].healthTags.positive}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
-                      <text class="tag-warning" wx:for="{{calendarData[day.date][item.type][0].healthTags.warning}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+                      <text class="tag-positive" wx:for="{{calendarData[day.date][item.type][0].healthTags.positive || []}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+                      <text class="tag-warning" wx:for="{{calendarData[day.date][item.type][0].healthTags.warning || []}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
                     </view>
                     <view wx:if="{{calendarData[day.date][item.type].length > 1}}" class="record-count">
                       <text>+{{calendarData[day.date][item.type].length - 1}}</text>
@@ -162,16 +162,25 @@
         <view class="detail-foods-section">
           <text class="detail-section-title">食物列表</text>
           <view class="detail-food-item" wx:for="{{detailData.foods}}" wx:key="name">
-            <text class="detail-food-name">{{item.name}}</text>
-            <text class="detail-food-weight">{{item.estimatedWeight || (item.portionEstimation && item.portionEstimation.estimatedWeight) || 100}}g</text>
+            <view class="detail-food-row">
+              <text class="detail-food-name">{{item.name}}</text>
+              <text class="detail-food-weight">{{item.estimatedWeight || (item.portionEstimation && item.portionEstimation.estimatedWeight) || 100}}g</text>
+            </view>
+            <view class="detail-food-tags" wx:if="{{item.tags && (item.tags.positive.length > 0 || item.tags.warning.length > 0)}}">
+              <text class="detail-food-tag tag-positive" wx:for="{{item.tags.positive}}" wx:key="*this">✓ {{item}}</text>
+              <text class="detail-food-tag tag-warning" wx:for="{{item.tags.warning}}" wx:key="*this">! {{item}}</text>
+            </view>
+            <view class="detail-food-advice" wx:if="{{item.advice}}">
+              <text>{{item.advice}}</text>
+            </view>
           </view>
         </view>
         
-        <view class="detail-tags-section" wx:if="{{detailData.healthTags.positive.length > 0 || detailData.healthTags.warning.length > 0}}">
-          <text class="detail-section-title">健康标签</text>
+        <view class="detail-tags-section" wx:if="{{detailData.healthTags && ((detailData.healthTags.positive && detailData.healthTags.positive.length > 0) || (detailData.healthTags.warning && detailData.healthTags.warning.length > 0))}}">
+          <text class="detail-section-title">整体健康标签</text>
           <view class="detail-tags">
-            <text class="detail-tag detail-tag-positive" wx:for="{{detailData.healthTags.positive}}" wx:key="*this">✓ {{item}}</text>
-            <text class="detail-tag detail-tag-warning" wx:for="{{detailData.healthTags.warning}}" wx:key="*this">! {{item}}</text>
+            <text class="detail-tag detail-tag-positive" wx:for="{{detailData.healthTags.positive || []}}" wx:key="*this">✓ {{item}}</text>
+            <text class="detail-tag detail-tag-warning" wx:for="{{detailData.healthTags.warning || []}}" wx:key="*this">! {{item}}</text>
           </view>
         </view>
         

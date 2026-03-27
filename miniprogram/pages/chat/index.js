@@ -755,7 +755,7 @@ Page({
         date: formatDate(new Date()),
         mealType: selectedMealType,
         foods: pendingFoods,
-        totalCalories: pendingMealOverview?.totalCalories || pendingFoods.reduce((sum, f) => sum + (f.nutrients?.calories || f.nutrientsEstimation?.calories || 0), 0),
+        totalCalories: pendingMealOverview?.totalCalories || pendingFoods.reduce((sum, f) => sum + (f.totalCalories || 0), 0),
         imageUrl: pendingFoods[0]?.imageUrl || '',
         mealOverview: pendingMealOverview
       }
