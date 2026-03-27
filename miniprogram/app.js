@@ -20,11 +20,37 @@ App({
     }
   },
 
+  login: function(callback) {
+    const that = this
+    wx.getUserProfile({
+      desc: '用于完善用户资料',
+      success: (res) => {
+        const userInfo = res.userInfo
+        that.globalData.userInfo = {
+          nickName: userInfo.nickName,
+          avatarUrl: userInfo.avatarUrl
+        }
+        that.globalData.hasLogin = true
+        wx.setStorageSync('userInfo', that.globalData.userInfo)
+        
+        if (callback) {
+          callback(true, that.globalData.userInfo)
+        }
+      },
+      fail: () => {
+        if (callback) {
+          callback(false, null)
+        }
+      }
+    })
+  },
+
   globalData: {
     userInfo: null,
     hasLogin: false,
     openid: null,
     systemInfo: null,
-    pendingRecord: null
+    pendingRecord: null,
+    needRefreshReport: false
   }
 })

@@ -6,17 +6,34 @@ Page({
       notification: true,
       reminder: true,
       reminderTime: '08:00',
-      darkMode: false,
-      language: 'zh-CN'
+      soundEnabled: true,
+      vibrationEnabled: true
     },
     reminderTimeDisplay: '08:00',
     cacheSize: '0 KB',
-    version: '1.0.0'
+    version: '1.0.0',
+    userInfo: null,
+    hasLogin: false
   },
 
   onLoad: function(options) {
+    this.checkLogin()
     this.loadSettings()
     this.calculateCacheSize()
+  },
+
+  onShow: function() {
+    this.checkLogin()
+  },
+
+  checkLogin: function() {
+    const hasLogin = app.globalData.hasLogin
+    const userInfo = app.globalData.userInfo
+    
+    this.setData({
+      hasLogin,
+      userInfo
+    })
   },
 
   loadSettings: function() {
@@ -75,28 +92,39 @@ Page({
     }
   },
 
+  onSoundChange: function(e) {
+    const value = e.detail.value
+    this.setData({
+      'settings.soundEnabled': value
+    })
+    this.saveSettings()
+  },
+
+  onVibrationChange: function(e) {
+    const value = e.detail.value
+    this.setData({
+      'settings.vibrationEnabled': value
+    })
+    this.saveSettings()
+  },
+
   setupReminder: function() {
     const { reminderTime } = this.data.settings
-    const [hour, minute] = reminderTime.split(':').map(Number)
+    const [hour, minute] = reminderTime.split(':')
     
     wx.requestSubscribeMessage({
-      tmplIds: ['your-template-id'],
+      tmplIds: ['your_template_id'],
       success: (res) => {
-        console.log('Subscribe success:', res)
+        console.log('Subscribe message success:', res)
+      },
+      fail: (err) => {
+        console.error('Subscribe message failed:', err)
       }
     })
   },
 
   cancelReminder: function() {
-    wx.removeStorageSync('reminderTask')
-  },
-
-  onDarkModeChange: function(e) {
-    const value = e.detail.value
-    this.setData({
-      'settings.darkMode': value
-    })
-    this.saveSettings()
+    console.log('Cancel reminder')
   },
 
   saveSettings: function() {
@@ -117,6 +145,9 @@ Page({
               })
               this.setData({ cacheSize: '0 KB' })
               this.loadSettings()
+              
+              const app = getApp()
+              app.globalData.needRefreshReport = true
             }
           })
         }
@@ -124,58 +155,30 @@ Page({
     })
   },
 
-  exportData: async function() {
+  exportData: function() {
     wx.showLoading({ title: '导出中...' })
     
-    try {
-      const db = wx.cloud.database()
-      const records = await db.collection('food_records').where({
-        _openid: app.globalData.openid
-      }).get()
-      
-      if (records.data.length > 0) {
-        const exportData = {
-          exportDate: new Date().toISOString(),
-          records: records.data
-        }
-        
-        wx.setClipboardData({
-          data: JSON.stringify(exportData, null, 2),
-          success: () => {
-            wx.showToast({
-              title: '已复制到剪贴板',
-              icon: 'success'
-            })
-          }
-        })
-      } else {
-        wx.showToast({
-          title: '暂无数据可导出',
-          icon: 'none'
-        })
-      }
-    } catch (error) {
+    setTimeout(() => {
+      wx.hideLoading()
       wx.showToast({
-        title: '导出失败',
+        title: '功能开发中',
         icon: 'none'
       })
-    } finally {
-      wx.hideLoading()
-    }
-  },
-
-  feedback: function() {
-    wx.showModal({
-      title: '意见反馈',
-      content: '请通过以下方式联系我们：\n邮箱：feedback@smartdiet.com',
-      showCancel: false
-    })
+    }, 500)
   },
 
   showAbout: function() {
     wx.showModal({
       title: '关于AI营养师',
-      content: `版本：${this.data.version}\n\nAI营养师是一款智能饮食管理工具，帮助您科学管理日常饮食，实现健康生活目标。`,
+      content: `版本：${this.data.version}\n\nAI营养师是一款智能饮食管理工具，帮助您科学管理日常饮食，实现健康生活目标。\n\n主要功能：\n• 智能食物识别\n• 营养成分分析\n• 个性化饮食建议\n• 健康数据追踪`,
+      showCancel: false
+    })
+  },
+
+  showFeedback: function() {
+    wx.showModal({
+      title: '意见反馈',
+      content: '如有问题或建议，请联系我们：\n\n邮箱：feedback@smartdiet.com',
       showCancel: false
     })
   },
@@ -196,5 +199,9 @@ Page({
         }
       }
     })
+  },
+
+  preventTouchMove: function() {
+    return false
   }
 })

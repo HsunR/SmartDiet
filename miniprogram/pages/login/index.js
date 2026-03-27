@@ -158,15 +158,23 @@ Page({
   },
 
   onGetUserProfile: function() {
+    if (this.data.getUserProfileLock) {
+      return
+    }
+    
+    this.setData({ getUserProfileLock: true })
+    
     wx.getUserProfile({
       desc: '用于完善用户资料',
       success: (res) => {
         this.setData({
-          userInfo: res.userInfo
+          userInfo: res.userInfo,
+          getUserProfileLock: false
         })
         this.onLogin()
       },
       fail: () => {
+        this.setData({ getUserProfileLock: false })
         this.onLogin()
       }
     })

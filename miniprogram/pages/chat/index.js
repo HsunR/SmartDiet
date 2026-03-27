@@ -627,7 +627,7 @@ Page({
     
     const mealType = foodCardMsg?.data?.mealType || this.getCurrentMealType()
     const rating = foodCardMsg?.data?.rating || 0
-    const imageUrl = foodCardMsg?.data?.imageUrl || foodCardMsg?.data?.cloudFileId || this.data.currentImageUrl
+    const imageUrl = foodCardMsg?.data?.cloudFileId || foodCardMsg?.data?.imageUrl || this.data.currentCloudFileId || this.data.currentImageUrl
     
     const messages = this.data.messages.map((msg, index) => {
       if (index === foodCardIndex) {
@@ -663,6 +663,9 @@ Page({
     
     try {
       const saveResult = await safeApiCall(() => api.food.addRecord(record))
+      
+      const app = getApp()
+      app.globalData.needRefreshReport = true
       
       const updatedMessages = this.data.messages.map((msg, index) => {
         if (index === foodCardIndex) {

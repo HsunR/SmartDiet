@@ -125,37 +125,87 @@
     </view>
   </view>
   
-  <view class="summary-section">
-    <view class="summary-card">
-      <view class="summary-title">本周概览</view>
-      <view class="summary-stats">
-        <view class="stat-item">
-          <text class="stat-value">{{weekSummary.totalCalories}}</text>
-          <text class="stat-label">总热量(kcal)</text>
+  <view class="weekly-report-section">
+    <view class="report-header">
+      <view class="header-content">
+        <text class="report-title">📊 本周营养报告</text>
+        <text class="report-subtitle">{{weekRange}}</text>
+      </view>
+    </view>
+    
+    <view class="report-chart-section">
+      <view class="chart-header">
+        <text class="chart-title">📈 每日餐均热量</text>
+      </view>
+      <view class="chart-container">
+        <view class="chart-y-axis">
+          <text class="y-label">{{weekSummary.maxCalories || 800}}</text>
+          <text class="y-label">{{(weekSummary.maxCalories || 800) / 2}}</text>
+          <text class="y-label">0</text>
         </view>
-        <view class="stat-item">
-          <text class="stat-value">{{weekSummary.avgCalories}}</text>
-          <text class="stat-label">日均热量(kcal)</text>
-        </view>
-        <view class="stat-item">
-          <text class="stat-value">{{weekSummary.mealCount}}</text>
-          <text class="stat-label">用餐次数</text>
+        <view class="chart-area">
+          <view class="chart-grid">
+            <view class="grid-line"></view>
+            <view class="grid-line"></view>
+            <view class="grid-line"></view>
+          </view>
+          <view class="chart-line-wrapper">
+            <view class="chart-line-points">
+              <view class="line-point {{item.isToday ? 'today' : ''}}" wx:for="{{weekSummary.dailyAvgCalories}}" wx:key="date" style="bottom: {{item.calories > 0 ? (item.calories / (weekSummary.maxCalories || 800) * 100) : 0}}">
+                <view class="point-dot"></view>
+                <text class="point-value" wx:if="{{item.calories > 0}}">{{item.calories}}</text>
+              </view>
+            </view>
+            <view class="chart-line-svg">
+              <view class="line-segment" wx:for="{{weekSummary.dailyAvgCalories}}" wx:key="date" wx:if="{{index < 6}}" style="transform: rotate({{calculateLineAngle(index, weekSummary.dailyAvgCalories, weekSummary.maxCalories || 800)}}deg); width: {{calculateLineWidth(index, weekSummary.dailyAvgCalories, weekSummary.maxCalories || 800)}}rpx;"></view>
+            </view>
+          </view>
+          <view class="chart-x-labels">
+            <text class="x-label {{item.isToday ? 'today' : ''}}" wx:for="{{weekSummary.dailyAvgCalories}}" wx:key="date">{{item.dayName}}</text>
+          </view>
         </view>
       </view>
+      <view class="chart-summary">
+        <view class="summary-item">
+          <text class="summary-label">本周总热量</text>
+          <text class="summary-value">{{weekSummary.totalCalories}} kcal</text>
+        </view>
+        <view class="summary-item">
+          <text class="summary-label">用餐次数</text>
+          <text class="summary-value">{{weekSummary.mealCount}} 次</text>
+        </view>
+      </view>
+    </view>
+    
+    <view class="report-empty" wx:if="{{weekSummary.mealCount === 0}}">
+      <view class="empty-icon">
+        <text>📝</text>
+      </view>
+      <text class="empty-title">暂无数据</text>
+      <text class="empty-desc">本周还没有记录饮食，快去记录吧~</text>
+      <button class="empty-btn" bindtap="navigateToChat">
+        <text>开始记录</text>
+      </button>
     </view>
   </view>
 </view>
 
-<view class="detail-modal {{showDetailModal ? 'show' : ''}}" catchtouchmove="preventTouchMove">
-  <view class="modal-mask" bindtap="closeDetailModal"></view>
-  <view class="modal-content">
+<view class="meal-detail-modal {{showDetailModal ? 'show' : ''}}" catchtouchmove="preventTouchMove">
+  <view class="modal-backdrop" bindtap="closeDetailModal"></view>
+  
+  <view class="modal-container">
     <view class="modal-header">
-      <view class="modal-title-row">
+      <view class="header-left">
         <text class="modal-title">{{detailMealType}}</text>
         <text class="modal-date">{{detailDate}}</text>
       </view>
-      <view class="modal-close" bindtap="closeDetailModal">
-        <text>✕</text>
+      <view class="header-right">
+        <view class="edit-btn" bindtap="toggleEdit">
+          <text>{{isEditing ? '取消' : '编辑'}}</text>
+        </view>
+        <view class="close-btn" bindtap="closeDetailModal">
+          <text>✕</text>
+        </view>
       </view>
     </view>
     
@@ -163,65 +213,160 @@
       <view class="pagination-btn {{currentRecordIndex === 0 ? 'disabled' : ''}}" bindtap="onPrevRecord">
         <text>‹</text>
       </view>
-      <text class="pagination-info">{{currentRecordIndex + 1}} / {{totalRecords}}</text>
+      <text class="pagination-text">{{currentRecordIndex + 1}} / {{totalRecords}}</text>
       <view class="pagination-btn {{currentRecordIndex === totalRecords - 1 ? 'disabled' : ''}}" bindtap="onNextRecord">
         <text>›</text>
       </view>
     </view>
     
-    <scroll-view scroll-y class="modal-body" wx:if="{{detailData}}">
-      <view class="detail-card">
-        <image wx:if="{{detailData.imageUrl}}" src="{{detailData.imageUrl}}" class="detail-image" mode="aspectFill"></image>
+    <swiper 
+      class="modal-swiper" 
+      current="{{currentRecordIndex}}"
+      bindchange="onSwiperChange"
+      wx:if="{{currentRecords.length > 0}}"
+    >
+      <swiper-item wx:for="{{currentRecords}}" wx:key="_id">
+        <scroll-view scroll-y class="modal-body">
+          <view class="detail-content">
+            <view class="detail-image-section" wx:if="{{item.imageUrl}}">
+              <image src="{{item.imageUrl}}" class="detail-image" mode="aspectFill"></image>
+            </view>
+            
+            <view class="detail-score-section">
+              <view class="score-circle" style="background: conic-gradient({{item.mealOverview.overallHealthScore >= 80 ? '#4CAF50' : item.mealOverview.overallHealthScore >= 60 ? '#FF9800' : '#F44336'}} {{item.mealOverview.overallHealthScore || 60}}, #E8E8E8 {{item.mealOverview.overallHealthScore || 60}})">
+                <view class="score-inner">
+                  <text class="score-number">{{item.mealOverview.overallHealthScore || 60}}</text>
+                  <text class="score-label">健康评分</text>
+                </view>
+              </view>
+              
+              <view class="score-info">
+                <view class="info-item">
+                  <text class="info-label">热量</text>
+                  <text class="info-value">{{item.totalCalories || 0}} kcal</text>
+                </view>
+                <view class="info-item">
+                  <text class="info-label">评分</text>
+                  <text class="info-value">{{item.rating === 0 ? '待定' : item.rating + '星'}}</text>
+                </view>
+                <view class="score-tags" wx:if="{{item.healthTags && (item.healthTags.positive.length > 0 || item.healthTags.warning.length > 0)}}">
+                  <text class="score-tag tag-positive" wx:for="{{item.healthTags.positive || []}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+                  <text class="score-tag tag-warning" wx:for="{{item.healthTags.warning || []}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+                </view>
+              </view>
+            </view>
+            
+            <view class="detail-foods-section" wx:if="{{item.foods && item.foods.length > 0}}">
+              <view class="section-header">
+                <view class="header-icon">
+                  <text>🍽️</text>
+                </view>
+                <text class="header-title">食物清单</text>
+                <text class="header-count">{{item.foods.length}}种</text>
+              </view>
+              
+              <view class="foods-list">
+                <view class="food-item" wx:for="{{item.foods}}" wx:for-item="food" wx:key="name">
+                  <view class="food-main">
+                    <view class="food-info">
+                      <text class="food-name">{{food.name}}</text>
+                      <view class="food-tags" wx:if="{{food.tags && food.tags.length > 0}}">
+                        <text class="food-tag" wx:for="{{food.tags}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+                      </view>
+                    </view>
+                    <text class="food-calories">{{food.calories || 0}} kcal</text>
+                  </view>
+                  <view class="food-meta">
+                    <text class="food-weight" wx:if="{{food.weight}}">{{food.weight}}g</text>
+                    <text class="food-category" wx:if="{{food.category}}">{{food.category}}</text>
+                  </view>
+                  <view class="food-advice" wx:if="{{food.advice}}">
+                    <text>💡 {{food.advice}}</text>
+                  </view>
+                </view>
+              </view>
+            </view>
+            
+            <view class="detail-tags-section" wx:if="{{item.healthTags && (item.healthTags.positive.length > 0 || item.healthTags.warning.length > 0)}}">
+              <view class="section-header">
+                <view class="header-icon">
+                  <text>🏷️</text>
+                </view>
+                <text class="header-title">健康标签</text>
+              </view>
+              
+              <view class="tags-grid">
+                <view class="tag-item tag-positive" wx:for="{{item.healthTags.positive || []}}" wx:key="*this">
+                  <text class="tag-icon">✓</text>
+                  <text class="tag-text">{{item}}</text>
+                </view>
+                <view class="tag-item tag-warning" wx:for="{{item.healthTags.warning || []}}" wx:key="*this">
+                  <text class="tag-icon">⚠️</text>
+                  <text class="tag-text">{{item}}</text>
+                </view>
+              </view>
+            </view>
+            
+            <view class="detail-advice-section" wx:if="{{item.dietaryAdvice}}">
+              <view class="section-header">
+                <view class="header-icon">
+                  <text>💡</text>
+                </view>
+                <text class="header-title">饮食建议</text>
+              </view>
+              
+              <view class="advice-card">
+                <text class="advice-text">{{item.dietaryAdvice}}</text>
+              </view>
+            </view>
+          </view>
+        </scroll-view>
+      </swiper-item>
+    </swiper>
+    
+    <scroll-view scroll-y class="modal-body" wx:if="{{isEditing && detailData}}">
+      <view class="detail-content edit-mode">
+        <view class="edit-header">
+          <text class="edit-title">编辑食物信息</text>
+        </view>
         
-        <view class="detail-score-section">
-          <view class="detail-score-circle" style="background: conic-gradient(#4CAF50 {{detailData.mealOverview.overallHealthScore || 60}}%, #E8E8E8 {{detailData.mealOverview.overallHealthScore || 60}}%)">
-            <view class="detail-score-inner">
-              <text class="detail-score-number">{{detailData.mealOverview.overallHealthScore || 60}}</text>
-              <text class="detail-score-label">健康评分</text>
+        <view class="edit-foods-list">
+          <view class="edit-food-item" wx:for="{{editFoods}}" wx:key="name">
+            <view class="edit-food-row">
+              <text class="edit-label">名称</text>
+              <input 
+                class="edit-input" 
+                value="{{item.name}}" 
+                data-index="{{index}}"
+                bindinput="onEditFoodName"
+              />
+            </view>
+            <view class="edit-food-row">
+              <text class="edit-label">热量</text>
+              <input 
+                class="edit-input" 
+                type="number"
+                value="{{item.calories}}" 
+                data-index="{{index}}"
+                bindinput="onEditFoodCalories"
+              />
+              <text class="edit-unit">kcal</text>
+            </view>
+            <view class="edit-food-row">
+              <text class="edit-label">重量</text>
+              <input 
+                class="edit-input" 
+                type="number"
+                value="{{item.weight}}" 
+                data-index="{{index}}"
+                bindinput="onEditFoodWeight"
+              />
+              <text class="edit-unit">g</text>
             </view>
           </view>
         </view>
         
-        <view class="detail-info-row">
-          <view class="detail-info-item">
-            <text class="detail-info-value">{{detailData.totalCalories}}</text>
-            <text class="detail-info-label">热量(kcal)</text>
-          </view>
-          <view class="detail-info-item">
-            <text class="detail-info-value">{{detailData.rating === 0 ? '待定' : detailData.rating + '星'}}</text>
-            <text class="detail-info-label">评分</text>
-          </view>
-        </view>
-        
-        <view class="detail-foods-section">
-          <text class="detail-section-title">食物列表</text>
-          <view class="detail-food-item" wx:for="{{detailData.foods}}" wx:key="name">
-            <view class="detail-food-row">
-              <text class="detail-food-name">{{item.name}}</text>
-              <text class="detail-food-weight">{{item.estimatedWeight || (item.portionEstimation && item.portionEstimation.estimatedWeight) || 100}}g</text>
-            </view>
-            <view class="detail-food-tags" wx:if="{{item.tags && (item.tags.positive.length > 0 || item.tags.warning.length > 0)}}">
-              <text class="detail-food-tag tag-positive" wx:for="{{item.tags.positive}}" wx:key="*this">✓ {{item}}</text>
-              <text class="detail-food-tag tag-warning" wx:for="{{item.tags.warning}}" wx:key="*this">! {{item}}</text>
-            </view>
-            <view class="detail-food-advice" wx:if="{{item.advice}}">
-              <text>{{item.advice}}</text>
-            </view>
-          </view>
-        </view>
-        
-        <view class="detail-tags-section" wx:if="{{detailData.healthTags && ((detailData.healthTags.positive && detailData.healthTags.positive.length > 0) || (detailData.healthTags.warning && detailData.healthTags.warning.length > 0))}}">
-          <text class="detail-section-title">整体健康标签</text>
-          <view class="detail-tags">
-            <text class="detail-tag detail-tag-positive" wx:for="{{detailData.healthTags.positive || []}}" wx:key="*this">✓ {{item}}</text>
-            <text class="detail-tag detail-tag-warning" wx:for="{{detailData.healthTags.warning || []}}" wx:key="*this">! {{item}}</text>
-          </view>
-        </view>
-        
-        <view class="detail-advice-section" wx:if="{{detailData.dietaryAdvice}}">
-          <text class="detail-section-title">饮食建议</text>
-          <text class="detail-advice">{{detailData.dietaryAdvice}}</text>
-        </view>
+        <button class="save-edit-btn" bindtap="saveEdit">保存修改</button>
       </view>
     </scroll-view>
   </view>

@@ -164,7 +164,23 @@ const getImageUrl = (path, options = {}) => {
   if (path.startsWith('cloud://')) {
     return path
   }
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path
+  }
   return path
+}
+
+const getValidImageUrl = (imageUrl, cloudFileId) => {
+  if (cloudFileId && cloudFileId.startsWith('cloud://')) {
+    return cloudFileId
+  }
+  if (imageUrl && imageUrl.startsWith('cloud://')) {
+    return imageUrl
+  }
+  if (imageUrl && (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) {
+    return imageUrl
+  }
+  return cloudFileId || imageUrl || ''
 }
 
 const compressImage = (tempFilePath, quality = 80) => {
@@ -229,6 +245,7 @@ module.exports = {
   getProgressStatus,
   validateNumber,
   getImageUrl,
+  getValidImageUrl,
   compressImage,
   uploadFile,
   getTempFileURL,

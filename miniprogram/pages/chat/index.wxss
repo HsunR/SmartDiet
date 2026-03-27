@@ -15,7 +15,7 @@
 .message-item {
   display: flex;
   margin-bottom: 24rpx;
-  margin-right: 25rpx
+  margin-right: 25rpx;
   animation: fadeIn 0.3s ease;
 }
 

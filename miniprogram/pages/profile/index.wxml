@@ -24,163 +24,208 @@
         </view>
         <view class="user-detail">
           <text class="user-name">{{userInfo.nickName || '用户'}}</text>
-          <text class="user-id">ID: {{openid || '---'}}</text>
+          <text class="user-streak" wx:if="{{stats.streakDays > 0}}">🔥 连续记录 {{stats.streakDays}} 天</text>
         </view>
       </view>
-      <view class="edit-btn" bindtap="onEditProfile">
-        <text>编辑资料</text>
+    </view>
+    
+    <view class="stats-overview">
+      <view class="stat-card">
+        <view class="stat-icon">📊</view>
+        <view class="stat-content">
+          <text class="stat-value">{{stats.totalRecords}}</text>
+          <text class="stat-label">记录次数</text>
+        </view>
+      </view>
+      
+      <view class="stat-card">
+        <view class="stat-icon">📅</view>
+        <view class="stat-content">
+          <text class="stat-value">{{stats.totalDays}}</text>
+          <text class="stat-label">记录天数</text>
+        </view>
+      </view>
+      
+      <view class="stat-card">
+        <view class="stat-icon">🔥</view>
+        <view class="stat-content">
+          <text class="stat-value">{{stats.avgCalories}}</text>
+          <text class="stat-label">餐均热量</text>
+        </view>
+      </view>
+      
+      <view class="stat-card">
+        <view class="stat-icon">⭐</view>
+        <view class="stat-content">
+          <text class="stat-value">{{stats.avgScore}}</text>
+          <text class="stat-label">平均评分</text>
+        </view>
       </view>
     </view>
     
-    <view class="stats-card">
-      <view class="stat-item">
-        <text class="stat-value">{{stats.totalRecords}}</text>
-        <text class="stat-label">记录次数</text>
-      </view>
-      <view class="stat-divider"></view>
-      <view class="stat-item">
-        <text class="stat-value">{{stats.totalDays}}</text>
-        <text class="stat-label">记录天数</text>
-      </view>
-      <view class="stat-divider"></view>
-      <view class="stat-item">
-        <text class="stat-value">{{stats.avgCalories}}</text>
-        <text class="stat-label">日均热量</text>
-      </view>
-    </view>
-    
-    <view class="profile-card">
-      <view class="card-header">
-        <text class="card-title">个人资料</text>
+    <view class="profile-section">
+      <view class="section-header">
+        <text class="section-title">📋 个人资料</text>
       </view>
       
       <view class="profile-form">
         <view class="form-item">
-          <text class="form-label">性别</text>
+          <view class="item-left">
+            <text class="item-icon">👤</text>
+            <text class="item-label">性别</text>
+          </view>
           <picker mode="selector" range="{{['男', '女']}}" value="{{profile.gender - 1}}" bindchange="onGenderChange">
-            <view class="form-value">
-              <text>{{profile.gender === 1 ? '男' : '女'}}</text>
-              <text class="arrow">›</text>
+            <view class="item-right">
+              <text class="item-value">{{profile.gender === 1 ? '男' : '女'}}</text>
+              <text class="item-arrow">›</text>
             </view>
           </picker>
         </view>
         
         <view class="form-item">
-          <text class="form-label">年龄</text>
-          <input 
-            type="number" 
-            value="{{profile.age}}" 
-            class="form-input"
-            data-field="age"
-            bindinput="onInputChange"
-          />
-          <text class="form-unit">岁</text>
+          <view class="item-left">
+            <text class="item-icon">🎂</text>
+            <text class="item-label">年龄</text>
+          </view>
+          <view class="item-right">
+            <input 
+              type="number" 
+              value="{{profile.age}}" 
+              class="item-input"
+              data-field="age"
+              bindinput="onInputChange"
+            />
+            <text class="item-unit">岁</text>
+          </view>
         </view>
         
         <view class="form-item">
-          <text class="form-label">身高</text>
-          <input 
-            type="digit" 
-            value="{{profile.height}}" 
-            class="form-input"
-            data-field="height"
-            bindinput="onInputChange"
-          />
-          <text class="form-unit">cm</text>
+          <view class="item-left">
+            <text class="item-icon">📏</text>
+            <text class="item-label">身高</text>
+          </view>
+          <view class="item-right">
+            <input 
+              type="digit" 
+              value="{{profile.height}}" 
+              class="item-input"
+              data-field="height"
+              bindinput="onInputChange"
+            />
+            <text class="item-unit">cm</text>
+          </view>
         </view>
         
         <view class="form-item">
-          <text class="form-label">体重</text>
-          <input 
-            type="digit" 
-            value="{{profile.weight}}" 
-            class="form-input"
-            data-field="weight"
-            bindinput="onInputChange"
-          />
-          <text class="form-unit">kg</text>
+          <view class="item-left">
+            <text class="item-icon">⚖️</text>
+            <text class="item-label">体重</text>
+          </view>
+          <view class="item-right">
+            <input 
+              type="digit" 
+              value="{{profile.weight}}" 
+              class="item-input"
+              data-field="weight"
+              bindinput="onInputChange"
+            />
+            <text class="item-unit">kg</text>
+          </view>
         </view>
         
-        <view class="form-item">
-          <text class="form-label">活动水平</text>
-          <picker 
-            mode="selector" 
-            range="{{activityLevels}}" 
-            range-key="label" 
-            value="{{activityIndex}}"
-            bindchange="onActivityChange"
-          >
-            <view class="form-value">
-              <text>{{activityLabel}}</text>
-              <text class="arrow">›</text>
-            </view>
-          </picker>
+        <view class="form-item" bindtap="showActivityPicker">
+          <view class="item-left">
+            <text class="item-icon">🏃</text>
+            <text class="item-label">活动水平</text>
+          </view>
+          <view class="item-right">
+            <text class="item-value">{{activityLevels[activityIndex].label}}</text>
+            <text class="item-arrow">›</text>
+          </view>
         </view>
         
-        <view class="form-item">
-          <text class="form-label">目标</text>
-          <picker 
-            mode="selector" 
-            range="{{goals}}" 
-            range-key="label" 
-            value="{{goalIndex}}"
-            bindchange="onGoalChange"
-          >
-            <view class="form-value">
-              <text>{{goalLabel}}</text>
-              <text class="arrow">›</text>
-            </view>
-          </picker>
+        <view class="form-item" bindtap="showGoalPicker">
+          <view class="item-left">
+            <text class="item-icon">🎯</text>
+            <text class="item-label">健康目标</text>
+          </view>
+          <view class="item-right">
+            <text class="item-value">{{goals[goalIndex].label}}</text>
+            <text class="item-arrow">›</text>
+          </view>
         </view>
       </view>
     </view>
     
-    <view class="targets-card">
-      <view class="card-header">
-        <text class="card-title">每日营养目标</text>
-        <text class="card-subtitle">根据您的资料自动计算</text>
+    <view class="menu-section">
+      <view class="menu-item" bindtap="onMenuTap" data-path="/pages/history/index">
+        <view class="menu-left">
+          <text class="menu-icon">📋</text>
+          <text class="menu-title">历史记录</text>
+        </view>
+        <text class="menu-arrow">›</text>
       </view>
       
-      <view class="targets-grid">
-        <view class="target-item">
-          <text class="target-value">{{targets.calories}}</text>
-          <text class="target-unit">kcal</text>
-          <text class="target-label">热量</text>
+      <view class="menu-item" bindtap="onMenuTap" data-path="/pages/settings/index">
+        <view class="menu-left">
+          <text class="menu-icon">⚙️</text>
+          <text class="menu-title">设置</text>
         </view>
-        <view class="target-item">
-          <text class="target-value">{{targets.protein}}</text>
-          <text class="target-unit">g</text>
-          <text class="target-label">蛋白质</text>
-        </view>
-        <view class="target-item">
-          <text class="target-value">{{targets.fat}}</text>
-          <text class="target-unit">g</text>
-          <text class="target-label">脂肪</text>
-        </view>
-        <view class="target-item">
-          <text class="target-value">{{targets.carbohydrate}}</text>
-          <text class="target-unit">g</text>
-          <text class="target-label">碳水</text>
-        </view>
-      </view>
-    </view>
-    
-    <view class="menu-card">
-      <view 
-        class="menu-item" 
-        wx:for="{{menuItems}}" 
-        wx:key="title"
-        data-path="{{item.path}}"
-        bindtap="onMenuTap"
-      >
-        <text class="menu-icon">{{item.icon === 'history' ? '📋' : item.icon === 'settings' ? '⚙️' : item.icon === 'feedback' ? '💬' : 'ℹ️'}}</text>
-        <text class="menu-title">{{item.title}}</text>
         <text class="menu-arrow">›</text>
       </view>
     </view>
     
     <view class="save-section">
       <button class="save-btn" bindtap="saveProfile">保存资料</button>
+    </view>
+  </view>
+</view>
+
+<view class="picker-modal {{showGoalPicker ? 'show' : ''}}" catchtouchmove="preventTouchMove">
+  <view class="picker-backdrop" bindtap="hideGoalPicker"></view>
+  <view class="picker-container">
+    <view class="picker-header">
+      <text class="picker-title">选择健康目标</text>
+      <view class="picker-close" bindtap="hideGoalPicker">
+        <text>✕</text>
+      </view>
+    </view>
+    <view class="picker-options">
+      <view class="picker-option {{goalIndex === index ? 'active' : ''}}" wx:for="{{goals}}" wx:key="value" data-index="{{index}}" bindtap="onGoalSelect">
+        <view class="option-left">
+          <text class="option-icon">{{item.icon}}</text>
+          <view class="option-content">
+            <text class="option-title">{{item.label}}</text>
+            <text class="option-desc">{{item.desc}}</text>
+          </view>
+        </view>
+        <view class="option-check" wx:if="{{goalIndex === index}}">
+          <text>✓</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
+
+<view class="picker-modal {{showActivityPicker ? 'show' : ''}}" catchtouchmove="preventTouchMove">
+  <view class="picker-backdrop" bindtap="hideActivityPicker"></view>
+  <view class="picker-container">
+    <view class="picker-header">
+      <text class="picker-title">选择活动水平</text>
+      <view class="picker-close" bindtap="hideActivityPicker">
+        <text>✕</text>
+      </view>
+    </view>
+    <view class="picker-options">
+      <view class="picker-option {{activityIndex === index ? 'active' : ''}}" wx:for="{{activityLevels}}" wx:key="value" data-index="{{index}}" bindtap="onActivitySelect">
+        <view class="option-content">
+          <text class="option-title">{{item.label}}</text>
+          <text class="option-desc">{{item.desc}}</text>
+        </view>
+        <view class="option-check" wx:if="{{activityIndex === index}}">
+          <text>✓</text>
+        </view>
+      </view>
     </view>
   </view>
 </view>
