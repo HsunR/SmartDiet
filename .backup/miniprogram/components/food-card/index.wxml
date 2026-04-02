@@ -1,0 +1,96 @@
+<view class="food-card">
+  <view class="card-header">
+    <view class="header-left">
+      <text class="card-title">识别结果</text>
+      <view class="score-badge" style="background-color: {{scoreColor}}">
+        <text>{{mealOverview.overallHealthScore}}分</text>
+      </view>
+      <view class="rating-badge">
+        <text class="rating-label">您的评分：</text>
+        <text class="rating-value">{{rating === 0 ? '待定' : rating + '星'}}</text>
+      </view>
+    </view>
+    <text class="card-calories">{{mealOverview.totalCalories || 0}} kcal</text>
+  </view>
+  
+  <view class="meal-overview">
+    <view class="health-score-section">
+      <view class="score-circle" style="background: conic-gradient({{scoreColor}} {{mealOverview.overallHealthScore}}, #E8E8E8 {{mealOverview.overallHealthScore}})">
+        <view class="score-inner">
+          <text class="score-number">{{mealOverview.overallHealthScore}}</text>
+          <text class="score-label">健康评分</text>
+        </view>
+      </view>
+    </view>
+    
+    <view class="health-tags-section">
+      <view class="tags-row" wx:if="{{mealOverview.healthTags.positive.length > 0}}">
+        <view class="tag tag-positive" wx:for="{{mealOverview.healthTags.positive}}" wx:key="*this">
+          <text class="tag-icon">✓</text>
+          <text>{{item}}</text>
+        </view>
+      </view>
+      <view class="tags-row" wx:if="{{mealOverview.healthTags.warning.length > 0}}">
+        <view class="tag tag-warning" wx:for="{{mealOverview.healthTags.warning}}" wx:key="*this">
+          <text class="tag-icon">!</text>
+          <text>{{item}}</text>
+        </view>
+      </view>
+    </view>
+    
+    <view class="meal-summary">
+      <text>{{mealOverview.summary}}</text>
+    </view>
+  </view>
+  
+  <view class="food-list">
+    <view 
+      class="food-item" 
+      wx:for="{{processedFoods}}" 
+      wx:key="id"
+    >
+      <view class="food-main" data-index="{{index}}" bindtap="onFoodTap">
+        <view class="food-icon">
+          <text>{{item.categoryIcon}}</text>
+        </view>
+        
+        <view class="food-info">
+          <view class="food-name">{{item.name}}</view>
+          <view class="food-meta">
+            <text class="food-category">{{item.category}}</text>
+            <text class="food-weight">{{item.estimatedWeight}}g</text>
+          </view>
+          <view class="food-tags" wx:if="{{item.tags.positive.length > 0 || item.tags.warning.length > 0}}">
+            <text class="food-tag tag-positive" wx:for="{{item.tags.positive}}" wx:key="*this">✓ {{item}}</text>
+            <text class="food-tag tag-warning" wx:for="{{item.tags.warning}}" wx:key="*this">! {{item}}</text>
+          </view>
+        </view>
+        
+        <view class="food-right">
+          <text class="nutrient-value">{{item.displayCalories}} kcal</text>
+        </view>
+      </view>
+      
+      <view class="food-advice" wx:if="{{item.advice}}">
+        <text class="advice-text">{{item.advice}}</text>
+      </view>
+    </view>
+  </view>
+  
+  <view class="dietary-advice" wx:if="{{dietaryAdvice}}">
+    <view class="advice-header">
+      <text class="advice-icon">💡</text>
+      <text class="advice-title">饮食建议</text>
+    </view>
+    <text class="advice-content">{{dietaryAdvice}}</text>
+  </view>
+  
+  <view class="card-actions" wx:if="{{editable && !actionCompleted}}">
+    <button class="action-btn edit-btn" bindtap="onEdit" hover-class="edit-btn-hover">
+      <text>修改</text>
+    </button>
+    <button class="action-btn confirm-btn" bindtap="onConfirm" hover-class="confirm-btn-hover">
+      <text>确认记录</text>
+    </button>
+  </view>
+</view>

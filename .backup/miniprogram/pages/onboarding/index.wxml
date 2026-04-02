@@ -1,0 +1,107 @@
+<view class="onboarding-container">
+  <view class="progress-bar">
+    <view class="progress-fill" style="width: {{(currentStep + 1) / steps.length * 100}}%"></view>
+  </view>
+  
+  <view class="step-indicator">
+    <text class="step-text">{{currentStep + 1}} / {{steps.length}}</text>
+  </view>
+  
+  <view class="step-content">
+    <view class="step-title">{{steps[currentStep].title}}</view>
+    <view class="step-subtitle">{{steps[currentStep].subtitle}}</view>
+    
+    <view class="step-body">
+      <view wx:if="{{steps[currentStep].type === 'gender'}}" class="gender-selector">
+        <view 
+          class="gender-option {{profile.gender === 1 ? 'gender-selected' : ''}}"
+          bindtap="onGenderSelect"
+          data-gender="1"
+        >
+          <text class="gender-icon">👨</text>
+          <text class="gender-label">男</text>
+        </view>
+        <view 
+          class="gender-option {{profile.gender === 2 ? 'gender-selected' : ''}}"
+          bindtap="onGenderSelect"
+          data-gender="2"
+        >
+          <text class="gender-icon">👩</text>
+          <text class="gender-label">女</text>
+        </view>
+      </view>
+      
+      <view wx:elif="{{steps[currentStep].type === 'number'}}" class="number-input-section">
+        <view class="number-display">
+          <text class="number-value">{{profile[steps[currentStep].field] || steps[currentStep].min}}</text>
+          <text class="number-unit">{{steps[currentStep].unit}}</text>
+        </view>
+        <slider 
+          class="number-slider"
+          min="{{steps[currentStep].min}}"
+          max="{{steps[currentStep].max}}"
+          value="{{profile[steps[currentStep].field] || steps[currentStep].default}}"
+          step="{{steps[currentStep].step || 1}}"
+          block-size="28"
+          activeColor="#4CAF50"
+          backgroundColor="#E8F5E9"
+          data-field="{{steps[currentStep].field}}"
+          bindchange="onSliderChange"
+          bindchanging="onSliderChanging"
+        />
+        <view class="slider-labels">
+          <text>{{steps[currentStep].min}}</text>
+          <text>{{steps[currentStep].max}}</text>
+        </view>
+      </view>
+      
+      <view wx:elif="{{steps[currentStep].type === 'activity'}}" class="activity-selector">
+        <view 
+          class="activity-option {{profile.activityLevel === item.value ? 'activity-selected' : ''}}"
+          wx:for="{{activityLevels}}"
+          wx:key="value"
+          bindtap="onActivitySelect"
+          data-value="{{item.value}}"
+        >
+          <text class="activity-icon">{{item.icon}}</text>
+          <view class="activity-info">
+            <text class="activity-label">{{item.label}}</text>
+            <text class="activity-desc">{{item.desc}}</text>
+          </view>
+        </view>
+      </view>
+      
+      <view wx:elif="{{steps[currentStep].type === 'goal'}}" class="goal-selector">
+        <view 
+          class="goal-option {{profile.goal === item.value ? 'goal-selected' : ''}}"
+          wx:for="{{goals}}"
+          wx:key="value"
+          bindtap="onGoalSelect"
+          data-value="{{item.value}}"
+        >
+          <text class="goal-icon">{{item.icon}}</text>
+          <view class="goal-info">
+            <text class="goal-label">{{item.label}}</text>
+            <text class="goal-desc">{{item.desc}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <view class="navigation-buttons">
+    <view 
+      wx:if="{{currentStep > 0}}" 
+      class="nav-btn nav-btn-secondary"
+      bindtap="onPrevStep"
+    >
+      <text>上一步</text>
+    </view>
+    <view 
+      class="nav-btn nav-btn-primary {{currentStep === 0 ? 'nav-btn-full' : ''}}"
+      bindtap="onNextStep"
+    >
+      <text>{{currentStep === steps.length - 1 ? '完成' : '下一步'}}</text>
+    </view>
+  </view>
+</view>

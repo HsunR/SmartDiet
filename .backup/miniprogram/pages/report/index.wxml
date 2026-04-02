@@ -1,0 +1,373 @@
+<wxs src="../../utils/utils.wxs" module="utils" />
+<view class="report-container">
+  <view class="date-header">
+    <view class="date-nav" bindtap="onPrevWeek">
+      <text>‹</text>
+    </view>
+    <picker mode="date" value="{{currentDate}}" bindchange="onDateChange">
+      <view class="date-picker">
+        <text class="date-text">{{weekRange}}</text>
+        <text class="date-arrow">▼</text>
+      </view>
+    </picker>
+    <view class="date-nav" bindtap="onNextWeek">
+      <text>›</text>
+    </view>
+  </view>
+  
+  <view wx:if="{{loading}}" class="loading-container">
+    <view class="loading-spinner"></view>
+    <text>加载中...</text>
+  </view>
+  
+  <view wx:else class="calendar-wrapper">
+    <view class="calendar-table">
+      <scroll-view 
+        class="calendar-scroll" 
+        scroll-x 
+        scroll-left="{{scrollLeft}}"
+        enhanced
+        show-scrollbar="{{false}}"
+        bounces="{{false}}"
+      >
+        <view class="calendar-content">
+          <view class="calendar-header">
+            <view class="header-cell meal-type-header">餐次</view>
+            <view class="header-days">
+              <view class="header-cell day-cell {{item.isToday ? 'today' : ''}}" wx:for="{{weekDays}}" wx:key="date">
+                <text class="day-name">{{item.dayName}}</text>
+                <text class="day-date">{{item.dayNum}}</text>
+              </view>
+            </view>
+          </view>
+          
+          <view class="calendar-body">
+            <view class="calendar-row" wx:for="{{mealTypes}}" wx:key="type">
+              <view class="meal-type-cell">
+                <text class="meal-icon">{{item.icon}}</text>
+                <text class="meal-label">{{item.label}}</text>
+              </view>
+              
+              <view class="cells-row">
+                <view 
+                  class="calendar-cell {{day.isToday ? 'today-cell' : ''}}" 
+                  wx:for="{{weekDays}}" 
+                  wx:for-item="day"
+                  wx:key="date"
+                  data-date="{{day.date}}"
+                  data-meal="{{item.type}}"
+                  bindtap="onCellTap"
+                >
+                  <view wx:if="{{calendarData[day.date][item.type].length > 0}}" class="cell-content">
+                    <swiper 
+                      wx:if="{{calendarData[day.date][item.type].length > 1}}"
+                      class="cell-swiper"
+                      autoplay="{{true}}"
+                      interval="{{3000}}"
+                      duration="{{500}}"
+                      circular="{{true}}"
+                      indicator-dots="{{false}}"
+                    >
+                      <swiper-item wx:for="{{calendarData[day.date][item.type]}}" wx:for-item="record" wx:key="_id">
+                        <view class="swiper-record">
+                          <image 
+                            wx:if="{{record.imageUrl}}" 
+                            src="{{record.imageUrl}}" 
+                            class="cell-image"
+                            mode="aspectFill"
+                          ></image>
+                          <view class="cell-foods">
+                            <text class="food-name" wx:for="{{record.foods}}" wx:for-item="food" wx:key="name">{{food.name}}</text>
+                          </view>
+                          <view class="cell-rating" wx:if="{{record.rating !== undefined}}">
+                            <text class="rating-stars">{{utils.getRatingStars(record.rating)}}</text>
+                          </view>
+                          <view class="cell-tags">
+                            <text class="tag-positive" wx:for="{{record.healthTags.positive || []}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+                            <text class="tag-warning" wx:for="{{record.healthTags.warning || []}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+                          </view>
+                        </view>
+                      </swiper-item>
+                    </swiper>
+                    
+                    <view wx:else class="single-record">
+                      <image 
+                        wx:if="{{calendarData[day.date][item.type][0].imageUrl}}" 
+                        src="{{calendarData[day.date][item.type][0].imageUrl}}" 
+                        class="cell-image"
+                        mode="aspectFill"
+                      ></image>
+                      <view class="cell-foods">
+                        <text class="food-name" wx:for="{{calendarData[day.date][item.type][0].foods}}" wx:for-item="food" wx:key="name">{{food.name}}</text>
+                      </view>
+                      <view class="cell-rating" wx:if="{{calendarData[day.date][item.type][0].rating !== undefined}}">
+                        <text class="rating-stars">{{utils.getRatingStars(calendarData[day.date][item.type][0].rating)}}</text>
+                      </view>
+                      <view class="cell-tags">
+                        <text class="tag-positive" wx:for="{{calendarData[day.date][item.type][0].healthTags.positive || []}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+                        <text class="tag-warning" wx:for="{{calendarData[day.date][item.type][0].healthTags.warning || []}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+                      </view>
+                    </view>
+                    
+                    <view wx:if="{{calendarData[day.date][item.type].length > 1}}" class="record-count">
+                      <text>{{calendarData[day.date][item.type].length}}条</text>
+                    </view>
+                  </view>
+                  <view wx:else class="cell-empty">
+                    <text class="empty-icon">+</text>
+                  </view>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+  
+  <view class="weekly-report-section">
+    <view class="report-header">
+      <view class="header-content">
+        <text class="report-title">📊 本周营养报告</text>
+        <text class="report-subtitle">{{weekRange}}</text>
+      </view>
+    </view>
+    
+    <view class="report-chart-section">
+      <view class="chart-header">
+        <text class="chart-title">📈 每日餐均热量</text>
+      </view>
+      <view class="chart-container">
+        <view class="chart-y-axis">
+          <text class="y-label">{{weekSummary.maxCalories || 800}}</text>
+          <text class="y-label">{{(weekSummary.maxCalories || 800) / 2}}</text>
+          <text class="y-label">0</text>
+        </view>
+        <view class="chart-area">
+          <view class="chart-grid">
+            <view class="grid-line"></view>
+            <view class="grid-line"></view>
+            <view class="grid-line"></view>
+          </view>
+          <view class="chart-line-wrapper">
+            <view class="chart-line-points">
+              <view class="line-point {{item.isToday ? 'today' : ''}}" wx:for="{{weekSummary.dailyAvgCalories}}" wx:key="date" style="bottom: {{item.calories > 0 ? (item.calories / (weekSummary.maxCalories || 800) * 100) : 0}}">
+                <view class="point-dot"></view>
+                <text class="point-value" wx:if="{{item.calories > 0}}">{{item.calories}}</text>
+              </view>
+            </view>
+            <view class="chart-line-svg">
+              <view class="line-segment" wx:for="{{weekSummary.dailyAvgCalories}}" wx:key="date" wx:if="{{index < 6}}" style="transform: rotate({{calculateLineAngle(index, weekSummary.dailyAvgCalories, weekSummary.maxCalories || 800)}}deg); width: {{calculateLineWidth(index, weekSummary.dailyAvgCalories, weekSummary.maxCalories || 800)}}rpx;"></view>
+            </view>
+          </view>
+          <view class="chart-x-labels">
+            <text class="x-label {{item.isToday ? 'today' : ''}}" wx:for="{{weekSummary.dailyAvgCalories}}" wx:key="date">{{item.dayName}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="chart-summary">
+        <view class="summary-item">
+          <text class="summary-label">本周总热量</text>
+          <text class="summary-value">{{weekSummary.totalCalories}} kcal</text>
+        </view>
+        <view class="summary-item">
+          <text class="summary-label">用餐次数</text>
+          <text class="summary-value">{{weekSummary.mealCount}} 次</text>
+        </view>
+      </view>
+    </view>
+    
+    <view class="report-empty" wx:if="{{weekSummary.mealCount === 0}}">
+      <view class="empty-icon">
+        <text>📝</text>
+      </view>
+      <text class="empty-title">暂无数据</text>
+      <text class="empty-desc">本周还没有记录饮食，快去记录吧~</text>
+      <button class="empty-btn" bindtap="navigateToChat">
+        <text>开始记录</text>
+      </button>
+    </view>
+  </view>
+</view>
+
+<view class="meal-detail-modal {{showDetailModal ? 'show' : ''}}" catchtouchmove="preventTouchMove">
+  <view class="modal-backdrop" bindtap="closeDetailModal"></view>
+  
+  <view class="modal-container">
+    <view class="modal-header">
+      <view class="header-left">
+        <text class="modal-title">{{detailMealType}}</text>
+        <text class="modal-date">{{detailDate}}</text>
+      </view>
+      <view class="header-right">
+        <view class="edit-btn" bindtap="toggleEdit">
+          <text>{{isEditing ? '取消' : '编辑'}}</text>
+        </view>
+        <view class="close-btn" bindtap="closeDetailModal">
+          <text>✕</text>
+        </view>
+      </view>
+    </view>
+    
+    <view class="modal-pagination" wx:if="{{totalRecords > 1}}">
+      <view class="pagination-btn {{currentRecordIndex === 0 ? 'disabled' : ''}}" bindtap="onPrevRecord">
+        <text>‹</text>
+      </view>
+      <text class="pagination-text">{{currentRecordIndex + 1}} / {{totalRecords}}</text>
+      <view class="pagination-btn {{currentRecordIndex === totalRecords - 1 ? 'disabled' : ''}}" bindtap="onNextRecord">
+        <text>›</text>
+      </view>
+    </view>
+    
+    <swiper 
+      class="modal-swiper" 
+      current="{{currentRecordIndex}}"
+      bindchange="onSwiperChange"
+      wx:if="{{currentRecords.length > 0}}"
+    >
+      <swiper-item wx:for="{{currentRecords}}" wx:key="_id">
+        <scroll-view scroll-y class="modal-body">
+          <view class="detail-content">
+            <view class="detail-image-section" wx:if="{{item.imageUrl}}">
+              <image src="{{item.imageUrl}}" class="detail-image" mode="aspectFill"></image>
+            </view>
+            
+            <view class="detail-score-section">
+              <view class="score-circle" style="background: conic-gradient({{item.mealOverview.overallHealthScore >= 80 ? '#4CAF50' : item.mealOverview.overallHealthScore >= 60 ? '#FF9800' : '#F44336'}} {{item.mealOverview.overallHealthScore || 60}}, #E8E8E8 {{item.mealOverview.overallHealthScore || 60}})">
+                <view class="score-inner">
+                  <text class="score-number">{{item.mealOverview.overallHealthScore || 60}}</text>
+                  <text class="score-label">健康评分</text>
+                </view>
+              </view>
+              
+              <view class="score-info">
+                <view class="info-item">
+                  <text class="info-label">热量</text>
+                  <text class="info-value">{{item.totalCalories || 0}} kcal</text>
+                </view>
+                <view class="info-item">
+                  <text class="info-label">评分</text>
+                  <text class="info-value">{{item.rating === 0 ? '待定' : item.rating + '星'}}</text>
+                </view>
+                <view class="score-tags" wx:if="{{item.healthTags && (item.healthTags.positive.length > 0 || item.healthTags.warning.length > 0)}}">
+                  <text class="score-tag tag-positive" wx:for="{{item.healthTags.positive || []}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+                  <text class="score-tag tag-warning" wx:for="{{item.healthTags.warning || []}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+                </view>
+              </view>
+            </view>
+            
+            <view class="detail-foods-section" wx:if="{{item.foods && item.foods.length > 0}}">
+              <view class="section-header">
+                <view class="header-icon">
+                  <text>🍽️</text>
+                </view>
+                <text class="header-title">食物清单</text>
+                <text class="header-count">{{item.foods.length}}种</text>
+              </view>
+              
+              <view class="foods-list">
+                <view class="food-item" wx:for="{{item.foods}}" wx:for-item="food" wx:key="name">
+                  <view class="food-main">
+                    <view class="food-info">
+                      <text class="food-name">{{food.name}}</text>
+                      <view class="food-tags" wx:if="{{food.tags && food.tags.length > 0}}">
+                        <text class="food-tag" wx:for="{{food.tags}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+                      </view>
+                    </view>
+                    <text class="food-calories">{{food.calories || 0}} kcal</text>
+                  </view>
+                  <view class="food-meta">
+                    <text class="food-weight" wx:if="{{food.weight}}">{{food.weight}}g</text>
+                    <text class="food-category" wx:if="{{food.category}}">{{food.category}}</text>
+                  </view>
+                  <view class="food-advice" wx:if="{{food.advice}}">
+                    <text>💡 {{food.advice}}</text>
+                  </view>
+                </view>
+              </view>
+            </view>
+            
+            <view class="detail-tags-section" wx:if="{{item.healthTags && (item.healthTags.positive.length > 0 || item.healthTags.warning.length > 0)}}">
+              <view class="section-header">
+                <view class="header-icon">
+                  <text>🏷️</text>
+                </view>
+                <text class="header-title">健康标签</text>
+              </view>
+              
+              <view class="tags-grid">
+                <view class="tag-item tag-positive" wx:for="{{item.healthTags.positive || []}}" wx:key="*this">
+                  <text class="tag-icon">✓</text>
+                  <text class="tag-text">{{item}}</text>
+                </view>
+                <view class="tag-item tag-warning" wx:for="{{item.healthTags.warning || []}}" wx:key="*this">
+                  <text class="tag-icon">⚠️</text>
+                  <text class="tag-text">{{item}}</text>
+                </view>
+              </view>
+            </view>
+            
+            <view class="detail-advice-section" wx:if="{{item.dietaryAdvice}}">
+              <view class="section-header">
+                <view class="header-icon">
+                  <text>💡</text>
+                </view>
+                <text class="header-title">饮食建议</text>
+              </view>
+              
+              <view class="advice-card">
+                <text class="advice-text">{{item.dietaryAdvice}}</text>
+              </view>
+            </view>
+          </view>
+        </scroll-view>
+      </swiper-item>
+    </swiper>
+    
+    <scroll-view scroll-y class="modal-body" wx:if="{{isEditing && detailData}}">
+      <view class="detail-content edit-mode">
+        <view class="edit-header">
+          <text class="edit-title">编辑食物信息</text>
+        </view>
+        
+        <view class="edit-foods-list">
+          <view class="edit-food-item" wx:for="{{editFoods}}" wx:key="name">
+            <view class="edit-food-row">
+              <text class="edit-label">名称</text>
+              <input 
+                class="edit-input" 
+                value="{{item.name}}" 
+                data-index="{{index}}"
+                bindinput="onEditFoodName"
+              />
+            </view>
+            <view class="edit-food-row">
+              <text class="edit-label">热量</text>
+              <input 
+                class="edit-input" 
+                type="number"
+                value="{{item.calories}}" 
+                data-index="{{index}}"
+                bindinput="onEditFoodCalories"
+              />
+              <text class="edit-unit">kcal</text>
+            </view>
+            <view class="edit-food-row">
+              <text class="edit-label">重量</text>
+              <input 
+                class="edit-input" 
+                type="number"
+                value="{{item.weight}}" 
+                data-index="{{index}}"
+                bindinput="onEditFoodWeight"
+              />
+              <text class="edit-unit">g</text>
+            </view>
+          </view>
+        </view>
+        
+        <button class="save-edit-btn" bindtap="saveEdit">保存修改</button>
+      </view>
+    </scroll-view>
+  </view>
+</view>

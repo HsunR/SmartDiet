@@ -1,0 +1,10 @@
+{
+  "functions": [
+    {
+      "name": "aiGateway",
+      "timeout": 120,
+      "memorySize": 1024,
+      "runtime": "Nodejs16.13"
+    }
+  ]
+}

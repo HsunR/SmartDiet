@@ -1,0 +1,283 @@
+.btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24rpx 48rpx;
+  border-radius: 16rpx;
+  font-size: 32rpx;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background-color: #4CAF50;
+  color: #FFFFFF;
+}
+
+.btn-primary:active {
+  background-color: #43A047;
+}
+
+.btn-secondary {
+  background-color: #E8F5E9;
+  color: #4CAF50;
+}
+
+.btn-secondary:active {
+  background-color: #C8E6C9;
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 2rpx solid #4CAF50;
+  color: #4CAF50;
+}
+
+.btn-outline:active {
+  background-color: #E8F5E9;
+}
+
+.btn-disabled {
+  background-color: #EEEEEE;
+  color: #BDBDBD;
+}
+
+.btn-sm {
+  padding: 16rpx 32rpx;
+  font-size: 28rpx;
+}
+
+.btn-lg {
+  padding: 32rpx 64rpx;
+  font-size: 36rpx;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.card {
+  background-color: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 16rpx;
+  border-bottom: 1rpx solid #EEEEEE;
+  margin-bottom: 16rpx;
+}
+
+.card-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #212121;
+}
+
+.card-body {
+  padding: 16rpx 0;
+}
+
+.card-footer {
+  padding-top: 16rpx;
+  border-top: 1rpx solid #EEEEEE;
+  margin-top: 16rpx;
+}
+
+.input {
+  width: 100%;
+  padding: 24rpx;
+  background-color: #FAFAFA;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  color: #212121;
+  border: 2rpx solid transparent;
+  transition: all 0.2s ease;
+}
+
+.input:focus {
+  background-color: #FFFFFF;
+  border-color: #4CAF50;
+}
+
+.input-placeholder {
+  color: #BDBDBD;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 8rpx 16rpx;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+}
+
+.tag-primary {
+  background-color: #E8F5E9;
+  color: #4CAF50;
+}
+
+.tag-warning {
+  background-color: #FFF3E0;
+  color: #FF9800;
+}
+
+.tag-error {
+  background-color: #FFEBEE;
+  color: #F44336;
+}
+
+.tag-success {
+  background-color: #E8F5E9;
+  color: #66BB6A;
+}
+
+.badge {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 32rpx;
+  height: 32rpx;
+  padding: 0 8rpx;
+  border-radius: 16rpx;
+  background-color: #F44336;
+  color: #FFFFFF;
+  font-size: 20rpx;
+}
+
+.avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.avatar image {
+  width: 100%;
+  height: 100%;
+}
+
+.avatar-sm {
+  width: 48rpx;
+  height: 48rpx;
+}
+
+.avatar-lg {
+  width: 120rpx;
+  height: 120rpx;
+}
+
+.divider {
+  height: 1rpx;
+  background-color: #EEEEEE;
+  margin: 24rpx 0;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 48rpx;
+}
+
+.loading-spinner {
+  width: 48rpx;
+  height: 48rpx;
+  border: 4rpx solid #E8F5E9;
+  border-top-color: #4CAF50;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 96rpx 48rpx;
+}
+
+.empty-icon {
+  width: 160rpx;
+  height: 160rpx;
+  margin-bottom: 32rpx;
+  opacity: 0.5;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #757575;
+  text-align: center;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 16rpx;
+  background-color: #EEEEEE;
+  border-radius: 8rpx;
+  overflow: hidden;
+}
+
+.progress-bar-inner {
+  height: 100%;
+  border-radius: 8rpx;
+  transition: width 0.3s ease;
+}
+
+.progress-bar-primary .progress-bar-inner {
+  background-color: #4CAF50;
+}
+
+.progress-bar-warning .progress-bar-inner {
+  background-color: #FF9800;
+}
+
+.progress-bar-error .progress-bar-inner {
+  background-color: #F44336;
+}
+
+.modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  max-width: 600rpx;
+  background-color: #FFFFFF;
+  border-radius: 24rpx;
+  z-index: 1001;
+  overflow: hidden;
+}
+
+.toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 24rpx 48rpx;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #FFFFFF;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  z-index: 2000;
+}
