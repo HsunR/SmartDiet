@@ -36,3 +36,6 @@ miniprogram/assets/images/
 
 *.tmp
 *.temp
+
+.worktrees/
+worktrees/
