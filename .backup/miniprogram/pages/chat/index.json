@@ -1,8 +1,0 @@
-{
-  "navigationBarTitleText": "AI营养师",
-  "enablePullDownRefresh": true,
-  "backgroundTextStyle": "dark",
-  "usingComponents": {
-    "food-card": "/components/food-card/index"
-  }
-}
