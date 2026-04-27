@@ -100,13 +100,13 @@ Page({
   },
 
   onQuickAction(e) {
-    const { action } = e.currentTarget.dataset
+    const { actionId } = e.detail
     const actions = {
       photo: () => this.chooseImage(),
       report: () => wx.switchTab({ url: '/pages/report/index' }),
       recommend: () => this.getRecommendation()
     }
-    actions[action]?.()
+    actions[actionId]?.()
   },
 
   onInputFocus() { this.setData({ inputFocus: true }) },

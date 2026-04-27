@@ -145,8 +145,8 @@
           />
         </view>
         
-        <!-- 消息时间戳（仅当组件未显示时间时） -->
-        <view class="message-time" wx:if="{{item.timestamp && item.type !== 'text'}}">
+        <!-- 消息时间戳 -->
+        <view class="message-time" wx:if="{{item.timestamp}}">
           <text class="text">{{utils.formatTime(item.timestamp)}}</text>
         </view>
       </view>
