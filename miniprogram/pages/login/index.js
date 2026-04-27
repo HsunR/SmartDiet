@@ -1,18 +1,37 @@
+/**
+ * 登录页面 - 用户登录和云环境初始化
+ * 提供微信登录和错误处理功能
+ * @page login
+ * @version 1.0.0
+ */
+
 const app = getApp()
 
 Page({
+  /**
+   * 页面数据
+   */
   data: {
-    loading: true,
-    userInfo: null,
-    cloudReady: false
+    loading: true,       // 是否正在加载
+    userInfo: null,      // 用户信息
+    cloudReady: false    // 云环境是否就绪
   },
 
+  /**
+   * 页面生命周期回调 - 监听页面加载
+   * 初始化云开发环境
+   */
   onLoad: function() {
     this.initCloud()
   },
 
+  /**
+   * 初始化云开发环境
+   * 检测基础库版本并初始化云服务
+   */
   initCloud: async function() {
     try {
+      // 检查基础库是否支持云开发
       if (!wx.cloud) {
         this.setData({
           loading: false,
@@ -21,6 +40,7 @@ Page({
         return
       }
       
+      // 初始化云环境
       await wx.cloud.init({
         env: 'cloud1-5g94ikff8709bdba',
         traceUser: true
@@ -42,6 +62,10 @@ Page({
     }
   },
 
+  /**
+   * 检查用户登录状态
+   * 如果已登录则直接跳转到聊天页
+   */
   checkLogin: function() {
     if (app.globalData.hasLogin) {
       wx.switchTab({
@@ -50,6 +74,10 @@ Page({
     }
   },
 
+  /**
+   * 用户登录处理函数
+   * 调用云函数进行用户登录/注册
+   */
   onLogin: async function() {
     if (!this.data.cloudReady) {
       wx.showModal({
@@ -74,6 +102,7 @@ Page({
         const result = loginResult.result
         
         if (result.success) {
+          // 设置全局登录状态
           app.globalData.hasLogin = true
           app.globalData.openid = result.openid
           
@@ -84,11 +113,14 @@ Page({
           
           wx.hideLoading()
           
+          // 根据用户资料完整性跳转到不同页面
           if (result.data && result.data.age && result.data.height && result.data.weight) {
+            // 资料完整，进入聊天页
             wx.switchTab({
               url: '/pages/chat/index'
             })
           } else {
+            // 资料不完整，进入引导页
             wx.redirectTo({
               url: '/pages/onboarding/index'
             })
@@ -96,23 +128,20 @@ Page({
           return
         }
         
+        // 数据库集合不存在，提示用户初始化
         if (result.needInit) {
           wx.hideLoading()
           wx.showModal({
             title: '需要初始化',
-            content: '数据库集合不存在，请前往云开发控制台创建 users 集合，或点击"跳过登录"先体验功能',
+            content: '数据库集合不存在，请前往云开发控制台创建 users 集合',
             confirmText: '去控制台',
-            cancelText: '跳过登录',
-            success: (res) => {
-              if (res.confirm) {
-                wx.showModal({
-                  title: '提示',
-                  content: '请在微信开发者工具中：云开发控制台 -> 数据库 -> 添加集合 -> 输入 users',
-                  showCancel: false
-                })
-              } else {
-                this.skipLogin()
-              }
+            showCancel: false,
+            success: () => {
+              wx.showModal({
+                title: '提示',
+                content: '请在微信开发者工具中：云开发控制台 -> 数据库 -> 添加集合 -> 输入 users',
+                showCancel: false
+              })
             }
           })
           return
@@ -128,8 +157,8 @@ Page({
       wx.hideLoading()
       
       let errorMsg = '登录失败，请重试'
-      let showSkip = true
       
+      // 错误类型判断和提示
       if (error.errMsg) {
         if (error.errMsg.includes('not deployed') || error.errMsg.includes('FunctionName')) {
           errorMsg = '云函数未部署，请右键 cloudfunctions/user 文件夹选择"上传并部署"'
@@ -144,19 +173,17 @@ Page({
       
       wx.showModal({
         title: '登录失败',
-        content: errorMsg + (showSkip ? '\n\n您可以选择"跳过登录"先体验功能' : ''),
-        showCancel: showSkip,
-        cancelText: '跳过登录',
-        confirmText: '重试',
-        success: (res) => {
-          if (res.cancel) {
-            this.skipLogin()
-          }
-        }
+        content: errorMsg,
+        showCancel: false,
+        confirmText: '重试'
       })
     }
   },
 
+  /**
+   * 获取用户头像和昵称
+   * 调用微信 getUserProfile 接口
+   */
   onGetUserProfile: function() {
     if (this.data.getUserProfileLock) {
       return
@@ -180,14 +207,4 @@ Page({
     })
   },
 
-  skipLogin: function() {
-    app.globalData.hasLogin = true
-    wx.redirectTo({
-      url: '/pages/onboarding/index'
-    })
-  },
-
-  onSkip: function() {
-    this.skipLogin()
-  }
 })

@@ -1,0 +1,20 @@
+<view class="meal-type-picker">
+  <view class="picker-title">{{content}}</view>
+  
+  <view class="picker-wheel-container">
+    <picker-view 
+      class="meal-picker-view"
+      value="{{pickerIndex}}" 
+      bindchange="onPickerChange"
+    >
+      <picker-view-column>
+        <view wx:for="{{mealTypes}}" wx:key="value" class="picker-item">
+          <view class="picker-icon">{{item.icon}}</view>
+          <view class="picker-label">{{item.label}}</view>
+        </view>
+      </picker-view-column>
+    </picker-view>
+  </view>
+  
+  <button class="picker-confirm-btn" bindtap="onConfirm">确认</button>
+</view>

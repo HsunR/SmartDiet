@@ -1,12 +1,16 @@
+<!-- 登录页面 - 用户登录引导 -->
 <view class="login-container">
   <view class="login-content">
+    <!-- Logo 图标 -->
     <view class="logo-placeholder">🥗</view>
     
+    <!-- 标题区域 -->
     <view class="title-section">
       <text class="title">AI营养师</text>
       <text class="subtitle">智能饮食管理，健康生活每一天</text>
     </view>
     
+    <!-- 功能特性列表 -->
     <view class="features">
       <view class="feature-item">
         <view class="feature-icon">📷</view>
@@ -22,17 +26,16 @@
       </view>
     </view>
     
+    <!-- 登录操作按钮 -->
     <view class="login-actions">
+      <!-- 微信登录按钮 -->
       <button class="login-btn" bindtap="onGetUserProfile">
         <text class="btn-icon">👤</text>
         <text>微信登录</text>
       </button>
-      
-      <view class="skip-btn" bindtap="onSkip">
-        <text>稍后登录</text>
-      </view>
     </view>
     
+    <!-- 协议说明 -->
     <view class="agreement">
       <text>登录即表示同意</text>
       <text class="link">《用户协议》</text>

@@ -1,8 +1,10 @@
+/* ========== 页面容器 ========== */
 .history-container {
   min-height: 100vh;
   background-color: #FAFAFA;
 }
 
+/* ========== 筛选栏样式 ========== */
 .filter-bar {
   padding: 24rpx;
   background-color: #FFFFFF;
@@ -26,6 +28,7 @@
   color: #757575;
 }
 
+/* ========== 加载状态样式 ========== */
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -34,6 +37,7 @@
   padding: 120rpx;
 }
 
+/* 加载旋转动画 */
 .loading-spinner {
   width: 64rpx;
   height: 64rpx;
@@ -44,10 +48,12 @@
   margin-bottom: 24rpx;
 }
 
+/* 旋转动画关键帧 */
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
+/* ========== 空状态样式 ========== */
 .empty-container {
   display: flex;
   flex-direction: column;
@@ -78,14 +84,17 @@
   border: none;
 }
 
+/* ========== 记录列表样式 ========== */
 .records-list {
   height: calc(100vh - 120rpx);
 }
 
+/* 日期分组容器 */
 .date-group {
   margin-bottom: 24rpx;
 }
 
+/* 分组头部：显示日期和总热量 */
 .group-header {
   display: flex;
   justify-content: space-between;
@@ -106,6 +115,7 @@
   font-weight: 500;
 }
 
+/* ========== 记录项样式 ========== */
 .record-item {
   display: flex;
   align-items: center;
@@ -114,6 +124,7 @@
   border-bottom: 1rpx solid #F5F5F5;
 }
 
+/* 记录图片 */
 .record-image {
   width: 96rpx;
   height: 96rpx;
@@ -122,6 +133,7 @@
   background-color: #F5F5F5;
 }
 
+/* 图片占位符 */
 .record-placeholder {
   width: 96rpx;
   height: 96rpx;
@@ -134,10 +146,12 @@
   font-size: 40rpx;
 }
 
+/* 记录内容区域 */
 .record-content {
   flex: 1;
 }
 
+/* 记录头部：餐别和时间 */
 .record-header {
   display: flex;
   justify-content: space-between;
@@ -156,6 +170,7 @@
   color: #BDBDBD;
 }
 
+/* 食物名称：单行省略 */
 .record-foods {
   font-size: 28rpx;
   color: #212121;
@@ -166,6 +181,7 @@
   white-space: nowrap;
 }
 
+/* 营养标签容器 */
 .record-nutrients {
   display: flex;
   flex-wrap: wrap;
@@ -180,12 +196,14 @@
   border-radius: 8rpx;
 }
 
+/* 右侧箭头 */
 .record-arrow {
   font-size: 32rpx;
   color: #BDBDBD;
   margin-left: 16rpx;
 }
 
+/* ========== 加载更多样式 ========== */
 .loading-more {
   display: flex;
   justify-content: center;
@@ -195,6 +213,7 @@
   color: #757575;
 }
 
+/* 小号加载动画 */
 .loading-spinner-small {
   width: 32rpx;
   height: 32rpx;
@@ -205,6 +224,7 @@
   margin-right: 16rpx;
 }
 
+/* 没有更多数据提示 */
 .no-more {
   display: flex;
   justify-content: center;
@@ -214,6 +234,8 @@
   color: #BDBDBD;
 }
 
+/* ========== 日期选择器样式 ========== */
+/* 遮罩层 */
 .date-picker-mask {
   position: fixed;
   top: 0;
@@ -224,6 +246,7 @@
   z-index: 100;
 }
 
+/* 弹窗容器 */
 .date-picker-popup {
   position: fixed;
   left: 50%;
@@ -237,6 +260,7 @@
   overflow: hidden;
 }
 
+/* 弹窗头部 */
 .popup-header {
   display: flex;
   justify-content: space-between;
@@ -261,10 +285,12 @@
   color: #757575;
 }
 
+/* 弹窗内容 */
 .popup-content {
   padding: 24rpx;
 }
 
+/* 日期字段 */
 .date-field {
   display: flex;
   justify-content: space-between;
@@ -286,6 +312,7 @@
   border-radius: 16rpx;
 }
 
+/* 弹窗底部按钮 */
 .popup-footer {
   display: flex;
   padding: 24rpx;
@@ -304,11 +331,13 @@
   border: none;
 }
 
+/* 取消按钮 */
 .popup-btn.cancel {
   background-color: #F5F5F5;
   color: #757575;
 }
 
+/* 确认按钮 */
 .popup-btn.confirm {
   background-color: #4CAF50;
   color: #FFFFFF;

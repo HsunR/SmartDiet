@@ -112,15 +112,6 @@
   margin-right: 16rpx;
 }
 
-.skip-btn {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 72rpx;
-  font-size: 28rpx;
-  color: #757575;
-}
-
 .agreement {
   font-size: 24rpx;
   color: #BDBDBD;

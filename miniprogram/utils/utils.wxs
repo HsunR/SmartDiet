@@ -1,3 +1,15 @@
+/**
+ * WXS 工具模块 - 用于 WXML 模板中的数据处理
+ * 注意：WXS 语法与普通 JS 不同，只能使用 WXS 支持的 API
+ * @module utils/wxs
+ * @version 1.0.0
+ */
+
+/**
+ * 格式化时间戳为 HH:MM 格式
+ * @param {number} timestamp - 时间戳（毫秒）
+ * @returns {string} 格式化后的时间字符串
+ */
 var formatTime = function(timestamp) {
   if (!timestamp) {
     return ''
@@ -13,6 +25,12 @@ var formatTime = function(timestamp) {
   return hourStr + ':' + minuteStr
 }
 
+/**
+ * 重复字符串指定次数
+ * @param {string} str - 要重复的字符串
+ * @param {number} count - 重复次数
+ * @returns {string} 重复后的字符串
+ */
 var repeat = function(str, count) {
   if (!str || count <= 0) {
     return ''
@@ -24,6 +42,11 @@ var repeat = function(str, count) {
   return result
 }
 
+/**
+ * 获取评分对应的星号字符串
+ * @param {number} rating - 评分（0-5）
+ * @returns {string} 星号字符串
+ */
 var getRatingStars = function(rating) {
   if (rating === 0) {
     return '❓'

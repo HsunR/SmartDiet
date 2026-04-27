@@ -1,20 +1,65 @@
-const { formatDate } = require('../../utils/util')
+/**
+ * @fileoverview 饮食报告页面
+ * 展示本周饮食统计和趋势分析，包含日历视图、折线图、详细记录和编辑功能
+ * @module pages/report
+ * @version 1.0.0
+ * @requires module:utils/formatter
+ * @requires module:utils/api
+ */
+
+const { formatDate } = require('../../utils/formatter')
 const { api, safeApiCall } = require('../../utils/api')
 
+/**
+ * 缓存键名
+ * @constant {string}
+ */
 const CACHE_KEY = 'report_cache'
+
+/**
+ * 缓存时长：5 分钟
+ * @constant {number}
+ */
 const CACHE_DURATION = 5 * 60 * 1000
 
+/**
+ * 饮食报告页面实例
+ * @type {Page}
+ */
 Page({
+  /**
+   * 页面初始数据
+   * @property {Object} data - 页面数据对象
+   * @property {string} data.currentDate - 当前日期
+   * @property {string} data.weekRange - 本周日期范围
+   * @property {Array<Object>} data.weekDays - 本周七天日期数组
+   * @property {Object} data.calendarData - 日历数据
+   * @property {Object} data.weekSummary - 本周统计摘要
+   * @property {number} data.weekSummary.avgScore - 本周平均评分
+   * @property {number} data.weekSummary.mealCount - 本周餐次数量
+   * @property {Array<Object>} data.weekSummary.dailyAvgScore - 每日平均评分数组
+   * @property {boolean} data.loading - 是否正在加载
+   * @property {number} data.scrollLeft - 横向滚动位置
+   * @property {Array<Object>} data.mealTypes - 餐次类型配置
+   * @property {boolean} data.showDetailModal - 是否显示详情弹窗
+   * @property {Object|null} data.detailData - 详情数据
+   * @property {string} data.detailDate - 详情日期
+   * @property {string} data.detailMealType - 详情餐次类型
+   * @property {number} data.currentRecordIndex - 当前记录索引
+   * @property {number} data.totalRecords - 总记录数
+   * @property {Array<Object>} data.currentRecords - 当前记录列表
+   * @property {boolean} data.isEditing - 是否编辑模式
+   * @property {Array<Object>} data.editFoods - 编辑中的食物列表
+   */
   data: {
     currentDate: '',
     weekRange: '',
     weekDays: [],
     calendarData: {},
     weekSummary: {
-      totalCalories: 0,
-      avgCalories: 0,
+      avgScore: 0,
       mealCount: 0,
-      dailyAvgCalories: []
+      dailyAvgScore: []
     },
     loading: true,
     scrollLeft: 0,
@@ -35,7 +80,12 @@ Page({
     editFoods: []
   },
 
-  onLoad: function() {
+  /**
+   * 页面生命周期回调 - 监听页面加载
+   * 初始化日期并加载数据
+   * @param {Object} options - 页面参数
+   */
+  onLoad: function(options) {
     const today = new Date()
     this.setData({
       currentDate: formatDate(today)
@@ -48,6 +98,10 @@ Page({
     }
   },
 
+  /**
+   * 页面生命周期回调 - 监听页面显示
+   * 设置底部导航栏状态并处理刷新标记
+   */
   onShow: function() {
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({
@@ -63,12 +117,21 @@ Page({
     }
   },
 
+  /**
+   * 页面生命周期回调 - 监听用户下拉动作
+   * 刷新本周数据
+   */
   onPullDownRefresh: function() {
     this.loadWeekData().then(() => {
       wx.stopPullDownRefresh()
     })
   },
 
+  /**
+   * 初始化本周七天的日期数据
+   * 根据指定日期计算所在周的七天日期
+   * @param {Date} date - 任意日期，用于确定所在周
+   */
   initWeekDays: function(date) {
     const weekDays = []
     const dayNames = ['日', '一', '二', '三', '四', '五', '六']
@@ -99,15 +162,20 @@ Page({
     })
   },
 
+  /**
+   * 加载本周饮食数据
+   * 遍历七天查询每天的饮食记录并计算统计
+   * @async
+   * @returns {Promise<void>}
+   */
   loadWeekData: async function() {
     this.setData({ loading: true })
     
     try {
       const { weekDays } = this.data
       const calendarData = {}
-      let totalCalories = 0
       let mealCount = 0
-      const dailyCalories = {}
+      const dailyScores = {}
       
       for (const day of weekDays) {
         calendarData[day.date] = {
@@ -116,7 +184,7 @@ Page({
           dinner: [],
           snack: []
         }
-        dailyCalories[day.date] = { total: 0, count: 0 }
+        dailyScores[day.date] = { total: 0, count: 0 }
         
         try {
           const result = await safeApiCall(() => api.food.getRecords(day.date))
@@ -132,32 +200,34 @@ Page({
               const recordData = {
                 _id: record._id,
                 imageUrl: record.imageUrl || (foods[0]?.imageUrl),
-                foods: foods.map(food => ({
-                  name: food.name || '',
-                  calories: food.calories || food.totalCalories || 0,
-                  weight: food.weight || food.estimatedWeight || 0,
-                  category: food.category || '',
-                  advice: food.advice || '',
-                  tags: food.tags || (food.tags && (food.tags.positive || food.tags.warning) ? [...(food.tags.positive || []), ...(food.tags.warning || [])] : [])
-                })),
-                totalCalories: record.totalCalories || 0,
+                foods: foods.map(food => {
+                  const foodTags = food.tags || { positive: [], warning: [] }
+                  return {
+                    name: food.name || '',
+                    score: food.score || 60,
+                    estimatedWeight: food.estimatedWeight || food.weight || 0,
+                    category: food.category || '',
+                    advice: food.advice || '',
+                    tags: foodTags,
+                    tagReasons: food.tagReasons || {}
+                  }
+                }),
                 healthTags: mealOverview.healthTags || { positive: [], warning: [] },
                 rating: record.rating || 0,
                 mealOverview: {
                   overallHealthScore: mealOverview.overallHealthScore || 60,
-                  totalCalories: mealOverview.totalCalories || record.totalCalories || 0,
                   healthTags: mealOverview.healthTags || { positive: [], warning: [] },
-                  summary: mealOverview.summary || ''
+                  summary: mealOverview.summary || '',
+                  tagReasons: mealOverview.tagReasons || {}
                 },
                 dietaryAdvice: record.dietaryAdvice || ''
               }
               
               calendarData[day.date][mealType].push(recordData)
               
-              totalCalories += record.totalCalories || 0
               mealCount++
-              dailyCalories[day.date].total += record.totalCalories || 0
-              dailyCalories[day.date].count++
+              dailyScores[day.date].total += mealOverview.overallHealthScore || 60
+              dailyScores[day.date].count++
             })
           }
         } catch (e) {
@@ -165,26 +235,23 @@ Page({
         }
       }
       
-      const dailyAvgCalories = weekDays.map(day => {
-        const dayData = dailyCalories[day.date]
+      const dailyAvgScore = weekDays.map(day => {
+        const dayData = dailyScores[day.date]
         return {
           date: day.date,
           dayName: day.dayName,
-          calories: dayData.count > 0 ? Math.round(dayData.total / dayData.count) : 0,
+          score: dayData.count > 0 ? Math.round(dayData.total / dayData.count) : 0,
           isToday: day.isToday
         }
       })
       
-      const avgCalories = mealCount > 0 ? Math.round(totalCalories / 7) : 0
-      
-      const maxCalories = Math.max(...dailyAvgCalories.map(d => d.calories), 100)
+      const totalScore = dailyAvgScore.reduce((sum, d) => sum + d.score, 0)
+      const avgScore = mealCount > 0 ? Math.round(totalScore / dailyAvgScore.filter(d => d.score > 0).length) : 0
       
       const weekSummary = {
-        totalCalories,
-        avgCalories,
+        avgScore,
         mealCount,
-        dailyAvgCalories,
-        maxCalories: Math.ceil(maxCalories / 100) * 100
+        dailyAvgScore
       }
       
       this.setData({
@@ -205,6 +272,11 @@ Page({
     }
   },
 
+  /**
+   * 日期变更事件
+   * @param {Object} e - 事件对象
+   * @param {string} e.detail.value - 选择的日期
+   */
   onDateChange: function(e) {
     const date = e.detail.value
     this.setData({
@@ -214,6 +286,9 @@ Page({
     this.loadWeekData()
   },
 
+  /**
+   * 上一周按钮点击事件
+   */
   onPrevWeek: function() {
     const current = new Date(this.data.currentDate)
     current.setDate(current.getDate() - 7)
@@ -224,6 +299,9 @@ Page({
     this.loadWeekData()
   },
 
+  /**
+   * 下一周按钮点击事件
+   */
   onNextWeek: function() {
     const current = new Date(this.data.currentDate)
     current.setDate(current.getDate() + 7)
@@ -236,11 +314,22 @@ Page({
     }
   },
 
+  /**
+   * 获取评分星星显示
+   * @param {number} rating - 评分值
+   * @returns {string} 星星字符串
+   */
   getRatingStars: function(rating) {
     if (rating === 0) return '❓'
     return '⭐'.repeat(rating)
   },
 
+  /**
+   * 日历单元格点击事件
+   * @param {Object} e - 事件对象
+   * @param {string} e.currentTarget.dataset.date - 日期
+   * @param {string} e.currentTarget.dataset.meal - 餐次类型
+   */
   onCellTap: function(e) {
     const { date, meal } = e.currentTarget.dataset
     const { calendarData } = this.data
@@ -253,6 +342,12 @@ Page({
     }
   },
 
+  /**
+   * 显示记录详情
+   * @param {string} date - 日期
+   * @param {string} meal - 餐次类型
+   * @param {Array<Object>} records - 记录列表
+   */
   showRecordDetail: function(date, meal, records) {
     const mealTypeLabel = this.data.mealTypes.find(m => m.type === meal)?.label || '详情'
     
@@ -269,40 +364,41 @@ Page({
     })
   },
 
-  onSwiperChange: function(e) {
-    const index = e.detail.current
-    const { currentRecords } = this.data
-    if (currentRecords[index]) {
-      this.setData({
-        currentRecordIndex: index,
-        detailData: currentRecords[index],
-        isEditing: false
-      })
-    }
-  },
-
-  onPrevRecord: function() {
-    const { currentRecordIndex, currentRecords } = this.data
-    if (currentRecordIndex > 0) {
-      this.setData({
-        currentRecordIndex: currentRecordIndex - 1,
-        detailData: currentRecords[currentRecordIndex - 1],
-        isEditing: false
-      })
-    }
-  },
-
+  /**
+   * 切换到下一条记录
+   */
   onNextRecord: function() {
     const { currentRecordIndex, currentRecords } = this.data
     if (currentRecordIndex < currentRecords.length - 1) {
+      const newIndex = currentRecordIndex + 1
       this.setData({
-        currentRecordIndex: currentRecordIndex + 1,
-        detailData: currentRecords[currentRecordIndex + 1],
+        currentRecordIndex: newIndex,
+        detailData: currentRecords[newIndex],
         isEditing: false
       })
     }
   },
 
+  /**
+   * 切换到上一条记录
+   */
+  onPrevRecord: function() {
+    const { currentRecordIndex, currentRecords } = this.data
+    if (currentRecordIndex > 0) {
+      const newIndex = currentRecordIndex - 1
+      this.setData({
+        currentRecordIndex: newIndex,
+        detailData: currentRecords[newIndex],
+        isEditing: false
+      })
+    }
+  },
+
+
+
+  /**
+   * 关闭详情弹窗
+   */
   closeDetailModal: function() {
     this.setData({
       showDetailModal: false,
@@ -313,6 +409,9 @@ Page({
     })
   },
 
+  /**
+   * 切换编辑模式
+   */
   toggleEdit: function() {
     const { isEditing, detailData } = this.data
     if (!isEditing) {
@@ -325,6 +424,12 @@ Page({
     }
   },
 
+  /**
+   * 编辑食物名称
+   * @param {Object} e - 事件对象
+   * @param {number} e.currentTarget.dataset.index - 食物索引
+   * @param {string} e.detail.value - 输入值
+   */
   onEditFoodName: function(e) {
     const { index } = e.currentTarget.dataset
     const value = e.detail.value
@@ -333,14 +438,26 @@ Page({
     })
   },
 
-  onEditFoodCalories: function(e) {
+  /**
+   * 编辑食物热量
+   * @param {Object} e - 事件对象
+   * @param {number} e.currentTarget.dataset.index - 食物索引
+   * @param {string} e.detail.value - 输入值
+   */
+  onEditFoodScore: function(e) {
     const { index } = e.currentTarget.dataset
     const value = parseInt(e.detail.value) || 0
     this.setData({
-      [`editFoods[${index}].calories`]: value
+      [`editFoods[${index}].score`]: value
     })
   },
 
+  /**
+   * 编辑食物重量
+   * @param {Object} e - 事件对象
+   * @param {number} e.currentTarget.dataset.index - 食物索引
+   * @param {string} e.detail.value - 输入值
+   */
   onEditFoodWeight: function(e) {
     const { index } = e.currentTarget.dataset
     const value = parseInt(e.detail.value) || 0
@@ -349,17 +466,24 @@ Page({
     })
   },
 
+  /**
+   * 保存编辑
+   * 将编辑后的食物数据保存到服务器
+   * @async
+   * @returns {Promise<void>}
+   */
   saveEdit: async function() {
     const { detailData, editFoods, currentRecordIndex, currentRecords } = this.data
     
     wx.showLoading({ title: '保存中...' })
     
     try {
-      const totalCalories = editFoods.reduce((sum, food) => sum + (food.calories || 0), 0)
+      const avgScore = editFoods.length > 0
+        ? Math.round(editFoods.reduce((sum, food) => sum + (food.score || 60), 0) / editFoods.length)
+        : 60
       
       const updateData = {
-        foods: editFoods,
-        totalCalories
+        foods: editFoods
       }
       
       await safeApiCall(() => api.food.updateRecord(detailData._id, updateData))
@@ -367,7 +491,10 @@ Page({
       const updatedRecord = {
         ...detailData,
         foods: editFoods,
-        totalCalories
+        mealOverview: {
+          ...detailData.mealOverview,
+          overallHealthScore: avgScore
+        }
       }
       
       currentRecords[currentRecordIndex] = updatedRecord
@@ -395,6 +522,11 @@ Page({
     }
   },
 
+  /**
+   * 提示添加记录
+   * @param {string} date - 日期
+   * @param {string} meal - 餐次类型
+   */
   promptAddRecord: function(date, meal) {
     const mealTypeLabel = this.data.mealTypes.find(m => m.type === meal)?.label || '餐次'
     
@@ -409,6 +541,11 @@ Page({
     })
   },
 
+  /**
+   * 带参数跳转到聊天页面
+   * @param {string} date - 日期
+   * @param {string} meal - 餐次类型
+   */
   navigateToChatWithParams: function(date, meal) {
     const app = getApp()
     app.globalData.pendingRecord = {
@@ -421,16 +558,27 @@ Page({
     })
   },
 
+  /**
+   * 跳转到聊天页面
+   */
   navigateToChat: function() {
     wx.switchTab({
       url: '/pages/chat/index'
     })
   },
 
+  /**
+   * 阻止触摸移动
+   * @returns {boolean} 返回false阻止默认行为
+   */
   preventTouchMove: function() {
     return false
   },
 
+  /**
+   * 加载缓存数据
+   * @returns {boolean} 是否成功加载缓存
+   */
   loadCachedData: function() {
     try {
       const cached = wx.getStorageSync(CACHE_KEY)
@@ -457,6 +605,11 @@ Page({
     return false
   },
 
+  /**
+   * 保存缓存
+   * @param {Object} calendarData - 日历数据
+   * @param {Object} weekSummary - 周统计摘要
+   */
   saveCache: function(calendarData, weekSummary) {
     try {
       const cache = {
@@ -471,6 +624,9 @@ Page({
     }
   },
 
+  /**
+   * 清除缓存
+   */
   clearCache: function() {
     try {
       wx.removeStorageSync(CACHE_KEY)
@@ -479,12 +635,15 @@ Page({
     }
   },
 
+  /**
+   * 滚动到今天位置
+   */
   scrollToToday: function() {
     const { weekDays } = this.data
     const todayStr = formatDate(new Date())
     let todayIndex = -1
   
-    // 1. 查找今日索引（这部分是对的，保留）
+    // 查找今日索引
     for (let i = 0; i < weekDays.length; i++) {
       if (weekDays[i].date === todayStr) {
         todayIndex = i
@@ -492,15 +651,15 @@ Page({
       }
     }
     if (todayIndex === -1) return
-    // 🔥 核心修复：等DOM渲染完成，再获取真实宽度计算
+    // 等DOM渲染完成，再获取真实宽度计算
     wx.nextTick(() => {
       const query = wx.createSelectorQuery().in(this)
       
-      // 2. 获取 左侧固定栏 真实宽度（px）
+      // 获取左侧固定栏真实宽度（px）
       query.select('.meal-type-header').boundingClientRect()
-      // 3. 获取 日期单元格 真实宽度（px）
+      // 获取日期单元格真实宽度（px）
       query.select('.day-cell').boundingClientRect()
-      // 4. 获取 滚动容器 真实宽度（px）
+      // 获取滚动容器真实宽度（px）
       query.select('.calendar-scroll').boundingClientRect()
   
       query.exec((res) => {
@@ -511,28 +670,36 @@ Page({
         const cellWidth = res[1].width        // 日期格子真实宽度
         const scrollWidth = res[2].width     // 滚动容器可视宽度
   
-        // 5. 计算精准滚动偏移量（全用px，无硬编码）
+        // 计算精准滚动偏移量（全用px，无硬编码）
         const todayCellLeft = mealTypeWidth + todayIndex * cellWidth
         const todayCellCenter = todayCellLeft + cellWidth / 2
         const targetCenter = scrollWidth / 2
         let scrollLeft = todayCellCenter - targetCenter
   
-        // 6. 边界限制（防止滚动越界）
+        // 边界限制（防止滚动越界）
         const totalWidth = mealTypeWidth + weekDays.length * cellWidth
         const maxScrollLeft = Math.max(0, totalWidth - scrollWidth)
         scrollLeft = Math.max(0, Math.min(scrollLeft, maxScrollLeft))
   
-        // 7. 赋值滚动
+        // 赋值滚动
         this.setData({ scrollLeft })
       })
     })
   },
 
-  calculateLineAngle: function(index, data, maxCalories) {
+  /**
+   * 计算折线图线段的角度
+   * 使用反正切函数计算两点连线的旋转角度
+   * @param {number} index - 当前数据点索引
+   * @param {Array<Object>} data - 每日热量数据数组
+   * @param {number} maxCalories - 最大热量值（用于归一化）
+   * @returns {number} 线段旋转角度（度）
+   */
+  calculateLineAngle: function(index, data, maxScore) {
     if (!data || index >= data.length - 1) return 0
     
-    const current = data[index].calories / maxCalories * 100
-    const next = data[index + 1].calories / maxCalories * 100
+    const current = data[index].score / maxScore * 100
+    const next = data[index + 1].score / maxScore * 100
     
     const deltaY = next - current
     const deltaX = 100
@@ -541,11 +708,19 @@ Page({
     return angle
   },
 
-  calculateLineWidth: function(index, data, maxCalories) {
+  /**
+   * 计算折线图线段的长度
+   * 使用勾股定理计算两点间的距离
+   * @param {number} index - 当前数据点索引
+   * @param {Array<Object>} data - 每日评分数据数组
+   * @param {number} maxScore - 最大评分值（用于归一化）
+   * @returns {number} 线段长度（rpx）
+   */
+  calculateLineWidth: function(index, data, maxScore) {
     if (!data || index >= data.length - 1) return 0
     
-    const current = data[index].calories / maxCalories * 100
-    const next = data[index + 1].calories / maxCalories * 100
+    const current = data[index].score / maxScore * 100
+    const next = data[index + 1].score / maxScore * 100
     
     const deltaY = Math.abs(next - current)
     const deltaX = 100
@@ -554,10 +729,16 @@ Page({
     return width
   },
 
+  /**
+   * 用户点击右上角分享
+   * @returns {Object} 分享配置对象
+   * @returns {string} return.title - 分享标题
+   * @returns {string} return.path - 分享路径
+   */
   onShareAppMessage: function() {
     return {
-      title: 'AI营养师 - 本周报告',
-      path: '/pages/report/index'
+      title: 'AI 营养师 - 智能饮食管理助手',
+      path: '/pages/chat/index'
     }
   }
 })

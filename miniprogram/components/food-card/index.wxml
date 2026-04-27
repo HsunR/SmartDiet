@@ -1,82 +1,110 @@
+<!-- 食物卡片组件 -->
 <view class="food-card">
+  <!-- 卡片头部：包含标题、健康评分和卡路里 -->
   <view class="card-header">
     <view class="header-left">
       <text class="card-title">识别结果</text>
-      <view class="score-badge" style="background-color: {{scoreColor}}">
-        <text>{{mealOverview.overallHealthScore}}分</text>
-      </view>
+      <!-- 用户评分徽章 -->
       <view class="rating-badge">
         <text class="rating-label">您的评分：</text>
         <text class="rating-value">{{rating === 0 ? '待定' : rating + '星'}}</text>
       </view>
     </view>
-    <text class="card-calories">{{mealOverview.totalCalories || 0}} kcal</text>
+    <!-- 总评分显示 -->
+    <text class="card-score">{{mealOverview.overallHealthScore || 60}} 分</text>
   </view>
-  
+
+  <!-- 餐食概览区域：包含健康评分圆环和健康标签 -->
   <view class="meal-overview">
     <view class="health-score-section">
-      <view class="score-circle" style="background: conic-gradient({{scoreColor}} {{mealOverview.overallHealthScore}}, #E8E8E8 {{mealOverview.overallHealthScore}})">
+      <!-- 健康评分圆环（灰色背景 + 橙色进度） -->
+      <view class="score-circle-wrapper">
+        <view class="score-circle-bg"></view>
+        <view class="score-circle-progress" style="background: conic-gradient(#FF9800 {{mealOverview.overallHealthScore}}%, transparent {{mealOverview.overallHealthScore}}%)"></view>
         <view class="score-inner">
           <text class="score-number">{{mealOverview.overallHealthScore}}</text>
           <text class="score-label">健康评分</text>
         </view>
       </view>
     </view>
-    
+
+    <!-- 健康标签区域 -->
     <view class="health-tags-section">
+      <!-- 正面标签（绿色） -->
       <view class="tags-row" wx:if="{{mealOverview.healthTags.positive.length > 0}}">
-        <view class="tag tag-positive" wx:for="{{mealOverview.healthTags.positive}}" wx:key="*this">
+        <view class="tag tag-positive" wx:for="{{mealOverview.healthTags.positive}}" wx:for-index="index" wx:for-item="tag" wx:key="index">
           <text class="tag-icon">✓</text>
-          <text>{{item}}</text>
+          <text>{{tag}}</text>
+          <text class="tag-reason" wx:if="{{mealOverview.tagReasons[tag]}}">{{mealOverview.tagReasons[tag]}}</text>
         </view>
       </view>
+      <!-- 警告标签（橙色） -->
       <view class="tags-row" wx:if="{{mealOverview.healthTags.warning.length > 0}}">
-        <view class="tag tag-warning" wx:for="{{mealOverview.healthTags.warning}}" wx:key="*this">
+        <view class="tag tag-warning" wx:for="{{mealOverview.healthTags.warning}}" wx:for-index="index" wx:for-item="tag" wx:key="index">
           <text class="tag-icon">!</text>
-          <text>{{item}}</text>
+          <text>{{tag}}</text>
+          <text class="tag-reason" wx:if="{{mealOverview.tagReasons[tag]}}">{{mealOverview.tagReasons[tag]}}</text>
         </view>
       </view>
     </view>
-    
+
+    <!-- 餐食总结文本 -->
     <view class="meal-summary">
       <text>{{mealOverview.summary}}</text>
     </view>
   </view>
-  
+
+  <!-- 食物列表 -->
   <view class="food-list">
-    <view 
-      class="food-item" 
-      wx:for="{{processedFoods}}" 
+    <!-- 遍历处理后的食物列表 -->
+    <view
+      class="food-item"
+      wx:for="{{processedFoods}}"
       wx:key="id"
     >
+      <!-- 食物主要信息（可点击展开详情） -->
       <view class="food-main" data-index="{{index}}" bindtap="onFoodTap">
+        <!-- 食物类别图标 -->
         <view class="food-icon">
           <text>{{item.categoryIcon}}</text>
         </view>
-        
+
+        <!-- 食物信息区域 -->
         <view class="food-info">
+          <!-- 食物名称 -->
           <view class="food-name">{{item.name}}</view>
+          <!-- 食物元数据（类别和重量） -->
           <view class="food-meta">
             <text class="food-category">{{item.category}}</text>
             <text class="food-weight">{{item.estimatedWeight}}g</text>
           </view>
-          <view class="food-tags" wx:if="{{item.tags.positive.length > 0 || item.tags.warning.length > 0}}">
-            <text class="food-tag tag-positive" wx:for="{{item.tags.positive}}" wx:key="*this">✓ {{item}}</text>
-            <text class="food-tag tag-warning" wx:for="{{item.tags.warning}}" wx:key="*this">! {{item}}</text>
+          <!-- 食物标签（正面/警告，附带原因解释） -->
+          <view class="food-tags" wx:if="{{item.positiveTagsWithReasons.length > 0 || item.warningTagsWithReasons.length > 0}}">
+            <view class="food-tag tag-positive" wx:for="{{item.positiveTagsWithReasons}}" wx:key="label">
+              <text class="tag-label">✓ {{item.label}}</text>
+              <text class="tag-reason-text" wx:if="{{item.reason}}">{{item.reason}}</text>
+            </view>
+            <view class="food-tag tag-warning" wx:for="{{item.warningTagsWithReasons}}" wx:key="label">
+              <text class="tag-label">! {{item.label}}</text>
+              <text class="tag-reason-text" wx:if="{{item.reason}}">{{item.reason}}</text>
+            </view>
           </view>
         </view>
-        
+
+        <!-- 食物右侧：显示评分 -->
         <view class="food-right">
-          <text class="nutrient-value">{{item.displayCalories}} kcal</text>
+          <text class="nutrient-value">{{item.displayScore}} 分</text>
         </view>
       </view>
-      
+
+      <!-- 食物建议（如果存在） -->
       <view class="food-advice" wx:if="{{item.advice}}">
         <text class="advice-text">{{item.advice}}</text>
       </view>
     </view>
   </view>
-  
+
+  <!-- 饮食建议区域 -->
   <view class="dietary-advice" wx:if="{{dietaryAdvice}}">
     <view class="advice-header">
       <text class="advice-icon">💡</text>
@@ -84,11 +112,14 @@
     </view>
     <text class="advice-content">{{dietaryAdvice}}</text>
   </view>
-  
+
+  <!-- 操作按钮区域（仅可编辑且未完成时显示） -->
   <view class="card-actions" wx:if="{{editable && !actionCompleted}}">
+    <!-- 修改按钮 -->
     <button class="action-btn edit-btn" bindtap="onEdit" hover-class="edit-btn-hover">
       <text>修改</text>
     </button>
+    <!-- 确认记录按钮 -->
     <button class="action-btn confirm-btn" bindtap="onConfirm" hover-class="confirm-btn-hover">
       <text>确认记录</text>
     </button>

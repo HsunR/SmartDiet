@@ -1,39 +1,97 @@
-const { generateId } = require('./util')
+/**
+ * @fileoverview 常量定义模块
+ * @description 定义项目中使用的所有常量，包括消息类型、餐次类型、用户目标、存储键名等
+ * @module utils/constants
+ * @author SmartDiet Team
+ * @version 1.0.0
+ * @example
+ * // 使用示例
+ * const { MESSAGE_TYPES, MEAL_TYPES, STORAGE_KEYS } = require('./constants');
+ *
+ * // 使用消息类型
+ * if (message.type === MESSAGE_TYPES.TEXT) { ... }
+ *
+ * // 使用餐次类型
+ * const mealType = MEAL_TYPES.find(t => t.value === 'breakfast');
+ */
 
+/**
+ * 消息类型常量
+ * @constant {Object}
+ * @property {string} TEXT - 文本消息
+ * @property {string} IMAGE - 图片消息
+ * @property {string} FOOD_CARD - 食物卡片消息
+ * @property {string} USER_INFO_FORM - 用户信息表单消息
+ * @property {string} FEEDBACK_INPUT - 反馈输入消息
+ * @property {string} QUICK_ACTIONS - 快捷操作消息
+ * @property {string} MEAL_TYPE_PICKER - 餐次选择器消息（Picker模式）
+ * @property {string} MEAL_TYPE_SELECT - 餐次选择消息（按钮模式）
+ * @property {string} RATING_SELECT - 评分选择消息
+ * @property {string} DATE_SELECT - 日期选择消息
+ */
 const MESSAGE_TYPES = {
   TEXT: 'text',
   IMAGE: 'image',
   FOOD_CARD: 'food_card',
-  MEAL_TYPE_PICKER: 'meal_type_picker',
   USER_INFO_FORM: 'user_info_form',
   FEEDBACK_INPUT: 'feedback_input',
-  REPORT_CARD: 'report_card',
-  RECOMMEND_CARD: 'recommend_card',
   QUICK_ACTIONS: 'quick_actions',
+  MEAL_TYPE_PICKER: 'meal_type_picker',
   MEAL_TYPE_SELECT: 'meal_type_select',
   RATING_SELECT: 'rating_select',
   DATE_SELECT: 'date_select'
 }
 
+/**
+ * 消息角色常量
+ * @constant {Object}
+ * @property {string} USER - 用户发送的消息
+ * @property {string} ASSISTANT - AI助手发送的消息
+ */
 const MESSAGE_ROLES = {
   USER: 'user',
   ASSISTANT: 'assistant'
 }
 
-const MEAL_TYPES = {
-  BREAKFAST: 'breakfast',
-  LUNCH: 'lunch',
-  DINNER: 'dinner',
-  SNACK: 'snack'
-}
+/**
+ * 餐次类型数组
+ * @constant {Array<Object>}
+ * @property {string} value - 餐次标识值
+ * @property {string} label - 餐次显示标签
+ * @property {string} icon - 餐次图标
+ */
+const MEAL_TYPES = [
+  { value: 'breakfast', label: '早餐', icon: '🌅' },
+  { value: 'lunch', label: '午餐', icon: '☀️' },
+  { value: 'dinner', label: '晚餐', icon: '🌙' },
+  { value: 'snack', label: '其他', icon: '🍎' }
+]
 
-const MEAL_TYPE_LABELS = {
-  breakfast: '早餐',
-  lunch: '午餐',
-  dinner: '晚餐',
-  snack: '其他'
-}
+/**
+ * 评分选项数组
+ * @constant {Array<Object>}
+ * @property {number} value - 评分值 (0-5)
+ * @property {string} label - 评分标签
+ * @property {string} icon - 评分图标（星星）
+ */
+const RATING_OPTIONS = [
+  { value: 5, label: '五星', icon: '⭐⭐⭐⭐⭐' },
+  { value: 4, label: '四星', icon: '⭐⭐⭐⭐' },
+  { value: 3, label: '三星', icon: '⭐⭐⭐' },
+  { value: 2, label: '二星', icon: '⭐⭐' },
+  { value: 1, label: '一星', icon: '⭐' },
+  { value: 0, label: '待定', icon: '❓' }
+]
 
+/**
+ * 用户体重目标常量
+ * @constant {Object}
+ * @property {string} LOSE_WEIGHT - 减脂
+ * @property {string} MAINTAIN - 维持体重
+ * @property {string} GAIN_MUSCLE - 增肌
+ * @property {string} CONTROL_SUGAR - 控糖
+ * @property {string} CONTROL_BLOOD_PRESSURE - 控血压
+ */
 const USER_GOALS = {
   LOSE_WEIGHT: 'lose_weight',
   MAINTAIN: 'maintain',
@@ -42,303 +100,78 @@ const USER_GOALS = {
   CONTROL_BLOOD_PRESSURE: 'control_blood_pressure'
 }
 
-const USER_GOAL_LABELS = {
-  lose_weight: '减脂',
-  maintain: '维持体重',
-  gain_muscle: '增肌',
-  control_sugar: '控糖',
-  control_blood_pressure: '控血压'
+/**
+ * 用户目标选项数组（用于表单选择）
+ * @constant {Array<Object>}
+ * @property {string} value - 目标值
+ * @property {string} label - 目标显示标签
+ */
+const GOAL_OPTIONS = [
+  { value: USER_GOALS.LOSE_WEIGHT, label: '减脂' },
+  { value: USER_GOALS.MAINTAIN, label: '维持体重' },
+  { value: USER_GOALS.GAIN_MUSCLE, label: '增肌' },
+  { value: USER_GOALS.CONTROL_SUGAR, label: '控糖' },
+  { value: USER_GOALS.CONTROL_BLOOD_PRESSURE, label: '控血压' }
+]
+
+/**
+ * 本地存储键名常量
+ * @constant {Object}
+ * @property {string} CHAT_MESSAGES - 聊天消息存储键
+ * @property {string} USER_INFO - 用户信息存储键
+ * @property {string} HAS_LOGIN - 登录状态存储键
+ * @property {string} HAS_COMPLETED_ONBOARDING - 引导完成状态存储键
+ */
+const STORAGE_KEYS = {
+  CHAT_MESSAGES: 'chat_messages',
+  USER_INFO: 'userInfo',
+  HAS_LOGIN: 'hasLogin',
+  HAS_COMPLETED_ONBOARDING: 'hasCompletedOnboarding'
 }
 
+/**
+ * 云开发环境ID
+ * @constant {string}
+ */
+const CLOUD_ENV = 'cloud1-5g94ikff8709bdba'
+
+/**
+ * 默认卡路里目标值
+ * @constant {number}
+ * @description 当无法计算用户目标卡路里时使用的默认值（2000千卡/天）
+ */
+const DEFAULT_CALORIES_TARGET = 2000
+
+/**
+ * 活动水平系数常量
+ * @constant {Object}
+ * @property {number} SEDENTARY - 久坐不动 (1.2)
+ * @property {number} LIGHT - 轻度活动 (1.375)
+ * @property {number} MODERATE - 中度活动 (1.55)
+ * @property {number} ACTIVE - 高度活动 (1.725)
+ * @property {number} VERY_ACTIVE - 极高活动 (1.9)
+ */
 const ACTIVITY_LEVELS = {
-  SEDENTARY: 1,
-  LIGHT: 2,
-  MODERATE: 3,
-  ACTIVE: 4,
-  VERY_ACTIVE: 5
+  SEDENTARY: 1.2,      // 久坐不动，很少或不运动
+  LIGHT: 1.375,        // 轻度活动，每周运动1-3天
+  MODERATE: 1.55,      // 中度活动，每周运动3-5天
+  ACTIVE: 1.725,       // 高度活动，每周运动6-7天
+  VERY_ACTIVE: 1.9     // 极高活动，每天剧烈运动或体力劳动
 }
 
-const NUTRIENT_TARGETS = {
-  calories: { min: 1200, max: 4000 },
-  protein: { min: 30, max: 200 },
-  fat: { min: 20, max: 150 },
-  carbohydrate: { min: 100, max: 500 },
-  fiber: { min: 10, max: 50 },
-  vitaminA: { min: 500, max: 3000 },
-  vitaminC: { min: 30, max: 2000 },
-  calcium: { min: 500, max: 2500 },
-  iron: { min: 8, max: 45 }
-}
-
-const createTextMessage = (role, content) => ({
-  id: generateId(),
-  role,
-  type: MESSAGE_TYPES.TEXT,
-  content,
-  timestamp: Date.now()
-})
-
-const createImageMessage = (role, imageUrl, thumbnailUrl) => ({
-  id: generateId(),
-  role,
-  type: MESSAGE_TYPES.IMAGE,
-  content: '',
-  data: {
-    imageUrl,
-    thumbnailUrl: thumbnailUrl || imageUrl
-  },
-  timestamp: Date.now()
-})
-
-const createFoodCardMessage = (foods, mealOverview, dietaryAdvice, recordId) => ({
-  id: generateId(),
-  role: MESSAGE_ROLES.ASSISTANT,
-  type: MESSAGE_TYPES.FOOD_CARD,
-  content: '',
-  data: {
-    foods: foods || [],
-    mealOverview: mealOverview || {
-      mealType: '',
-      totalCalories: 0,
-      overallHealthScore: 0,
-      healthTags: { positive: [], warning: [] },
-      summary: ''
-    },
-    dietaryAdvice: dietaryAdvice || '',
-    recordId
-  },
-  timestamp: Date.now()
-})
-
-const createMealTypePickerMessage = (mealOverview, foods) => ({
-  id: generateId(),
-  role: MESSAGE_ROLES.ASSISTANT,
-  type: MESSAGE_TYPES.MEAL_TYPE_PICKER,
-  content: '请选择餐次类型：',
-  data: {
-    mealOverview,
-    foods,
-    mealTypes: [
-      { value: 'breakfast', label: '早餐', icon: '🌅' },
-      { value: 'lunch', label: '午餐', icon: '☀️' },
-      { value: 'dinner', label: '晚餐', icon: '🌙' },
-      { value: 'snack', label: '其他', icon: '🍎' }
-    ]
-  },
-  timestamp: Date.now()
-})
-
-const createMealTypeSelectMessage = (imageUrl, cloudFileId) => ({
-  id: generateId(),
-  role: MESSAGE_ROLES.ASSISTANT,
-  type: MESSAGE_TYPES.MEAL_TYPE_SELECT,
-  content: '请选择餐次：',
-  data: {
-    imageUrl,
-    cloudFileId,
-    mealTypes: [
-      { value: 'breakfast', label: '早餐', icon: '🌅' },
-      { value: 'lunch', label: '午餐', icon: '☀️' },
-      { value: 'dinner', label: '晚餐', icon: '🌙' },
-      { value: 'snack', label: '其他', icon: '🍎' }
-    ],
-    selectedMealType: null,
-    collapsed: false
-  },
-  timestamp: Date.now()
-})
-
-const createRatingSelectMessage = (imageUrl, cloudFileId, selectedMealType) => ({
-  id: generateId(),
-  role: MESSAGE_ROLES.ASSISTANT,
-  type: MESSAGE_TYPES.RATING_SELECT,
-  content: '给这餐打分：',
-  data: {
-    imageUrl,
-    cloudFileId,
-    selectedMealType,
-    ratings: [
-      { value: 5, label: '五星', icon: '⭐⭐⭐⭐⭐' },
-      { value: 4, label: '四星', icon: '⭐⭐⭐⭐' },
-      { value: 3, label: '三星', icon: '⭐⭐⭐' },
-      { value: 2, label: '二星', icon: '⭐⭐' },
-      { value: 1, label: '一星', icon: '⭐' },
-      { value: 0, label: '待定', icon: '❓' }
-    ],
-    selectedRating: null,
-    collapsed: false
-  },
-  timestamp: Date.now()
-})
-
-const createDateSelectMessage = (imageUrl, cloudFileId, defaultDate, defaultMealType) => {
-  const today = new Date()
-  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
-  
-  return {
-    id: generateId(),
-    role: MESSAGE_ROLES.ASSISTANT,
-    type: MESSAGE_TYPES.DATE_SELECT,
-    content: '选择用餐日期：',
-    data: {
-      imageUrl,
-      cloudFileId,
-      selectedDate: defaultDate || todayStr,
-      selectedMealType: defaultMealType || null,
-      collapsed: false
-    },
-    timestamp: Date.now()
-  }
-}
-
-const createFeedbackInputMessage = (foods, mealOverview, imageUrl) => ({
-  id: generateId(),
-  role: MESSAGE_ROLES.ASSISTANT,
-  type: MESSAGE_TYPES.FEEDBACK_INPUT,
-  content: '请告诉我识别结果有什么问题，我会重新分析：',
-  data: {
-    foods,
-    mealOverview,
-    imageUrl
-  },
-  timestamp: Date.now()
-})
-
-const createUserInfoFormMessage = () => ({
-  id: generateId(),
-  role: MESSAGE_ROLES.ASSISTANT,
-  type: MESSAGE_TYPES.USER_INFO_FORM,
-  content: '为了给您提供更精准的饮食建议，请先完善您的个人信息：',
-  data: {
-    fields: [
-      { key: 'age', label: '年龄', type: 'number', placeholder: '请输入年龄' },
-      { key: 'gender', label: '性别', type: 'picker', options: ['男', '女'] },
-      { key: 'height', label: '身高(cm)', type: 'number', placeholder: '请输入身高' },
-      { key: 'weight', label: '体重(kg)', type: 'number', placeholder: '请输入体重' },
-      { key: 'goals', label: '健康目标', type: 'multiPicker', options: [
-        { value: 'lose_weight', label: '减脂' },
-        { value: 'maintain', label: '维持体重' },
-        { value: 'gain_muscle', label: '增肌' },
-        { value: 'control_sugar', label: '控糖' },
-        { value: 'control_blood_pressure', label: '控血压' }
-      ]}
-    ]
-  },
-  timestamp: Date.now()
-})
-
-const createQuickActionsMessage = (actions) => ({
-  id: generateId(),
-  role: MESSAGE_ROLES.ASSISTANT,
-  type: MESSAGE_TYPES.QUICK_ACTIONS,
-  content: '您还可以：',
-  data: {
-    actions: actions || [
-      { id: 'photo', label: '拍照识别', icon: '📷' },
-      { id: 'report', label: '今日报告', icon: '📊' },
-      { id: 'recommend', label: '饮食建议', icon: '💡' }
-    ]
-  },
-  timestamp: Date.now()
-})
-
-const createReportCardMessage = (reportData) => ({
-  id: generateId(),
-  role: MESSAGE_ROLES.ASSISTANT,
-  type: MESSAGE_TYPES.REPORT_CARD,
-  content: '',
-  data: reportData,
-  timestamp: Date.now()
-})
-
-const calculateBMR = (profile) => {
-  const { gender, weight = 65, height = 170, age = 25 } = profile
-  if (gender === '男') {
-    return Math.round(10 * weight + 6.25 * height - 5 * age + 5)
-  } else {
-    return Math.round(10 * weight + 6.25 * height - 5 * age - 161)
-  }
-}
-
-const calculateTDEE = (profile) => {
-  const bmr = calculateBMR(profile)
-  const activityMultiplier = {
-    1: 1.2,
-    2: 1.375,
-    3: 1.55,
-    4: 1.725,
-    5: 1.9
-  }
-  const activityLevel = profile.activityLevel || 3
-  return Math.round(bmr * (activityMultiplier[activityLevel] || 1.55))
-}
-
-const calculateTargetCalories = (profile) => {
-  const tdee = calculateTDEE(profile)
-  const goal = profile.goal || 'maintain'
-  
-  switch (goal) {
-    case 'lose_weight':
-      return Math.round(tdee * 0.8)
-    case 'gain_muscle':
-      return Math.round(tdee * 1.1)
-    default:
-      return tdee
-  }
-}
-
-const calculateNutrientTargets = (profile) => {
-  const calories = calculateTargetCalories(profile)
-  const goal = profile.goal || 'maintain'
-  
-  let proteinRatio = 0.25
-  let fatRatio = 0.25
-  let carbRatio = 0.5
-  
-  if (goal === 'lose_weight') {
-    proteinRatio = 0.3
-    fatRatio = 0.25
-    carbRatio = 0.45
-  } else if (goal === 'gain_muscle') {
-    proteinRatio = 0.3
-    fatRatio = 0.2
-    carbRatio = 0.5
-  } else if (goal === 'control_sugar') {
-    proteinRatio = 0.25
-    fatRatio = 0.3
-    carbRatio = 0.45
-  }
-  
-  return {
-    calories,
-    protein: Math.round((calories * proteinRatio) / 4),
-    fat: Math.round((calories * fatRatio) / 9),
-    carbohydrate: Math.round((calories * carbRatio) / 4)
-  }
-}
-
+/**
+ * 导出所有常量
+ * @exports constants
+ */
 module.exports = {
   MESSAGE_TYPES,
   MESSAGE_ROLES,
   MEAL_TYPES,
-  MEAL_TYPE_LABELS,
+  RATING_OPTIONS,
   USER_GOALS,
-  USER_GOAL_LABELS,
-  ACTIVITY_LEVELS,
-  NUTRIENT_TARGETS,
-  createTextMessage,
-  createImageMessage,
-  createFoodCardMessage,
-  createMealTypePickerMessage,
-  createMealTypeSelectMessage,
-  createRatingSelectMessage,
-  createDateSelectMessage,
-  createFeedbackInputMessage,
-  createUserInfoFormMessage,
-  createQuickActionsMessage,
-  createReportCardMessage,
-  calculateBMR,
-  calculateTDEE,
-  calculateTargetCalories,
-  calculateNutrientTargets
+  GOAL_OPTIONS,
+  STORAGE_KEYS,
+  CLOUD_ENV,
+  DEFAULT_CALORIES_TARGET,
+  ACTIVITY_LEVELS
 }

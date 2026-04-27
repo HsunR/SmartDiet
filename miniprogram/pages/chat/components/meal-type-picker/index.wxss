@@ -1,0 +1,58 @@
+.meal-type-picker {
+  padding: 16rpx 0;
+}
+
+.picker-title {
+  display: block;
+  font-size: 28rpx;
+  color: #212121;
+  margin-bottom: 20rpx;
+  font-weight: 500;
+}
+
+.picker-wheel-container {
+  background-color: #FAFAFA;
+  border-radius: 16rpx;
+  overflow: hidden;
+  margin-bottom: 20rpx;
+}
+
+.meal-picker-view {
+  height: 300rpx;
+}
+
+.picker-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100rpx;
+}
+
+.picker-icon {
+  font-size: 40rpx;
+  margin-bottom: 4rpx;
+}
+
+.picker-label {
+  font-size: 28rpx;
+  color: #212121;
+}
+
+.picker-confirm-btn {
+  width: 100%;
+  height: 80rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #4CAF50;
+  border-radius: 40rpx;
+  color: #FFFFFF;
+  font-size: 30rpx;
+  font-weight: 500;
+  border: none;
+}
+
+.picker-confirm-btn::after {
+  border: none;
+}

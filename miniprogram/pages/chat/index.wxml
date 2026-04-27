@@ -1,5 +1,9 @@
+<!-- 引入 WXS 工具模块 -->
 <wxs src="../../utils/utils.wxs" module="utils" />
+
+<!-- 聊天页面主容器 -->
 <view class="chat-container">
+  <!-- 消息列表滚动区域 -->
   <scroll-view 
     class="message-list" 
     scroll-y 
@@ -7,6 +11,7 @@
     scroll-into-view="{{scrollToView}}"
     scroll-with-animation
   >
+    <!-- 消息列表：遍历所有消息 -->
     <view 
       wx:for="{{messages}}" 
       wx:key="id" 
@@ -14,23 +19,32 @@
       wx:if="{{!(item.type === 'feedback_input' && item.data.completed)}}"
       class="message-item {{item.role === 'user' ? 'message-user' : 'message-ai'}}"
     >
+      <!-- AI 头像（仅 AI 消息显示） -->
       <view class="message-avatar" wx:if="{{item.role === 'assistant'}}">
         <view class="avatar-placeholder avatar-ai">🤖</view>
       </view>
       
+      <!-- 消息内容区域 -->
       <view class="message-content {{item.role === 'user' ? 'message-content-user' : ''}}">
+        <!-- 消息气泡 -->
         <view class="message-bubble {{item.role === 'user' ? 'bubble-user' : 'bubble-ai'}}">
-          <text wx:if="{{item.type === 'text'}}" class="message-text">{{item.content}}</text>
+          <!-- 文本类型消息 -->
+          <text-message 
+            wx:if="{{item.type === 'text'}}"
+            content="{{item.content}}"
+            role="{{item.role}}"
+            timestamp="{{item.timestamp}}"
+          />
           
-          <image 
-            wx:elif="{{item.type === 'image'}}" 
-            src="{{item.data.imageUrl}}" 
-            mode="widthFix" 
-            class="message-image"
-            bindtap="previewImage"
-            data-url="{{item.data.imageUrl}}"
-          ></image>
+          <!-- 图片类型消息 -->
+          <image-message 
+            wx:elif="{{item.type === 'image'}}"
+            image-url="{{item.data.imageUrl}}"
+            role="{{item.role}}"
+            bind:previewImage="onPreviewImage"
+          />
           
+          <!-- 食物卡片类型消息 -->
           <food-card 
             wx:elif="{{item.type === 'food_card'}}" 
             foods="{{item.data.foods}}"
@@ -39,216 +53,125 @@
             record-id="{{item.data.recordId}}"
             rating="{{item.data.rating}}"
             action-completed="{{item.data.actionCompleted}}"
-            bindconfirm="onFoodCardConfirm"
-            bindedit="onFoodCardEdit"
-          ></food-card>
+            bind:confirm="onFoodCardConfirm"
+            bind:edit="onFoodCardEdit"
+          />
           
-          <view wx:if="{{item.type === 'meal_type_picker' && !item.data.completed}}" class="meal-type-picker">
-            <text class="picker-title">{{item.content}}</text>
-            <view class="picker-wheel-container">
-              <picker-view 
-                class="meal-picker-view"
-                value="{{[pickerIndex]}}"
-                bindchange="onMealPickerChange"
-              >
-                <picker-view-column>
-                  <view class="picker-item" wx:for="{{item.data.mealTypes}}" wx:key="value">
-                    <text class="picker-icon">{{item.icon}}</text>
-                    <text class="picker-label">{{item.label}}</text>
-                  </view>
-                </picker-view-column>
-              </picker-view>
-            </view>
-            <button class="picker-confirm-btn" bindtap="onMealTypeConfirm" data-msg-id="{{item.id}}">
-              <text>确认</text>
-            </button>
-          </view>
+          <!-- 餐次选择器（滚轮式） -->
+          <meal-type-picker
+            wx:if="{{item.type === 'meal_type_picker' && !item.data.completed}}"
+            content="{{item.content}}"
+            meal-types="{{item.data.mealTypes}}"
+            msg-id="{{item.id}}"
+            bind:confirm="onMealTypePickerConfirm"
+          />
           
-          <view wx:if="{{item.type === 'meal_type_select' && !item.data.collapsed}}" class="meal-type-select-container message-animate-in">
-            <text class="select-title">{{item.content}}</text>
-            <view class="meal-type-grid">
-              <view 
-                wx:for="{{item.data.mealTypes}}" 
-                wx:for-item="mealType"
-                wx:key="value"
-                class="meal-type-option {{item.data.selectedMealType === mealType.value ? 'meal-type-selected' : ''}}"
-                bindtap="onMealTypeSelect"
-                data-value="{{mealType.value}}"
-                data-msg-id="{{item.id}}"
-              >
-                <text class="meal-type-icon">{{mealType.icon}}</text>
-                <text class="meal-type-text">{{mealType.label}}</text>
-              </view>
-            </view>
-          </view>
+          <!-- 餐次选择（网格样式） -->
+          <meal-type-select
+            wx:if="{{item.type === 'meal_type_select' && !item.data.collapsed}}"
+            content="{{item.content}}"
+            meal-types="{{item.data.mealTypes}}"
+            selected-meal-type="{{item.data.selectedMealType}}"
+            collapsed="{{item.data.collapsed}}"
+            msg-id="{{item.id}}"
+            bind:select="onMealTypeSelect"
+          />
           
-          <view wx:if="{{item.type === 'date_select' && !item.data.collapsed}}" class="date-select-container message-animate-in">
-            <text class="select-title">{{item.content}}</text>
-            <view class="date-picker-wrapper">
-              <picker 
-                mode="date" 
-                value="{{item.data.selectedDate}}" 
-                bindchange="onDateSelect"
-                data-msg-id="{{item.id}}"
-                class="date-picker"
-              >
-                <view class="date-picker-display">
-                  <text class="date-picker-icon">📅</text>
-                  <text class="date-picker-value">{{item.data.selectedDate}}</text>
-                  <text class="date-picker-arrow">▼</text>
-                </view>
-              </picker>
-            </view>
-            <view wx:if="{{item.data.selectedMealType}}" class="date-meal-type-hint">
-              <text>餐次：{{item.data.selectedMealType === 'breakfast' ? '🌅 早餐' : item.data.selectedMealType === 'lunch' ? '☀️ 午餐' : item.data.selectedMealType === 'dinner' ? '🌙 晚餐' : '🍎 其他'}}</text>
-            </view>
-            <button class="date-confirm-btn" bindtap="onDateConfirm" data-msg-id="{{item.id}}">
-              <text>确认</text>
-            </button>
-          </view>
-          
-          <view wx:if="{{item.type === 'date_select' && item.data.collapsed}}" class="date-collapsed message-animate-out">
-            <text class="collapsed-text">日期：{{item.data.selectedDate}}{{item.data.selectedMealType ? ' | ' + (item.data.selectedMealType === 'breakfast' ? '🌅 早餐' : item.data.selectedMealType === 'lunch' ? '☀️ 午餐' : item.data.selectedMealType === 'dinner' ? '🌙 晚餐' : '🍎 其他') : ''}}</text>
-          </view>
-          
+          <!-- 餐次选择（已折叠状态） -->
           <view wx:if="{{item.type === 'meal_type_select' && item.data.collapsed}}" class="meal-type-collapsed message-animate-out">
             <text class="collapsed-text">已选择：{{item.data.selectedMealType === 'breakfast' ? '🌅 早餐' : item.data.selectedMealType === 'lunch' ? '☀️ 午餐' : item.data.selectedMealType === 'dinner' ? '🌙 晚餐' : '🍎 其他'}}</text>
           </view>
           
-          <view wx:if="{{item.type === 'rating_select' && !item.data.collapsed}}" class="rating-select-container message-animate-in">
-            <text class="select-title">{{item.content}}</text>
-            <view class="rating-grid">
-              <view 
-                wx:for="{{item.data.ratings}}" 
-                wx:for-item="rating"
-                wx:key="value"
-                class="rating-option {{item.data.selectedRating === rating.value ? 'rating-selected' : ''}}"
-                bindtap="onRatingSelect"
-                data-value="{{rating.value}}"
-                data-msg-id="{{item.id}}"
-              >
-                <text class="rating-icon">{{rating.icon}}</text>
-                <text class="rating-text">{{rating.label}}</text>
-              </view>
-            </view>
+          <!-- 日期选择器 -->
+          <date-select
+            wx:if="{{item.type === 'date_select' && !item.data.collapsed}}"
+            content="{{item.content}}"
+            selected-date="{{item.data.selectedDate}}"
+            selected-meal-type="{{item.data.selectedMealType}}"
+            collapsed="{{item.data.collapsed}}"
+            msg-id="{{item.id}}"
+            bind:dateChange="onDateSelect"
+            bind:confirm="onDateConfirm"
+          />
+          
+          <!-- 日期选择器（已折叠状态） -->
+          <view wx:if="{{item.type === 'date_select' && item.data.collapsed}}" class="date-collapsed message-animate-out">
+            <text class="collapsed-text">日期：{{item.data.selectedDate}}{{item.data.selectedMealType ? ' | ' + (item.data.selectedMealType === 'breakfast' ? '🌅 早餐' : item.data.selectedMealType === 'lunch' ? '☀️ 午餐' : item.data.selectedMealType === 'dinner' ? '🌙 晚餐' : '🍎 其他') : ''}}</text>
           </view>
           
+          <!-- 评分选择器 -->
+          <rating-select
+            wx:if="{{item.type === 'rating_select' && !item.data.collapsed}}"
+            content="{{item.content}}"
+            ratings="{{item.data.ratings}}"
+            selected-rating="{{item.data.selectedRating}}"
+            collapsed="{{item.data.collapsed}}"
+            msg-id="{{item.id}}"
+            bind:select="onRatingSelect"
+          />
+          
+          <!-- 评分选择器（已折叠状态） -->
           <view wx:if="{{item.type === 'rating_select' && item.data.collapsed}}" class="rating-collapsed message-animate-out">
             <text class="collapsed-text">评分：{{item.data.selectedRating === 0 ? '❓ 待定' : item.data.selectedRating + '星'}}</text>
           </view>
           
-          <view wx:if="{{item.type === 'feedback_input' && !item.data.completed}}" class="feedback-input">
-            <text class="feedback-title">{{item.content}}</text>
-            <textarea 
-              class="feedback-textarea" 
-              placeholder="例如：分量估算不对、漏识别了食物、烹饪方式判断错误..."
-              bindinput="onFeedbackInput"
-              data-msg-id="{{item.id}}"
-              value="{{feedbackValues[item.id] || ''}}"
-            ></textarea>
-            <button class="feedback-submit-btn" bindtap="onFeedbackSubmitBtn" data-msg-id="{{item.id}}">
-              <text>重新识别</text>
-            </button>
-          </view>
+          <!-- 反馈输入框 -->
+          <feedback-input
+            wx:if="{{item.type === 'feedback_input' && !item.data.completed}}"
+            content="{{item.content}}"
+            placeholder="例如：分量估算不对、漏识别了食物、烹饪方式判断错误..."
+            value="{{feedbackValues[item.id] || ''}}"
+            msg-id="{{item.id}}"
+            bind:input="onFeedbackInput"
+            bind:submit="onFeedbackSubmit"
+          />
           
-          <view wx:if="{{item.type === 'user_info_form' && !item.data.completed}}" class="user-info-form">
-            <text class="form-title">{{item.content}}</text>
-            <view class="form-fields">
-              <view class="form-field" wx:for="{{item.data.fields}}" wx:for-item="field" wx:key="key">
-                <text class="field-label">{{field.label}}</text>
-                <input 
-                  wx:if="{{field.type === 'number'}}"
-                  class="field-input"
-                  type="number"
-                  placeholder="{{field.placeholder}}"
-                  data-field="{{field.key}}"
-                  data-msg-id="{{item.id}}"
-                  bindinput="onFormFieldInput"
-                />
-                <picker 
-                  wx:elif="{{field.type === 'picker'}}"
-                  class="field-picker"
-                  range="{{field.options}}"
-                  data-field="{{field.key}}"
-                  data-msg-id="{{item.id}}"
-                  bindchange="onFormFieldPicker"
-                >
-                  <view class="picker-display">
-                    <text>{{formValues[field.key] || '请选择'}}</text>
-                    <text class="picker-arrow">▼</text>
-                  </view>
-                </picker>
-                <view 
-                  wx:elif="{{field.type === 'multiPicker'}}"
-                  class="field-multi-picker"
-                >
-                  <view 
-                    class="multi-option {{formValues[field.key] && formValues[field.key].indexOf(opt.value) >= 0 ? 'multi-selected' : ''}}"
-                    wx:for="{{field.options}}"
-                    wx:for-item="opt"
-                    wx:key="value"
-                    data-field="{{field.key}}"
-                    data-value="{{opt.value}}"
-                    data-msg-id="{{item.id}}"
-                    bindtap="onMultiPickerToggle"
-                  >
-                    <text>{{opt.label}}</text>
-                  </view>
-                </view>
-              </view>
-            </view>
-            <button class="form-submit-btn" bindtap="onUserInfoFormSubmit" data-msg-id="{{item.id}}">
-              <text>保存信息</text>
-            </button>
-          </view>
+          <!-- 用户信息表单 -->
+          <user-info-form
+            wx:if="{{item.type === 'user_info_form' && !item.data.completed}}"
+            content="{{item.content}}"
+            fields="{{item.data.fields}}"
+            values="{{formValues}}"
+            msg-id="{{item.id}}"
+            bind:submit="onUserInfoFormSubmit"
+          />
           
-          <view wx:elif="{{item.type === 'quick_actions'}}" class="quick-actions">
-            <text class="quick-actions-title">{{item.content}}</text>
-            <view class="quick-actions-list">
-              <view 
-                wx:for="{{item.data.actions}}" 
-                wx:for-item="action"
-                wx:key="id"
-                class="quick-action-btn"
-                bindtap="onQuickAction"
-                data-action="{{action.id}}"
-              >
-                <text>{{action.icon}} {{action.label}}</text>
-              </view>
-            </view>
-          </view>
+          <!-- 快捷操作按钮组 -->
+          <quick-actions
+            wx:elif="{{item.type === 'quick_actions'}}"
+            content="{{item.content}}"
+            actions="{{item.data.actions}}"
+            bind:actionClick="onQuickAction"
+          />
         </view>
         
-        <view class="message-time" wx:if="{{item.timestamp}}">
-          <text>{{utils.formatTime(item.timestamp)}}</text>
+        <!-- 消息时间戳（仅当组件未显示时间时） -->
+        <view class="message-time" wx:if="{{item.timestamp && item.type !== 'text'}}">
+          <text class="text">{{utils.formatTime(item.timestamp)}}</text>
         </view>
       </view>
-      
-      <!-- <view class="message-avatar" wx:if="{{item.role === 'user'}}">
-        <view class="avatar-placeholder avatar-user">{{userInfo.nickName ? userInfo.nickName[0] : '👤'}}</view>
-      </view> -->
     </view>
     
+    <!-- AI 正在输入动画 -->
     <view wx:if="{{isLoading}}" class="message-item message-ai">
       <view class="message-avatar">
         <view class="avatar-placeholder avatar-ai">🤖</view>
       </view>
       <view class="message-content">
         <view class="message-bubble bubble-ai">
-          <view class="typing-indicator">
-            <view class="typing-dot"></view>
-            <view class="typing-dot"></view>
-            <view class="typing-dot"></view>
-          </view>
+          <typing-indicator />
         </view>
       </view>
     </view>
     
+    <!-- 滚动到底部占位符 -->
     <view class="scroll-bottom-placeholder"></view>
   </scroll-view>
   
+  <!-- 底部输入区域 -->
   <view class="input-area">
     <view class="input-wrapper">
+      <!-- 相机按钮 -->
       <view class="camera-btn" bindtap="chooseImage">
         <view class="camera-icon-svg">
           <view class="camera-body"></view>
@@ -256,6 +179,7 @@
         </view>
       </view>
       
+      <!-- 文本输入框 -->
       <input 
         class="message-input"
         type="text"
@@ -268,6 +192,7 @@
         bindconfirm="sendMessage"
       />
       
+      <!-- 发送按钮 -->
       <view 
         class="send-btn {{inputValue ? 'send-btn-active' : ''}}" 
         bindtap="sendMessage"

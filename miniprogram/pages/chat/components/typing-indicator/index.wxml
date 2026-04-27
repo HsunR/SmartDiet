@@ -1,0 +1,5 @@
+<view class="typing-indicator">
+  <view class="typing-dot"></view>
+  <view class="typing-dot"></view>
+  <view class="typing-dot"></view>
+</view>

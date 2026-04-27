@@ -1,0 +1,23 @@
+<view class="date-select-container">
+  <view class="select-title">{{content}}</view>
+  
+  <view class="date-picker-wrapper">
+    <picker mode="date" value="{{selectedDate}}" bindchange="onDateChange" class="date-picker">
+      <view class="date-picker-display">
+        <text class="date-picker-icon">📅</text>
+        <text class="date-picker-value">{{selectedDate}}</text>
+        <text class="date-picker-arrow">›</text>
+      </view>
+    </picker>
+  </view>
+  
+  <view wx:if="{{selectedMealType}}" class="date-meal-type-hint">
+    <text class="text">已选择餐次：{{selectedMealType}}</text>
+  </view>
+  
+  <button class="date-confirm-btn" bindtap="onConfirm">确认</button>
+  
+  <view wx:if="{{collapsed}}" class="date-collapsed">
+    <text class="collapsed-text">已选择：{{selectedDate}} {{selectedMealType ? ' - ' + selectedMealType : ''}}</text>
+  </view>
+</view>

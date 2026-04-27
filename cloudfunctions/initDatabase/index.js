@@ -1,9 +1,24 @@
+/**
+ * 数据库初始化云函数
+ * 用于初始化食物数据库，预置常见食物营养数据
+ * @module initDatabase
+ * @version 1.0.0
+ */
+
 const cloud = require('wx-server-sdk')
 
+// 初始化云开发环境
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
+// 初始化数据库
 const db = cloud.database()
 
+/**
+ * 初始食物营养数据
+ * 包含主食、肉类、蔬菜、水果、乳制品、饮品等常见食物
+ * 每种食物包含：名称、类别、营养成分（卡路里、蛋白质、脂肪、碳水化合物）
+ * @type {Array<Object>}
+ */
 const FOOD_DATA = [
   { name: '米饭', category: '主食', nutrients: { calories: 116, protein: 2.6, fat: 0.3, carbohydrate: 25.9 } },
   { name: '馒头', category: '主食', nutrients: { calories: 223, protein: 7.0, fat: 1.1, carbohydrate: 47.0 } },
@@ -31,17 +46,29 @@ const FOOD_DATA = [
   { name: '果汁', category: '饮品', nutrients: { calories: 45, protein: 0.2, fat: 0.1, carbohydrate: 11.0 } }
 ]
 
+/**
+ * 云函数主入口
+ * 初始化食物数据库，如果集合不存在则自动创建
+ * 如果集合已存在且有数据则跳过初始化
+ * @async
+ * @param {Object} event - 事件对象
+ * @param {Object} context - 云函数上下文
+ * @returns {Promise<Object>} 初始化结果
+ */
 exports.main = async (event, context) => {
   try {
     const foodCollection = db.collection('food_database')
     
     let countResult
     try {
+      // 尝试获取数据条数
       countResult = await foodCollection.count()
     } catch (countError) {
+      // 集合不存在，创建集合并初始化数据
       if (countError.errCode === -502005) {
         console.log('集合不存在，开始创建集合并初始化数据...')
         
+        // 批量添加食物数据
         const addPromises = FOOD_DATA.map(food => {
           return foodCollection.add({
             data: {
@@ -61,6 +88,7 @@ exports.main = async (event, context) => {
       throw countError
     }
     
+    // 如果集合为空，初始化数据
     if (countResult.total === 0) {
       const addPromises = FOOD_DATA.map(food => {
         return foodCollection.add({
@@ -78,6 +106,7 @@ exports.main = async (event, context) => {
         message: `成功初始化 ${FOOD_DATA.length} 条食物数据`
       }
     } else {
+      // 集合已有数据，跳过初始化
       return {
         success: true,
         message: `数据库已有 ${countResult.total} 条数据，跳过初始化`

@@ -1,0 +1,11 @@
+<view class="feedback-input">
+  <text class="feedback-title">{{content}}</text>
+  <textarea 
+    class="feedback-textarea" 
+    placeholder="{{placeholder}}"
+    value="{{value}}"
+    bindinput="onInput"
+    placeholder-style="color: #BDBDBD;"
+  />
+  <button class="feedback-submit-btn" bindtap="onSubmit">提交</button>
+</view>

@@ -1,0 +1,27 @@
+.message-bubble {
+  padding: 10rpx;
+  border-radius: 16rpx;
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow: visible;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.bubble-ai {
+  background-color: #FFFFFF;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+  border-top-left-radius: 4rpx;
+  overflow: visible;
+}
+
+.bubble-user {
+  background-color: #4CAF50;
+  color: #FFFFFF;
+  border-top-right-radius: 4rpx;
+}
+
+.message-image {
+  max-width: 400rpx;
+  border-radius: 12rpx;
+}

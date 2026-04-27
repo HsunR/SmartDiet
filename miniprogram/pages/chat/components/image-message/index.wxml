@@ -1,0 +1,8 @@
+<view class="message-bubble {{role === 'user' ? 'bubble-user' : 'bubble-ai'}}">
+  <image 
+    class="message-image" 
+    src="{{imageUrl}}" 
+    mode="widthFix" 
+    bindtap="handlePreview"
+  />
+</view>

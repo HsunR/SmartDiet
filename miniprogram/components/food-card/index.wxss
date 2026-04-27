@@ -31,6 +31,7 @@
   font-size: 22rpx;
   color: #FFFFFF;
   font-weight: 600;
+  background-color: #FF9800;
 }
 
 .rating-badge {
@@ -54,9 +55,9 @@
   margin-left: 4rpx;
 }
 
-.card-calories {
+.card-score {
   font-size: 26rpx;
-  color: #4CAF50;
+  color: #FF9800;
   font-weight: 600;
 }
 
@@ -72,17 +73,36 @@
   margin-bottom: 20rpx;
 }
 
-.score-circle {
+/* 圆环进度条容器 */
+.score-circle-wrapper {
+  position: relative;
   width: 160rpx;
   height: 160rpx;
-  border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative;
 }
 
+/* 灰色背景圆环 */
+.score-circle-bg {
+  position: absolute;
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 50%;
+  background-color: #E8E8E8;
+}
+
+/* 橙色进度圆环 */
+.score-circle-progress {
+  position: absolute;
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 50%;
+}
+
+/* 内部白色圆形 */
 .score-inner {
+  position: relative;
   width: 120rpx;
   height: 120rpx;
   border-radius: 50%;
@@ -92,6 +112,7 @@
   justify-content: center;
   align-items: center;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+  z-index: 1;
 }
 
 .score-number {
@@ -227,9 +248,12 @@
 }
 
 .food-tag {
+  display: flex;
+  flex-direction: column;
   font-size: 20rpx;
-  padding: 4rpx 10rpx;
+  padding: 6rpx 12rpx;
   border-radius: 12rpx;
+  margin-bottom: 4rpx;
 }
 
 .food-tag.tag-positive {
@@ -240,6 +264,25 @@
 .food-tag.tag-warning {
   background-color: #FFF3E0;
   color: #E65100;
+}
+
+.tag-label {
+  font-weight: 500;
+  font-size: 20rpx;
+}
+
+.tag-reason-text {
+  font-size: 18rpx;
+  color: #757575;
+  margin-top: 2rpx;
+  line-height: 1.4;
+}
+
+.tag-reason {
+  font-size: 20rpx;
+  color: #757575;
+  margin-left: 8rpx;
+  font-weight: 400;
 }
 
 .food-right {

@@ -1,0 +1,30 @@
+.quick-actions {
+  padding: 8rpx 0;
+}
+
+.quick-actions-title {
+  display: block;
+  font-size: 28rpx;
+  color: #212121;
+  margin-bottom: 16rpx;
+}
+
+.quick-actions-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.quick-action-btn {
+  padding: 16rpx 24rpx;
+  background-color: #E8F5E9;
+  border-radius: 32rpx;
+  font-size: 26rpx;
+  color: #4CAF50;
+  transition: all 0.2s ease;
+}
+
+.quick-action-btn:active {
+  background-color: #C8E6C9;
+  transform: scale(0.95);
+}

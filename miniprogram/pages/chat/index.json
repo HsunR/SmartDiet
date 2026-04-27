@@ -1,8 +1,18 @@
 {
-  "navigationBarTitleText": "AI营养师",
+  "navigationBarTitleText": "AI 营养师",
   "enablePullDownRefresh": true,
   "backgroundTextStyle": "dark",
   "usingComponents": {
-    "food-card": "/components/food-card/index"
+    "food-card": "/components/food-card/index",
+    "text-message": "/pages/chat/components/text-message/index",
+    "image-message": "/pages/chat/components/image-message/index",
+    "typing-indicator": "/pages/chat/components/typing-indicator/index",
+    "meal-type-select": "/pages/chat/components/meal-type-select/index",
+    "meal-type-picker": "/pages/chat/components/meal-type-picker/index",
+    "date-select": "/pages/chat/components/date-select/index",
+    "rating-select": "/pages/chat/components/rating-select/index",
+    "feedback-input": "/pages/chat/components/feedback-input/index",
+    "user-info-form": "/pages/chat/components/user-info-form/index",
+    "quick-actions": "/pages/chat/components/quick-actions/index"
   }
 }

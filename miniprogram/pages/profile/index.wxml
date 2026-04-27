@@ -1,8 +1,11 @@
+<!-- 个人中心页面 - 用户个人资料管理 -->
+<!-- 页面结构：登录引导 / 个人资料内容（用户信息、统计数据、资料表单、菜单列表） -->
 <view class="profile-container">
+  <!-- 未登录状态：显示登录引导 -->
   <view wx:if="{{!hasLogin}}" class="login-section">
     <view class="login-card">
       <view class="login-logo">🥗</view>
-      <text class="login-title">AI营养师</text>
+      <text class="login-title">AI 营养师</text>
       <text class="login-desc">智能饮食管理，健康生活每一天</text>
       <button class="login-btn" bindtap="onLogin">
         <text>微信登录</text>
@@ -10,26 +13,33 @@
     </view>
   </view>
   
+  <!-- 已登录状态：显示个人资料内容 -->
   <view wx:else class="profile-content">
+    <!-- 用户头部信息：头像、昵称、连续记录天数 -->
     <view class="user-header">
       <view class="user-info" bindtap="onGetUserProfile">
+        <!-- 用户头像（如果有） -->
         <image 
           wx:if="{{userInfo.avatarUrl}}"
           src="{{userInfo.avatarUrl}}" 
           class="user-avatar"
           mode="aspectFill"
         ></image>
+        <!-- 头像占位符（如果没有） -->
         <view class="user-avatar-placeholder" wx:else>
           <text>👤</text>
         </view>
         <view class="user-detail">
           <text class="user-name">{{userInfo.nickName || '用户'}}</text>
+          <!-- 连续记录天数徽章 -->
           <text class="user-streak" wx:if="{{stats.streakDays > 0}}">🔥 连续记录 {{stats.streakDays}} 天</text>
         </view>
       </view>
     </view>
     
+    <!-- 统计数据概览：记录次数、记录天数、餐均热量、平均评分 -->
     <view class="stats-overview">
+      <!-- 记录次数统计卡片 -->
       <view class="stat-card">
         <view class="stat-icon">📊</view>
         <view class="stat-content">
@@ -38,6 +48,7 @@
         </view>
       </view>
       
+      <!-- 记录天数统计卡片 -->
       <view class="stat-card">
         <view class="stat-icon">📅</view>
         <view class="stat-content">
@@ -46,6 +57,7 @@
         </view>
       </view>
       
+      <!-- 餐均热量统计卡片 -->
       <view class="stat-card">
         <view class="stat-icon">🔥</view>
         <view class="stat-content">
@@ -54,6 +66,7 @@
         </view>
       </view>
       
+      <!-- 平均评分统计卡片 -->
       <view class="stat-card">
         <view class="stat-icon">⭐</view>
         <view class="stat-content">
@@ -63,12 +76,15 @@
       </view>
     </view>
     
+    <!-- 个人资料表单区域：性别、年龄、身高、体重、活动水平、健康目标 -->
     <view class="profile-section">
       <view class="section-header">
         <text class="section-title">📋 个人资料</text>
       </view>
       
+      <!-- 个人资料表单 -->
       <view class="profile-form">
+        <!-- 性别选择 -->
         <view class="form-item">
           <view class="item-left">
             <text class="item-icon">👤</text>
@@ -82,6 +98,7 @@
           </picker>
         </view>
         
+        <!-- 年龄输入 -->
         <view class="form-item">
           <view class="item-left">
             <text class="item-icon">🎂</text>
@@ -99,6 +116,7 @@
           </view>
         </view>
         
+        <!-- 身高输入 -->
         <view class="form-item">
           <view class="item-left">
             <text class="item-icon">📏</text>
@@ -116,6 +134,7 @@
           </view>
         </view>
         
+        <!-- 体重输入 -->
         <view class="form-item">
           <view class="item-left">
             <text class="item-icon">⚖️</text>
@@ -133,6 +152,7 @@
           </view>
         </view>
         
+        <!-- 活动水平选择 -->
         <view class="form-item" bindtap="showActivityPicker">
           <view class="item-left">
             <text class="item-icon">🏃</text>
@@ -144,6 +164,7 @@
           </view>
         </view>
         
+        <!-- 健康目标选择 -->
         <view class="form-item" bindtap="showGoalPicker">
           <view class="item-left">
             <text class="item-icon">🎯</text>
@@ -157,7 +178,9 @@
       </view>
     </view>
     
+    <!-- 菜单列表：历史记录、设置等 -->
     <view class="menu-section">
+      <!-- 历史记录菜单项 -->
       <view class="menu-item" bindtap="onMenuTap" data-path="/pages/history/index">
         <view class="menu-left">
           <text class="menu-icon">📋</text>
@@ -166,6 +189,7 @@
         <text class="menu-arrow">›</text>
       </view>
       
+      <!-- 设置菜单项 -->
       <view class="menu-item" bindtap="onMenuTap" data-path="/pages/settings/index">
         <view class="menu-left">
           <text class="menu-icon">⚙️</text>
@@ -175,12 +199,14 @@
       </view>
     </view>
     
+    <!-- 保存按钮区域 -->
     <view class="save-section">
       <button class="save-btn" bindtap="saveProfile">保存资料</button>
     </view>
   </view>
 </view>
 
+<!-- 健康目标选择弹窗：底部弹出式选择器 -->
 <view class="picker-modal {{showGoalPicker ? 'show' : ''}}" catchtouchmove="preventTouchMove">
   <view class="picker-backdrop" bindtap="hideGoalPicker"></view>
   <view class="picker-container">
@@ -191,6 +217,7 @@
       </view>
     </view>
     <view class="picker-options">
+      <!-- 遍历健康目标选项 -->
       <view class="picker-option {{goalIndex === index ? 'active' : ''}}" wx:for="{{goals}}" wx:key="value" data-index="{{index}}" bindtap="onGoalSelect">
         <view class="option-left">
           <text class="option-icon">{{item.icon}}</text>
@@ -199,6 +226,7 @@
             <text class="option-desc">{{item.desc}}</text>
           </view>
         </view>
+        <!-- 选中对勾标记 -->
         <view class="option-check" wx:if="{{goalIndex === index}}">
           <text>✓</text>
         </view>
@@ -207,6 +235,7 @@
   </view>
 </view>
 
+<!-- 活动水平选择弹窗：底部弹出式选择器 -->
 <view class="picker-modal {{showActivityPicker ? 'show' : ''}}" catchtouchmove="preventTouchMove">
   <view class="picker-backdrop" bindtap="hideActivityPicker"></view>
   <view class="picker-container">
@@ -217,11 +246,13 @@
       </view>
     </view>
     <view class="picker-options">
+      <!-- 遍历活动水平选项 -->
       <view class="picker-option {{activityIndex === index ? 'active' : ''}}" wx:for="{{activityLevels}}" wx:key="value" data-index="{{index}}" bindtap="onActivitySelect">
         <view class="option-content">
           <text class="option-title">{{item.label}}</text>
           <text class="option-desc">{{item.desc}}</text>
         </view>
+        <!-- 选中对勾标记 -->
         <view class="option-check" wx:if="{{activityIndex === index}}">
           <text>✓</text>
         </view>

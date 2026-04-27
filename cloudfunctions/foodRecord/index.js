@@ -1,12 +1,106 @@
+/**
+ * @module foodRecord
+ * @description 饮食记录云函数 - 管理用户的饮食记录数据
+ */
+
 const cloud = require('wx-server-sdk')
+const { success, fail, withErrorHandling, validate } = require('./response')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
 const db = cloud.database()
 const _ = db.command
-const recordsCollection = db.collection('food_records')
 
-exports.main = async (event, context) => {
+const COLLECTION_NAME = 'food_records'
+
+const getCollection = () => db.collection(COLLECTION_NAME)
+
+const addRecord = async (openid, recordData) => {
+  const errors = validate(recordData, {
+    date: { required: true, label: '日期' },
+    mealType: { required: true, label: '餐次类型' },
+    foods: { required: true, type: 'object', label: '食物列表' }
+  })
+  
+  if (errors.length > 0) {
+    return fail(errors.join(', '))
+  }
+  
+  const record = {
+    ...recordData,
+    _openid: openid,
+    createdAt: db.serverDate(),
+    updatedAt: db.serverDate()
+  }
+  
+  const result = await getCollection().add({ data: record })
+  
+  return success({ _id: result._id, ...record })
+}
+
+const getRecordsByDate = async (openid, date) => {
+  if (!date) {
+    return fail('日期不能为空')
+  }
+  
+  const result = await getCollection()
+    .where({ _openid: openid, date })
+    .orderBy('createdAt', 'desc')
+    .get()
+  
+  return success(result.data)
+}
+
+const getHistory = async (openid, startDate, endDate) => {
+  if (!startDate || !endDate) {
+    return fail('开始日期和结束日期不能为空')
+  }
+  
+  const result = await getCollection()
+    .where({
+      _openid: openid,
+      date: _.gte(startDate).and(_.lte(endDate))
+    })
+    .orderBy('date', 'desc')
+    .orderBy('createdAt', 'desc')
+    .limit(100)
+    .get()
+  
+  return success(result.data)
+}
+
+const deleteRecord = async (openid, recordId) => {
+  if (!recordId) {
+    return fail('记录ID不能为空')
+  }
+  
+  await getCollection()
+    .where({ _id: recordId, _openid: openid })
+    .remove()
+  
+  return success({ recordId })
+}
+
+const updateRecord = async (openid, recordId, updateData) => {
+  if (!recordId) {
+    return fail('记录ID不能为空')
+  }
+  
+  const { recordId: _, ...data } = updateData
+  
+  await getCollection()
+    .where({ _id: recordId, _openid: openid })
+    .update({
+      data: {
+        ...data,
+        updatedAt: db.serverDate()
+      }
+    })
+  
+  return success({ recordId })
+}
+
+exports.main = withErrorHandling(async (event) => {
   const { action, data } = event
   const wxContext = cloud.getWXContext()
   const openid = wxContext.OPENID
@@ -23,105 +117,6 @@ exports.main = async (event, context) => {
     case 'update':
       return await updateRecord(openid, data.recordId, data)
     default:
-      return { success: false, error: 'Unknown action' }
+      return fail('未知操作')
   }
-}
-
-async function addRecord(openid, recordData) {
-  try {
-    const record = {
-      ...recordData,
-      _openid: openid,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    }
-    
-    const result = await recordsCollection.add({ data: record })
-    
-    return { 
-      success: true, 
-      data: { 
-        _id: result._id,
-        ...record 
-      } 
-    }
-  } catch (error) {
-    console.error('Add record error:', error)
-    return { success: false, error: error.message }
-  }
-}
-
-async function getRecordsByDate(openid, date) {
-  try {
-    const result = await recordsCollection
-      .where({
-        _openid: openid,
-        date: date
-      })
-      .orderBy('createdAt', 'desc')
-      .get()
-    
-    return { success: true, data: result.data }
-  } catch (error) {
-    console.error('Get records by date error:', error)
-    return { success: false, error: error.message }
-  }
-}
-
-async function getHistory(openid, startDate, endDate) {
-  try {
-    const result = await recordsCollection
-      .where({
-        _openid: openid,
-        date: _.gte(startDate).and(_.lte(endDate))
-      })
-      .orderBy('date', 'desc')
-      .orderBy('createdAt', 'desc')
-      .limit(100)
-      .get()
-    
-    return { success: true, data: result.data }
-  } catch (error) {
-    console.error('Get history error:', error)
-    return { success: false, error: error.message }
-  }
-}
-
-async function deleteRecord(openid, recordId) {
-  try {
-    const result = await recordsCollection
-      .where({
-        _id: recordId,
-        _openid: openid
-      })
-      .remove()
-    
-    return { success: true, data: result }
-  } catch (error) {
-    console.error('Delete record error:', error)
-    return { success: false, error: error.message }
-  }
-}
-
-async function updateRecord(openid, recordId, updateData) {
-  try {
-    const { recordId: _, ...data } = updateData
-    
-    const result = await recordsCollection
-      .where({
-        _id: recordId,
-        _openid: openid
-      })
-      .update({
-        data: {
-          ...data,
-          updatedAt: new Date()
-        }
-      })
-    
-    return { success: true, data: result }
-  } catch (error) {
-    console.error('Update record error:', error)
-    return { success: false, error: error.message }
-  }
-}
+})

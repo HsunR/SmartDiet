@@ -1,0 +1,59 @@
+<view class="user-info-form">
+  <text class="form-title">{{content}}</text>
+  
+  <view class="form-fields">
+    <view wx:for="{{fields}}" wx:key="key" class="form-field">
+      
+      <!-- 数字输入类型 -->
+      <view wx:if="{{item.type === 'number'}}">
+        <text class="field-label">{{item.label}}</text>
+        <input
+          class="field-input"
+          type="number"
+          placeholder="{{item.placeholder}}"
+          value="{{formData[item.key] || ''}}"
+          bindinput="onInputChange"
+          data-key="{{item.key}}"
+        />
+      </view>
+      
+      <!-- 单项选择类型 -->
+      <view wx:elif="{{item.type === 'picker'}}">
+        <text class="field-label">{{item.label}}</text>
+        <picker
+          class="field-picker"
+          range="{{pickerDisplayValues[item.key]}}"
+          value="{{pickerIndexes[item.key] || 0}}"
+          bindchange="onPickerChange"
+          data-key="{{item.key}}"
+        >
+          <view class="picker-display">
+            <text class="text">{{pickerDisplayTexts[item.key] || item.placeholder}}</text>
+            <text class="picker-arrow">▼</text>
+          </view>
+        </picker>
+      </view>
+      
+      <!-- 多项选择类型 -->
+      <view wx:elif="{{item.type === 'multiPicker'}}">
+        <text class="field-label">{{item.label}}</text>
+        <view class="field-multi-picker">
+          <view
+            wx:for="{{item.options}}"
+            wx:for-item="opt"
+            wx:key="value"
+            class="multi-option {{formData[item.key] && formData[item.key].indexOf(opt.value) >= 0 ? 'multi-selected' : ''}}"
+            bindtap="onMultiOptionTap"
+            data-key="{{item.key}}"
+            data-value="{{opt.value}}"
+          >
+            <text>{{opt.label}}</text>
+          </view>
+        </view>
+      </view>
+      
+    </view>
+  </view>
+  
+  <button class="form-submit-btn" bindtap="onSubmit">提交</button>
+</view>

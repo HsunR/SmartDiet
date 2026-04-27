@@ -1,17 +1,23 @@
+<!-- 用户引导页面 - 分步引导用户填写基本信息 -->
 <view class="onboarding-container">
+  <!-- 进度条 -->
   <view class="progress-bar">
     <view class="progress-fill" style="width: {{(currentStep + 1) / steps.length * 100}}%"></view>
   </view>
   
+  <!-- 步骤指示器 -->
   <view class="step-indicator">
     <text class="step-text">{{currentStep + 1}} / {{steps.length}}</text>
   </view>
   
+  <!-- 当前步骤内容 -->
   <view class="step-content">
     <view class="step-title">{{steps[currentStep].title}}</view>
     <view class="step-subtitle">{{steps[currentStep].subtitle}}</view>
     
+    <!-- 步骤主体内容区 -->
     <view class="step-body">
+      <!-- 性别选择界面 -->
       <view wx:if="{{steps[currentStep].type === 'gender'}}" class="gender-selector">
         <view 
           class="gender-option {{profile.gender === 1 ? 'gender-selected' : ''}}"
@@ -31,11 +37,14 @@
         </view>
       </view>
       
+      <!-- 数字输入界面（年龄、身高、体重） -->
       <view wx:elif="{{steps[currentStep].type === 'number'}}" class="number-input-section">
+        <!-- 当前数值显示 -->
         <view class="number-display">
           <text class="number-value">{{profile[steps[currentStep].field] || steps[currentStep].min}}</text>
           <text class="number-unit">{{steps[currentStep].unit}}</text>
         </view>
+        <!-- 滑块控件 -->
         <slider 
           class="number-slider"
           min="{{steps[currentStep].min}}"
@@ -49,12 +58,14 @@
           bindchange="onSliderChange"
           bindchanging="onSliderChanging"
         />
+        <!-- 滑块最小/最大值标签 -->
         <view class="slider-labels">
           <text>{{steps[currentStep].min}}</text>
           <text>{{steps[currentStep].max}}</text>
         </view>
       </view>
       
+      <!-- 活动水平选择界面 -->
       <view wx:elif="{{steps[currentStep].type === 'activity'}}" class="activity-selector">
         <view 
           class="activity-option {{profile.activityLevel === item.value ? 'activity-selected' : ''}}"
@@ -71,6 +82,7 @@
         </view>
       </view>
       
+      <!-- 健康目标选择界面 -->
       <view wx:elif="{{steps[currentStep].type === 'goal'}}" class="goal-selector">
         <view 
           class="goal-option {{profile.goal === item.value ? 'goal-selected' : ''}}"
@@ -89,7 +101,9 @@
     </view>
   </view>
   
+  <!-- 导航按钮组 -->
   <view class="navigation-buttons">
+    <!-- 上一步按钮（第一步不显示） -->
     <view 
       wx:if="{{currentStep > 0}}" 
       class="nav-btn nav-btn-secondary"
@@ -97,6 +111,7 @@
     >
       <text>上一步</text>
     </view>
+    <!-- 下一步/完成按钮 -->
     <view 
       class="nav-btn nav-btn-primary {{currentStep === 0 ? 'nav-btn-full' : ''}}"
       bindtap="onNextStep"

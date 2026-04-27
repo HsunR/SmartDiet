@@ -1,20 +1,32 @@
+/* ============================================
+   饮食报告页面样式表
+   功能：展示本周饮食统计和趋势分析的视觉效果
+   ============================================ */
+
+/* 页面容器 - 最小高度全屏，浅灰背景 */
 .report-container {
   min-height: 100vh;
   background-color: #FAFAFA;
-  padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
+  padding-bottom: calc(120rpx + env(safe-area-inset-bottom));  /* 适配 iPhone 底部安全区 */
 }
 
+/* ============================================
+   顶部日期导航栏样式
+   ============================================ */
+
+/* 日期导航栏 - Flex 布局，白色背景，固定在顶部 */
 .date-header {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: center;  /* 水平居中 */
+  align-items: center;      /* 垂直居中 */
   padding: 24rpx;
   background-color: #FFFFFF;
-  position: sticky;
+  position: sticky;  /* 粘性定位 */
   top: 0;
-  z-index: 10;
+  z-index: 10;       /* 层级高于内容区 */
 }
 
+/* 导航按钮（上一周/下一周） */
 .date-nav {
   width: 64rpx;
   height: 64rpx;
@@ -22,29 +34,36 @@
   justify-content: center;
   align-items: center;
   font-size: 36rpx;
-  color: #4CAF50;
+  color: #4CAF50;  /* 绿色主题色 */
 }
 
+/* 日期选择器 - 圆角胶囊样式 */
 .date-picker {
   display: flex;
   align-items: center;
   padding: 12rpx 32rpx;
-  background-color: #E8F5E9;
+  background-color: #E8F5E9;  /* 浅绿背景 */
   border-radius: 32rpx;
 }
 
+/* 日期文本 */
 .date-text {
   font-size: 28rpx;
   color: #212121;
   font-weight: 500;
 }
 
+/* 日期下拉箭头 */
 .date-arrow {
   margin-left: 8rpx;
   font-size: 20rpx;
   color: #757575;
 }
 
+/* ============================================
+   加载状态样式
+   ============================================ */
+/* 加载容器 - 居中显示 */
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -53,16 +72,18 @@
   padding: 120rpx;
 }
 
+/* 加载旋转动画 */
 .loading-spinner {
   width: 64rpx;
   height: 64rpx;
-  border: 6rpx solid #E8F5E9;
-  border-top-color: #4CAF50;
+  border: 6rpx solid #E8F5E9;  /* 浅绿底色 */
+  border-top-color: #4CAF50;    /* 绿色顶部 */
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  animation: spin 0.8s linear infinite;  /* 旋转动画 */
   margin-bottom: 24rpx;
 }
 
+/* 定义旋转关键帧动画 */
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
@@ -305,7 +326,7 @@
   border-radius: 16rpx;
 }
 
-.record-count text {
+.record-count .text {
   font-size: 20rpx;
   color: #FFFFFF;
   font-weight: 500;
@@ -511,7 +532,7 @@
 .summary-value {
   font-size: 28rpx;
   font-weight: 600;
-  color: #4CAF50;
+  color: #2196F3;
 }
 
 .report-empty {
@@ -560,6 +581,10 @@
   border: none;
 }
 
+/* ============================================
+   餐食详情弹窗样式 - 重写版本
+   ============================================ */
+
 .meal-detail-modal {
   position: fixed;
   top: 0;
@@ -567,14 +592,9 @@
   right: 0;
   bottom: 0;
   z-index: 1000;
-  visibility: hidden;
-  opacity: 0;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-.meal-detail-modal.show {
-  visibility: visible;
-  opacity: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
 }
 
 .modal-backdrop {
@@ -584,24 +604,42 @@
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .modal-container {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: relative;
   max-height: 85vh;
   background-color: #FFFFFF;
   border-radius: 32rpx 32rpx 0 0;
-  transform: translateY(100%);
-  transition: transform 0.3s ease;
   display: flex;
   flex-direction: column;
+  animation: slideUp 0.3s ease;
+  overflow: hidden;
 }
 
-.meal-detail-modal.show .modal-container {
-  transform: translateY(0);
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.modal-content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.modal-content-wrapper.edit-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-header {
@@ -642,7 +680,7 @@
   border-radius: 20rpx;
 }
 
-.edit-btn text {
+.edit-btn .text {
   font-size: 24rpx;
   color: #4CAF50;
 }
@@ -690,14 +728,20 @@
   font-weight: 500;
 }
 
-.modal-swiper {
-  flex: 1;
-  height: 60vh;
-}
-
 .modal-body {
   flex: 1;
+  height: 100%;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
+}
+
+.modal-body.edit-body {
+  flex: 1;
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
 }
 
 .detail-content {

@@ -1,0 +1,8 @@
+<wxs src="../../../../utils/utils.wxs" module="utils" />
+
+<view class="message-bubble {{role === 'user' ? 'bubble-user' : 'bubble-ai'}}">
+  <text class="message-text">{{content}}</text>
+</view>
+<view class="message-time" wx:if="{{timestamp}}">
+  <text class="text">{{utils.formatTime(timestamp)}}</text>
+</view>

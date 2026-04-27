@@ -1,0 +1,448 @@
+<mxfile host="app.diagrams.net" agent="SmartDiet">
+  <diagram id="AIChatFlow" name="AI聊天对话详细流程">
+    <mxGraphModel dx="2400" dy="2800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="4500" pageHeight="3500" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- 图例 -->
+        <mxCell id="legend-title" parent="1" style="text;html=1;strokeColor=none;fillColor=#333333;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=14;fontStyle=1;fontColor=#FFFFFF" value="图例说明" vertex="1">
+          <mxGeometry height="30" width="140" x="40" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-start" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=11;fontColor=#1565C0" value="开始/结束" vertex="1">
+          <mxGeometry height="35" width="100" x="40" y="85" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-process" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=11;fontColor=#F57F17" value="处理过程" vertex="1">
+          <mxGeometry height="35" width="100" x="40" y="135" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-data" parent="1" style="shape=parallelogram;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontSize=11;fontColor=#2E7D32" value="数据/输入" vertex="1">
+          <mxGeometry height="35" width="100" x="40" y="185" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-decision" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFCCBC;strokeColor=#D84315;fontSize=11;fontColor=#D84315" value="条件判断" vertex="1">
+          <mxGeometry height="45" width="100" x="40" y="235" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-db" parent="1" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#E1BEE7;strokeColor=#6A1B9A;fontSize=11;fontColor=#6A1B9A" value="数据库" vertex="1">
+          <mxGeometry height="40" width="100" x="40" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-cloud" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=11;fontColor=#2E7D32" value="云函数/API" vertex="1">
+          <mxGeometry height="35" width="100" x="40" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-ai" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1976D2;fontSize=11;fontColor=#1976D2" value="AI处理" vertex="1">
+          <mxGeometry height="35" width="100" x="40" y="415" as="geometry" />
+        </mxCell>
+        
+        <!-- 流程标题 -->
+        <mxCell id="flow-title" parent="1" style="text;html=1;strokeColor=none;fillColor=#1976D2;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=20;fontStyle=1;fontColor=#FFFFFF" value="AI聊天对话详细流程" vertex="1">
+          <mxGeometry height="50" width="400" x="400" y="40" as="geometry" />
+        </mxCell>
+        
+        <!-- 数据结构定义 -->
+        <mxCell id="data-def-title" parent="1" style="text;html=1;strokeColor=none;fillColor=#E8F5E9;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=14;fontStyle=1;fontColor=#2E7D32" value="【关键数据结构定义】" vertex="1">
+          <mxGeometry height="30" width="500" x="950" y="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="data-message" parent="1" style="text;html=1;strokeColor=#2E7D32;fillColor=#E8F5E9;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;fontSize=10;fontColor=#2E7D32;spacingLeft=10;spacingTop=5" value="&lt;b&gt;Message 消息结构&lt;/b&gt;&#xa;{&#xa;  id: string,              // 消息唯一ID&#xa;  role: string,            // 角色: 'user' | 'assistant'&#xa;  type: string,            // 类型: 'text' | 'image' | ...&#xa;  content: string,         // 文本内容&#xa;  data: object,            // 附加数据&#xa;  timestamp: number        // 时间戳&#xa;}&#xa;&#xa;&lt;b&gt;ConversationContext 对话上下文&lt;/b&gt;&#xa;{&#xa;  messages: Message[],     // 历史消息列表&#xa;  maxHistory: number       // 最大历史条数 (默认10)&#xa;}" vertex="1">
+          <mxGeometry height="180" width="260" x="950" y="85" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="data-chat" parent="1" style="text;html=1;strokeColor=#1565C0;fillColor=#E3F2FD;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;fontSize=10;fontColor=#1565C0;spacingLeft=10;spacingTop=5" value="&lt;b&gt;ChatRequest 聊天请求&lt;/b&gt;&#xa;{&#xa;  message: string,         // 用户消息&#xa;  context: {               // 上下文&#xa;    messages: Message[]&#xa;  }&#xa;}&#xa;&#xa;&lt;b&gt;ChatResponse 聊天响应&lt;/b&gt;&#xa;{&#xa;  success: boolean,&#xa;  data: {&#xa;    reply: string          // AI回复内容&#xa;  }&#xa;}&#xa;&#xa;&lt;b&gt;RecentDiet 最近饮食&lt;/b&gt;&#xa;{&#xa;  mealCount: number,       // 近3天餐次&#xa;  avgCalories: number,     // 平均卡路里&#xa;  recentFoods: string[]    // 最近食物列表&#xa;}" vertex="1">
+          <mxGeometry height="220" width="240" x="1240" y="85" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="data-prompt" parent="1" style="text;html=1;strokeColor=#1976D2;fillColor=#BBDEFB;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;fontSize=10;fontColor=#1976D2;spacingLeft=10;spacingTop=5" value="&lt;b&gt;ChatPrompt 聊天提示词&lt;/b&gt;&#xa;模板内容:&#xa;---&#xa;你是AI营养师助手。帮助用户&#xa;记录饮食、提供建议、解答问题。&#xa;&#xa;用户信息: {userProfile}&#xa;最近饮食: {recentDiet}&#xa;对话历史: {conversationHistory}&#xa;&#xa;用温暖专业的语气回复，&#xa;简洁明了。直接回复，不需要&#xa;JSON格式。&#xa;---&#xa;&#xa;&lt;b&gt;Prompt变量替换&lt;/b&gt;&#xa;- {userProfile} → JSON.stringify&#xa;- {recentDiet} → JSON.stringify&#xa;- {conversationHistory} → &#xa;  messages.slice(-10)" vertex="1">
+          <mxGeometry height="240" width="260" x="950" y="285" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="data-storage" parent="1" style="text;html=1;strokeColor=#6A1B9A;fillColor=#E1BEE7;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;fontSize=10;fontColor=#6A1B9A;spacingLeft=10;spacingTop=5" value="&lt;b&gt;StorageKeys 存储键&lt;/b&gt;&#xa;{&#xa;  CHAT_MESSAGES: 'chat_messages',&#xa;  MAX_MESSAGES: 100,       // 最大保存条数&#xa;  EXPIRE_DAYS: 7           // 过期天数&#xa;}&#xa;&#xa;&lt;b&gt;本地存储结构&lt;/b&gt;&#xa;{&#xa;  messages: Message[],&#xa;  lastUpdate: timestamp,&#xa;  version: string&#xa;}" vertex="1">
+          <mxGeometry height="140" width="240" x="1240" y="325" as="geometry" />
+        </mxCell>
+        
+        <!-- 主流程: 发送消息 -->
+        <mxCell id="main-title" parent="1" style="text;html=1;strokeColor=none;fillColor=#FFF3E0;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=14;fontStyle=1;fontColor=#E65100" value="【主流程: 发送消息】" vertex="1">
+          <mxGeometry height="30" width="220" x="280" y="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="start" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=11;fontColor=#1565C0;fontStyle=1" value="开始&#xa;用户输入消息" vertex="1">
+          <mxGeometry height="50" width="120" x="330" y="170" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="step1" parent="1" style="shape=parallelogram;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontSize=11;fontColor=#2E7D32" value="&lt;b&gt;用户输入&lt;/b&gt;&#xa;在输入框输入文本&#xa;点击发送按钮" vertex="1">
+          <mxGeometry height="60" width="140" x="320" y="250" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="step2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=11;fontColor=#F57F17" value="&lt;b&gt;onInputChange()&lt;/b&gt;&#xa;实时更新输入值&#xa;inputValue: string" vertex="1">
+          <mxGeometry height="55" width="140" x="320" y="340" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="step3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=11;fontColor=#F57F17" value="&lt;b&gt;sendMessage()&lt;/b&gt;&#xa;发送消息处理&#xa;1. 验证输入非空&#xa;2. 创建用户消息" vertex="1">
+          <mxGeometry height="70" width="150" x="315" y="425" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="step4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=11;fontColor=#F57F17" value="&lt;b&gt;createTextMessage()&lt;/b&gt;&#xa;创建用户文本消息&#xa;role: 'user'" vertex="1">
+          <mxGeometry height="55" width="150" x="315" y="525" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="step5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=11;fontColor=#F57F17" value="&lt;b&gt;更新消息列表&lt;/b&gt;&#xa;messages.push(userMsg)&#xa;滚动到底部" vertex="1">
+          <mxGeometry height="60" width="150" x="315" y="610" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="step6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=11;fontColor=#F57F17" value="&lt;b&gt;显示加载状态&lt;/b&gt;&#xa;isLoading: true&#xa;显示打字指示器" vertex="1">
+          <mxGeometry height="60" width="140" x="320" y="700" as="geometry" />
+        </mxCell>
+        
+        <!-- AI处理流程 -->
+        <mxCell id="ai-title" parent="1" style="text;html=1;strokeColor=none;fillColor=#BBDEFB;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=14;fontStyle=1;fontColor=#1976D2" value="【AI处理流程】" vertex="1">
+          <mxGeometry height="30" width="180" x="550" y="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ai1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=11;fontColor=#2E7D32" value="&lt;b&gt;api.chat.send()&lt;/b&gt;&#xa;调用聊天API&#xa;传入: message + context" vertex="1">
+          <mxGeometry height="60" width="150" x="565" y="170" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ai2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=11;fontColor=#2E7D32" value="&lt;b&gt;云函数: aiGateway&lt;/b&gt;&#xa;action: 'chat'" vertex="1">
+          <mxGeometry height="45" width="150" x="565" y="260" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ai3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=11;fontColor=#2E7D32" value="&lt;b&gt;getUserProfile()&lt;/b&gt;&#xa;查询用户档案" vertex="1">
+          <mxGeometry height="45" width="140" x="510" y="340" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ai3-db" parent="1" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#E1BEE7;strokeColor=#6A1B9A;fontSize=10;fontColor=#6A1B9A" value="&lt;b&gt;数据库: users&lt;/b&gt;&#xa;查询用户信息" vertex="1">
+          <mxGeometry height="50" width="120" x="520" y="420" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ai4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=11;fontColor=#2E7D32" value="&lt;b&gt;getRecentDiet()&lt;/b&gt;&#xa;查询最近3天饮食" vertex="1">
+          <mxGeometry height="45" width="140" x="680" y="340" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ai4-db" parent="1" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#E1BEE7;strokeColor=#6A1B9A;fontSize=10;fontColor=#6A1B9A" value="&lt;b&gt;数据库: food_records&lt;/b&gt;&#xa;查询近3天记录" vertex="1">
+          <mxGeometry height="50" width="130" x="685" y="420" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ai5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1976D2;fontSize=11;fontColor=#1976D2" value="&lt;b&gt;构建Chat Prompt&lt;/b&gt;&#xa;整合:&#xa;- 提示词模板&#xa;- 用户档案&#xa;- 最近饮食&#xa;- 对话历史" vertex="1">
+          <mxGeometry height="90" width="140" x="570" y="510" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ai6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1976D2;fontSize=11;fontColor=#1976D2" value="&lt;b&gt;callAIWithSystem()&lt;/b&gt;&#xa;调用AI服务&#xa;system: prompt&#xa;user: message" vertex="1">
+          <mxGeometry height="70" width="150" x="565" y="630" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ai7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1976D2;fontSize="11;fontColor=#1976D2" value="&lt;b&gt;AI Provider&lt;/b&gt;&#xa;- DashScope&#xa;- Qwen-Max&#xa;- 智谱AI&#xa;生成回复" vertex="1">
+          <mxGeometry height="80" width="120" x="580" y="730" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ai8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1976D2;fontSize=11;fontColor=#1976D2" value="&lt;b&gt;extractContent()&lt;/b&gt;&#xa;提取AI回复文本" vertex="1">
+          <mxGeometry height="45" width="140" x="570" y="840" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ai9" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=11;fontColor=#2E7D32" value="&lt;b&gt;返回ChatResponse&lt;/b&gt;&#xa;{success, data: {reply}}" vertex="1">
+          <mxGeometry height="50" width="150" x="565" y="920" as="geometry" />
+        </mxCell>
+        
+        <!-- 显示回复流程 -->
+        <mxCell id="display-title" parent="1" style="text;html=1;strokeColor=none;fillColor=#E8F5E9;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=14;fontStyle=1;fontColor=#2E7D32" value="【显示回复流程】" vertex="1">
+          <mxGeometry height="30" width="180" x="820" y="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="d1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=11;fontColor=#F57F17" value="&lt;b&gt;隐藏加载状态&lt;/b&gt;&#xa;isLoading: false" vertex="1">
+          <mxGeometry height="45" width="140" x="840" y="170" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="d2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=11;fontColor=#F57F17" value="&lt;b&gt;createTextMessage()&lt;/b&gt;&#xa;创建AI回复消息&#xa;role: 'assistant'" vertex="1">
+          <mxGeometry height="60" width="150" x="835" y="240" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="d3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=11;fontColor=#F57F17" value="&lt;b&gt;更新消息列表&lt;/b&gt;&#xa;messages.push(aiMsg)&#xa;滚动到底部" vertex="1">
+          <mxGeometry height="60" width="150" x="835" y="330" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="d4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=11;fontColor=#F57F17" value="&lt;b&gt;清空输入框&lt;/b&gt;&#xa;inputValue: ''" vertex="1">
+          <mxGeometry height="45" width="140" x="840" y="420" as="geometry" />
+        </mxCell>
+        
+        <!-- 保存流程 -->
+        <mxCell id="save-title" parent="1" style="text;html=1;strokeColor=none;fillColor=#E1BEE7;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=14;fontStyle=1;fontColor=#6A1B9A" value="【消息保存流程】" vertex="1">
+          <mxGeometry height="30" width="180" x="1050" y="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="s1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=11;fontColor=#F57F17" value="&lt;b&gt;saveChatMessages()&lt;/b&gt;&#xa;保存聊天记录" vertex="1">
+          <mxGeometry height="45" width="150" x="1065" y="170" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="s2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=11;fontColor=#F57F17" value="&lt;b&gt;wx.setStorageSync()&lt;/b&gt;&#xa;key: 'chat_messages'&#xa;value: messages" vertex="1">
+          <mxGeometry height="60" width="150" x="1065" y="240" as="geometry" />
+        </mxCell>
+        
+        <!-- 页面生命周期 -->
+        <mxCell id="lifecycle-title" parent="1" style="text;html=1;strokeColor=none;fillColor=#FFF3E0;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=14;fontStyle=1;fontColor=#E65100" value="【页面生命周期】" vertex="1">
+          <mxGeometry height="30" width="180" x="1280" y="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="l1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=11;fontColor=#F57F17" value="&lt;b&gt;chat.onLoad()&lt;/b&gt;&#xa;页面加载" vertex="1">
+          <mxGeometry height="45" width="140" x="1300" y="170" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="l2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=11;fontColor=#F57F17" value="&lt;b&gt;loadMessages()&lt;/b&gt;&#xa;加载历史消息" vertex="1">
+          <mxGeometry height="45" width="140" x="1300" y="240" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="l3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=11;fontColor=#F57F17" value="&lt;b&gt;wx.getStorageSync()&lt;/b&gt;&#xa;读取本地存储" vertex="1">
+          <mxGeometry height="45" width="150" x="1295" y="310" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="l4" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFCCBC;strokeColor=#D84315;fontSize=11;fontColor=#D84315" value="有历史&#xa;消息?" vertex="1">
+          <mxGeometry height="50" width="80" x="1330" y="380" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="l5-yes" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=11;fontColor=#F57F17" value="&lt;b&gt;恢复历史消息&lt;/b&gt;&#xa;messages = cached&#xa;渲染消息列表" vertex="1">
+          <mxGeometry height="60" width="140" x="1300" y="470" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="l5-no" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=11;fontColor=#F57F17" value="&lt;b&gt;初始化聊天&lt;/b&gt;&#xa;initChat()&#xa;显示欢迎消息&#xa;显示快捷操作" vertex="1">
+          <mxGeometry height="80" width="140" x="1480" y="370" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="l6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=11;fontColor=#F57F17" value="&lt;b&gt;chat.onUnload()&lt;/b&gt;&#xa;页面卸载" vertex="1">
+          <mxGeometry height="45" width="140" x="1300" y="580" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="l7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=11;fontColor=#F57F17" value="&lt;b&gt;saveMessages()&lt;/b&gt;&#xa;保存当前消息" vertex="1">
+          <mxGeometry height="45" width="140" x="1300" y="650" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="end" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=11;fontColor=#1565C0;fontStyle=1" value="结束" vertex="1">
+          <mxGeometry height="45" width="100" x="340" y="820" as="geometry" />
+        </mxCell>
+        
+        <!-- 连接线 - 主流程 -->
+        <mxCell id="em1" edge="1" parent="1" source="start" target="step1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="em2" edge="1" parent="1" source="step1" target="step2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="em3" edge="1" parent="1" source="step2" target="step3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="em4" edge="1" parent="1" source="step3" target="step4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="em5" edge="1" parent="1" source="step4" target="step5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="em6" edge="1" parent="1" source="step5" target="step6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- 连接到AI流程 -->
+        <mxCell id="em-ai" edge="1" parent="1" source="step6" target="ai1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="460" y="730" />
+              <mxPoint x="460" y="200" />
+              <mxPoint x="565" y="200" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- AI流程连接线 -->
+        <mxCell id="eai1" edge="1" parent="1" source="ai1" target="ai2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eai2" edge="1" parent="1" source="ai2" target="ai3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eai3" edge="1" parent="1" source="ai3" target="ai3-db" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2196F3;strokeWidth=2;fontColor=#2196F3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eai4" edge="1" parent="1" source="ai2" target="ai4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eai5" edge="1" parent="1" source="ai4" target="ai4-db" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2196F3;strokeWidth=2;fontColor=#2196F3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eai6" edge="1" parent="1" source="ai3-db" target="ai5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2196F3;strokeWidth=2;fontColor=#2196F3" value="userProfile">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eai7" edge="1" parent="1" source="ai4-db" target="ai5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2196F3;strokeWidth=2;fontColor=#2196F3" value="recentDiet">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="750" y="445" />
+              <mxPoint x="640" y="445" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eai8" edge="1" parent="1" source="ai5" target="ai6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eai9" edge="1" parent="1" source="ai6" target="ai7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eai10" edge="1" parent="1" source="ai7" target="ai8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eai11" edge="1" parent="1" source="ai8" target="ai9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- 连接到显示流程 -->
+        <mxCell id="e-to-display" edge="1" parent="1" source="ai9" target="d1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2196F3;strokeWidth=2;fontColor=#2196F3" value="reply">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="715" y="945" />
+              <mxPoint x="910" y="945" />
+              <mxPoint x="910" y="215" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 显示流程连接线 -->
+        <mxCell id="ed1" edge="1" parent="1" source="d1" target="d2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ed2" edge="1" parent="1" source="d2" target="d3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ed3" edge="1" parent="1" source="d3" target="d4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- 保存流程连接线 -->
+        <mxCell id="es1" edge="1" parent="1" source="d4" target="s1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="980" y="442" />
+              <mxPoint x="1140" y="442" />
+              <mxPoint x="1140" y="215" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="es2" edge="1" parent="1" source="s1" target="s2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- 生命周期连接线 -->
+        <mxCell id="el1" edge="1" parent="1" source="l1" target="l2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="el2" edge="1" parent="1" source="l2" target="l3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="el3" edge="1" parent="1" source="l3" target="l4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="el4-yes" edge="1" parent="1" source="l4" target="l5-yes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#4CAF50;strokeWidth=2;fontColor=#4CAF50" value="是">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="el4-no" edge="1" parent="1" source="l4" target="l5-no" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#D32F2F;strokeWidth=2;fontColor=#D32F2F" value="否">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="el5" edge="1" parent="1" source="l5-yes" target="l6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="el6" edge="1" parent="1" source="l6" target="l7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- 结束连接 -->
+        <mxCell id="e-end" edge="1" parent="1" source="s2" target="end" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1140" y="300" />
+              <mxPoint x="1140" y="842" />
+              <mxPoint x="440" y="842" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 快捷操作分支 -->
+        <mxCell id="quick-title" parent="1" style="text;html=1;strokeColor=none;fillColor=#E3F2FD;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=12;fontStyle=1;fontColor=#1565C0" value="【快捷操作分支】" vertex="1">
+          <mxGeometry height="30" width="150" x="280" y="920" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="q1" parent="1" style="shape=parallelogram;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontSize=11;fontColor=#2E7D32" value="&lt;b&gt;用户点击&lt;/b&gt;&#xa;快捷操作按钮&#xa;photo/report/recommend" vertex="1">
+          <mxGeometry height="60" width="140" x="285" y="970" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="q2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=11;fontColor=#F57F17" value="&lt;b&gt;onQuickAction()&lt;/b&gt;&#xa;根据action分发处理" vertex="1">
+          <mxGeometry height="50" width="150" x="280" y="1060" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="q3-photo" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFCCBC;strokeColor=#D84315;fontSize=11;fontColor=#D84315" value="&lt;b&gt;photo&lt;/b&gt;&#xa;触发拍照流程&#xa;(见食物识别流程)" vertex="1">
+          <mxGeometry height="60" width="130" x="200" y="1150" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="q3-report" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFCCBC;strokeColor=#D84315;fontSize=11;fontColor=#D84315" value="&lt;b&gt;report&lt;/b&gt;&#xa;wx.switchTab()&#xa;/pages/report/index" vertex="1">
+          <mxGeometry height="60" width="130" x="350" y="1150" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="q3-recommend" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=11;fontColor=#F57F17" value="&lt;b&gt;recommend&lt;/b&gt;&#xa;getRecommendation()&#xa;获取饮食建议" vertex="1">
+          <mxGeometry height="60" width="140" x="500" y="1150" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="q4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=11;fontColor=#2E7D32" value="&lt;b&gt;api.food.getRecords()&lt;/b&gt;&#xa;查询今日饮食记录" vertex="1">
+          <mxGeometry height="50" width="160" x="490" y="1250" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="q5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=11;fontColor=#F57F17" value="&lt;b&gt;生成饮食摘要&lt;/b&gt;&#xa;计算今日摄入&#xa;生成建议文本" vertex="1">
+          <mxGeometry height="60" width="140" x="500" y="1340" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="q6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=11;fontColor=#F57F17" value="&lt;b&gt;createTextMessage()&lt;/b&gt;&#xa;显示AI建议" vertex="1">
+          <mxGeometry height="45" width="150" x="495" y="1440" as="geometry" />
+        </mxCell>
+        
+        <!-- 快捷操作连接线 -->
+        <mxCell id="eq1" edge="1" parent="1" source="q1" target="q2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eq2" edge="1" parent="1" source="q2" target="q3-photo" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eq3" edge="1" parent="1" source="q2" target="q3-report" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eq4" edge="1" parent="1" source="q2" target="q3-recommend" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eq5" edge="1" parent="1" source="q3-recommend" target="q4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eq6" edge="1" parent="1" source="q4" target="q5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eq7" edge="1" parent="1" source="q5" target="q6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- 异常处理说明 -->
+        <mxCell id="exception-title" parent="1" style="text;html=1;strokeColor=none;fillColor=#FFEBEE;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=12;fontStyle=1;fontColor=#C62828" value="【异常处理路径】" vertex="1">
+          <mxGeometry height="25" width="150" x="1650" y="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="exception1" parent="1" style="text;html=1;strokeColor=#C62828;fillColor=#FFEBEE;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;fontSize=10;fontColor=#C62828;spacingLeft=5;spacingTop=3" value="&lt;b&gt;1. AI服务超时&lt;/b&gt;&#xa;   - 超时时间: 30s&#xa;   - 隐藏加载状态&#xa;   - 提示: '回复生成超时，请重试'&#xa;   - 保留用户消息，可重新发送&#xa;&#xa;&lt;b&gt;2. AI服务异常&lt;/b&gt;&#xa;   - 返回错误信息&#xa;   - 显示友好提示:&#xa;     '暂时无法回复，请稍后再试'&#xa;   - 记录错误日志&#xa;&#xa;&lt;b&gt;3. 网络中断&lt;/b&gt;&#xa;   - 检测网络状态&#xa;   - 提示检查网络&#xa;   - 提供重试机制&#xa;&#xa;&lt;b&gt;4. 消息过长&lt;/b&gt;&#xa;   - 限制输入长度 (500字)&#xa;   - 超出提示截断&#xa;   - 历史消息只保留最近10条" vertex="1">
+          <mxGeometry height="240" width="200" x="1650" y="160" as="geometry" />
+        </mxCell>
+        
+        <!-- 接口定义 -->
+        <mxCell id="api-title" parent="1" style="text;html=1;strokeColor=none;fillColor=#E3F2FD;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=12;fontStyle=1;fontColor=#1565C0" value="【接口定义】" vertex="1">
+          <mxGeometry height="25" width="100" x="1650" y="420" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="api-def" parent="1" style="text;html=1;strokeColor=#1565C0;fillColor=#E3F2FD;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;fontSize=10;fontColor=#1565C0;spacingLeft=5;spacingTop=3" value="&lt;b&gt;云函数: aiGateway&lt;/b&gt;&#xa;├── action: 'chat'&#xa;│   └── 输入: {message, context}&#xa;│   └── 输出: {success, data: {reply}}&#xa;└── action: 'foodRecognition'&#xa;    └── 输入: {imageUrl, userFeedback?}&#xa;&#xa;&lt;b&gt;云函数: foodRecord&lt;/b&gt;&#xa;├── action: 'getByDate'&#xa;│   └── 输入: {date}&#xa;│   └── 输出: {success, data: records[]}&#xa;└── action: 'getHistory'&#xa;    └── 输入: {startDate, endDate}&#xa;&#xa;&lt;b&gt;Service: chat-service.js&lt;/b&gt;&#xa;├── loadMessages()&#xa;├── saveMessages(messages)&#xa;├── initChat()&#xa;└── clearMessages()&#xa;&#xa;&lt;b&gt;Factory: message-factory.js&lt;/b&gt;&#xa;├── createTextMessage(role, content)&#xa;├── createImageMessage(role, imageUrl)&#xa;├── createQuickActionsMessage()&#xa;└── createFoodCardMessage(...)" vertex="1">
+          <mxGeometry height="300" width="280" x="1650" y="460" as="geometry" />
+        </mxCell>
+        
+        <!-- 常量定义 -->
+        <mxCell id="const-title" parent="1" style="text;html=1;strokeColor=none;fillColor=#FFF3E0;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=12;fontStyle=1;fontColor=#E65100" value="【常量定义】" vertex="1">
+          <mxGeometry height="25" width="100" x="1650" y="780" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="const-def" parent="1" style="text;html=1;strokeColor=#E65100;fillColor=#FFF3E0;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;fontSize=10;fontColor=#E65100;spacingLeft=5;spacingTop=3" value="&lt;b&gt;MESSAGE_TYPES 消息类型&lt;/b&gt;&#xa;{&#xa;  TEXT: 'text',&#xa;  IMAGE: 'image',&#xa;  FOOD_CARD: 'food_card',&#xa;  QUICK_ACTIONS: 'quick_actions',&#xa;  DATE_SELECT: 'date_select',&#xa;  MEAL_TYPE_SELECT: 'meal_type_select',&#xa;  RATING_SELECT: 'rating_select',&#xa;  FEEDBACK_INPUT: 'feedback_input',&#xa;  USER_INFO_FORM: 'user_info_form'&#xa;}&#xa;&#xa;&lt;b&gt;MESSAGE_ROLES 消息角色&lt;/b&gt;&#xa;{&#xa;  USER: 'user',&#xa;  ASSISTANT: 'assistant'&#xa;}&#xa;&#xa;&lt;b&gt;CHAT_CONFIG 聊天配置&lt;/b&gt;&#xa;{&#xa;  MAX_INPUT_LENGTH: 500,&#xa;  MAX_HISTORY: 10,&#xa;  MAX_STORAGE: 100,&#xa;  STORAGE_EXPIRE_DAYS: 7,&#xa;  AI_TIMEOUT: 30000&#xa;}&#xa;&#xa;&lt;b&gt;QUICK_ACTIONS 快捷操作&lt;/b&gt;&#xa;[&#xa;  {id: 'photo', label: '拍照识别', icon: '📷'},&#xa;  {id: 'report', label: '今日报告', icon: '📊'},&#xa;  {id: 'recommend', label: '饮食建议', icon: '💡'}&#xa;]" vertex="1">
+          <mxGeometry height="280" width="280" x="1650" y="820" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
