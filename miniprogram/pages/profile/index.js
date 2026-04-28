@@ -32,7 +32,7 @@ Page({
    * @property {Object} data.stats - 统计数据
    * @property {number} data.stats.totalRecords - 总记录次数
    * @property {number} data.stats.totalDays - 总记录天数
-   * @property {number} data.stats.avgCalories - 平均每餐热量
+   * @property {number} data.stats.avgMealScore - 餐均分数
    * @property {number} data.stats.avgScore - 平均健康评分
    * @property {number} data.stats.streakDays - 连续记录天数
    * @property {Array<Object>} data.goals - 健康目标选项
@@ -57,7 +57,7 @@ Page({
     stats: {
       totalRecords: 0,
       totalDays: 0,
-      avgCalories: 0,
+      avgMealScore: 0,
       avgScore: 0,
       streakDays: 0
     },
@@ -181,6 +181,7 @@ Page({
           stats: {
             totalRecords: records.length,
             totalDays: uniqueDays.size,
+            avgMealScore: records.length > 0 ? Math.round(totalScore / records.length) : 0,
             avgScore: records.length > 0 ? Math.round(totalScore / records.length) : 0,
             streakDays
           }

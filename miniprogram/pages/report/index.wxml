@@ -211,15 +211,15 @@
             <view class="chart-line-wrapper">
               <!-- 数据点容器 -->
               <view class="chart-line-points">
-              <view class="line-point {{item.isToday ? 'today' : ''}}" wx:for="{{weekSummary.dailyAvgScore}}" wx:key="date" style="bottom: {{item.score > 0 ? (item.score / 100 * 100) : 0}}%">
-                <view class="point-dot"></view>
+              <view class="line-point {{item.isToday ? 'today' : ''}} {{item.score > 0 ? 'has-data' : 'no-data'}}" wx:for="{{weekSummary.dailyAvgScore}}" wx:key="date" style="bottom: {{item.score > 0 ? (item.score / 100 * 100) : 0}}%">
+                <view class="point-dot" wx:if="{{item.score > 0}}"></view>
                 <text class="point-value" wx:if="{{item.score > 0}}">{{item.score}}</text>
               </view>
             </view>
               <!-- 线段容器：通过 CSS 旋转和宽度计算绘制线段 -->
               <view class="chart-line-svg">
-                <!-- 遍历数据生成线段（6 条线段连接 7 个点） -->
-                <view class="line-segment" wx:for="{{weekSummary.dailyAvgScore}}" wx:key="date" wx:if="{{index < 6}}" style="transform: rotate({{calculateLineAngle(index, weekSummary.dailyAvgScore, 100)}}deg); width: {{calculateLineWidth(index, weekSummary.dailyAvgScore, 100)}}rpx;"></view>
+                <!-- 遍历数据生成线段（6 条线段连接 7 个点），只连接有数据的点 -->
+                <view class="line-segment" wx:for="{{weekSummary.dailyAvgScore}}" wx:key="date" wx:if="{{index < 6 && item.score > 0 && weekSummary.dailyAvgScore[index + 1].score > 0}}" style="transform: rotate({{calculateLineAngle(index, weekSummary.dailyAvgScore, 100)}}deg); width: {{calculateLineWidth(index, weekSummary.dailyAvgScore, 100)}}rpx;"></view>
               </view>
             </view>
             <!-- X 轴标签：显示星期 -->

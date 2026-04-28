@@ -37,7 +37,7 @@
       </view>
     </view>
     
-    <!-- 统计数据概览：记录次数、记录天数、餐均热量、平均评分 -->
+    <!-- 统计数据概览：记录次数、记录天数、餐均分数、平均评分 -->
     <view class="stats-overview">
       <!-- 记录次数统计卡片 -->
       <view class="stat-card">
@@ -57,12 +57,12 @@
         </view>
       </view>
       
-      <!-- 餐均热量统计卡片 -->
+      <!-- 餐均分数统计卡片 -->
       <view class="stat-card">
-        <view class="stat-icon">🔥</view>
+        <view class="stat-icon">🎯</view>
         <view class="stat-content">
-          <text class="stat-value">{{stats.avgCalories}}</text>
-          <text class="stat-label">餐均热量</text>
+          <text class="stat-value">{{stats.avgMealScore}}</text>
+          <text class="stat-label">餐均分数</text>
         </view>
       </view>
       
