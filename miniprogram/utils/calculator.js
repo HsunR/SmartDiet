@@ -173,46 +173,6 @@ const calculateNutrientTargets = profile => {
 }
 
 /**
- * 计算健康评分
- * @description 根据餐食概览和营养目标计算健康评分(0-100)
- * @param {Object} mealOverview - 餐食概览数据
- * @param {number} mealOverview.totalCalories - 总卡路里
- * @param {Object} mealOverview.healthTags - 健康标签
- * @param {string[]} mealOverview.healthTags.positive - 正面标签
- * @param {string[]} mealOverview.healthTags.warning - 警告标签
- * @param {Object} targets - 营养目标
- * @param {number} targets.calories - 目标卡路里
- * @returns {number} 健康评分(0-100)
- * @example
- * calculator.calculateHealthScore(
- *   { totalCalories: 600, healthTags: { positive: ['高蛋白'], warning: [] } },
- *   { calories: 2000 }
- * );
- * // 返回: 75
- */
-const calculateHealthScore = (mealOverview, targets) => {
-  if (!mealOverview || !targets) return 60
-
-  const { totalCalories = 0, healthTags = { positive: [], warning: [] } } = mealOverview
-
-  let score = 60  // 基础分
-
-  // 根据卡路里占比调整分数
-  if (totalCalories <= targets.calories * 0.3) {
-    score += 10  // 低热量加分
-  } else if (totalCalories > targets.calories * 0.4) {
-    score -= 10  // 高热量减分
-  }
-
-  // 根据健康标签调整分数
-  score += (healthTags.positive?.length || 0) * 5   // 正面标签加分
-  score -= (healthTags.warning?.length || 0) * 5    // 警告标签减分
-
-  // 确保分数在0-100范围内
-  return Math.max(0, Math.min(100, score))
-}
-
-/**
  * 导出计算模块
  * @exports calculator
  */
@@ -236,10 +196,5 @@ module.exports = {
    * 计算宏量营养素目标
    * @type {Function}
    */
-  calculateNutrientTargets,
-  /**
-   * 计算健康评分
-   * @type {Function}
-   */
-  calculateHealthScore
+  calculateNutrientTargets
 }

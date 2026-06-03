@@ -15,7 +15,6 @@ Page({
     inputValue: '',
     isLoading: false,
     scrollToView: '',
-    dailyCalories: 0,
     userProfile: null,
     currentImageUrl: '',
     currentCloudFileId: '',
@@ -108,9 +107,6 @@ Page({
     }
     actions[actionId]?.()
   },
-
-  onInputFocus() { this.setData({ inputFocus: true }) },
-  onInputBlur() { this.setData({ inputFocus: false }) },
 
   onViewReport() { wx.switchTab({ url: '/pages/report/index' }) },
   onPullDownRefresh() { this.initChat(); wx.stopPullDownRefresh() },

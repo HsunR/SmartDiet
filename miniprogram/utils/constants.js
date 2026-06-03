@@ -54,67 +54,6 @@ const MESSAGE_ROLES = {
 }
 
 /**
- * 餐次类型数组
- * @constant {Array<Object>}
- * @property {string} value - 餐次标识值
- * @property {string} label - 餐次显示标签
- * @property {string} icon - 餐次图标
- */
-const MEAL_TYPES = [
-  { value: 'breakfast', label: '早餐', icon: '🌅' },
-  { value: 'lunch', label: '午餐', icon: '☀️' },
-  { value: 'dinner', label: '晚餐', icon: '🌙' },
-  { value: 'snack', label: '其他', icon: '🍎' }
-]
-
-/**
- * 评分选项数组
- * @constant {Array<Object>}
- * @property {number} value - 评分值 (0-5)
- * @property {string} label - 评分标签
- * @property {string} icon - 评分图标（星星）
- */
-const RATING_OPTIONS = [
-  { value: 5, label: '五星', icon: '⭐⭐⭐⭐⭐' },
-  { value: 4, label: '四星', icon: '⭐⭐⭐⭐' },
-  { value: 3, label: '三星', icon: '⭐⭐⭐' },
-  { value: 2, label: '二星', icon: '⭐⭐' },
-  { value: 1, label: '一星', icon: '⭐' },
-  { value: 0, label: '待定', icon: '❓' }
-]
-
-/**
- * 用户体重目标常量
- * @constant {Object}
- * @property {string} LOSE_WEIGHT - 减脂
- * @property {string} MAINTAIN - 维持体重
- * @property {string} GAIN_MUSCLE - 增肌
- * @property {string} CONTROL_SUGAR - 控糖
- * @property {string} CONTROL_BLOOD_PRESSURE - 控血压
- */
-const USER_GOALS = {
-  LOSE_WEIGHT: 'lose_weight',
-  MAINTAIN: 'maintain',
-  GAIN_MUSCLE: 'gain_muscle',
-  CONTROL_SUGAR: 'control_sugar',
-  CONTROL_BLOOD_PRESSURE: 'control_blood_pressure'
-}
-
-/**
- * 用户目标选项数组（用于表单选择）
- * @constant {Array<Object>}
- * @property {string} value - 目标值
- * @property {string} label - 目标显示标签
- */
-const GOAL_OPTIONS = [
-  { value: USER_GOALS.LOSE_WEIGHT, label: '减脂' },
-  { value: USER_GOALS.MAINTAIN, label: '维持体重' },
-  { value: USER_GOALS.GAIN_MUSCLE, label: '增肌' },
-  { value: USER_GOALS.CONTROL_SUGAR, label: '控糖' },
-  { value: USER_GOALS.CONTROL_BLOOD_PRESSURE, label: '控血压' }
-]
-
-/**
  * 本地存储键名常量
  * @constant {Object}
  * @property {string} CHAT_MESSAGES - 聊天消息存储键
@@ -166,10 +105,6 @@ const ACTIVITY_LEVELS = {
 module.exports = {
   MESSAGE_TYPES,
   MESSAGE_ROLES,
-  MEAL_TYPES,
-  RATING_OPTIONS,
-  USER_GOALS,
-  GOAL_OPTIONS,
   STORAGE_KEYS,
   CLOUD_ENV,
   DEFAULT_CALORIES_TARGET,
