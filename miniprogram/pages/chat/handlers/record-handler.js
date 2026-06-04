@@ -87,6 +87,8 @@ module.exports = {
    * @description 获取今日所有饮食记录，计算总热量并更新页面显示
    */
   async updateDailyProgress() {
+    const app = getApp()
+    if (!app.globalData.hasLogin) return
     try {
       const today = formatDate(new Date())
       const result = await safeApiCall(() => api.food.getRecords(today))

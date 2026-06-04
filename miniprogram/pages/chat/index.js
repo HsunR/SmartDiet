@@ -27,6 +27,8 @@ Page({
   },
 
   onShow() {
+    const app = getApp()
+    if (!app.globalData.hasLogin) return
     this.updateTabBar()
     this.handlePendingRecord()
     this.updateDailyProgress()
