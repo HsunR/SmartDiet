@@ -72,7 +72,7 @@ const STORAGE_KEYS = {
  * API 后端地址
  * @constant {string}
  */
-const API_BASE_URL = 'http://localhost:8000/api/v1'
+const API_BASE_URL = 'http://127.0.0.1:8000/api/v1'
 
 /**
  * 默认卡路里目标值
