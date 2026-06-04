@@ -3,8 +3,10 @@ from uuid import UUID
 from typing import Optional
 from pydantic import BaseModel
 
+from app.schemas.base import CamelModel
 
-class FoodItem(BaseModel):
+
+class FoodItem(CamelModel):
     name: str
     category: str = ""
     score: int = 60
@@ -15,14 +17,14 @@ class FoodItem(BaseModel):
     advice: str = ""
 
 
-class MealOverview(BaseModel):
+class MealOverview(CamelModel):
     overall_health_score: int = 60
     health_tags: dict = {}
     tag_reasons: dict = {}
     summary: str = ""
 
 
-class FoodRecordCreate(BaseModel):
+class FoodRecordCreate(CamelModel):
     date: date
     meal_type: str
     foods: list[FoodItem] = []
@@ -30,15 +32,13 @@ class FoodRecordCreate(BaseModel):
     image_url: str = ""
 
 
-class FoodRecordUpdate(BaseModel):
+class FoodRecordUpdate(CamelModel):
     meal_type: Optional[str] = None
     foods: Optional[list[FoodItem]] = None
     meal_overview: Optional[MealOverview] = None
 
 
-class FoodRecordResponse(BaseModel):
-    model_config = {"from_attributes": True}
-
+class FoodRecordResponse(CamelModel):
     id: UUID
     user_id: UUID
     date: date
@@ -49,12 +49,12 @@ class FoodRecordResponse(BaseModel):
     created_at: datetime
 
 
-class FoodRecognitionRequest(BaseModel):
+class FoodRecognitionRequest(CamelModel):
     image_url: str
     user_feedback: str = ""
 
 
-class FoodRecognitionResponse(BaseModel):
+class FoodRecognitionResponse(CamelModel):
     foods: list[FoodItem]
     meal_overview: MealOverview
     dietary_advice: str = ""

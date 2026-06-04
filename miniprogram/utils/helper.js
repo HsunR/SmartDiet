@@ -31,36 +31,7 @@ const compressImage = (tempFilePath, quality = 80) => {
   })
 }
 
-/**
- * 上传文件并获取临时链接（组合操作）
- * @param {string} cloudPath - 云存储路径
- * @param {string} filePath - 本地文件路径
- * @returns {Promise<{fileID: string, tempUrl: string}>} 包含fileID和临时链接的对象
- */
-const uploadAndGetUrl = async (cloudPath, filePath) => {
-  const fileID = await new Promise((resolve, reject) => {
-    wx.cloud.uploadFile({
-      cloudPath,
-      filePath,
-      success: res => resolve(res.fileID),
-      fail: err => reject(err)
-    })
-  })
-  const tempUrl = await new Promise((resolve, reject) => {
-    wx.cloud.getTempFileURL({
-      fileList: [fileID],
-      success: res => {
-        if (res.fileList && res.fileList.length > 0) {
-          resolve(res.fileList[0].tempFileURL)
-        } else {
-          reject(new Error('获取临时链接失败'))
-        }
-      },
-      fail: err => reject(err)
-    })
-  })
-  return { fileID, tempUrl }
-}
+
 
 /**
  * 根据当前时间获取对应的餐次类型
@@ -93,7 +64,6 @@ module.exports = {
   generateId,
   formatDate,
   compressImage,
-  uploadAndGetUrl,
   getCurrentMealType,
   getMealTypeLabel
 }

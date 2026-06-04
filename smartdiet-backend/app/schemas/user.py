@@ -4,8 +4,10 @@ from decimal import Decimal
 from typing import Optional
 from pydantic import BaseModel
 
+from app.schemas.base import CamelModel
 
-class UserCreate(BaseModel):
+
+class UserCreate(CamelModel):
     openid: str
     nickname: str = ""
     avatar: str = ""
@@ -17,7 +19,7 @@ class UserCreate(BaseModel):
     goal: str = "maintain"
 
 
-class UserUpdate(BaseModel):
+class UserUpdate(CamelModel):
     nickname: Optional[str] = None
     avatar: Optional[str] = None
     gender: Optional[int] = None
@@ -30,9 +32,7 @@ class UserUpdate(BaseModel):
     allergies: Optional[list] = None
 
 
-class UserResponse(BaseModel):
-    model_config = {"from_attributes": True}
-
+class UserResponse(CamelModel):
     id: UUID
     openid: str
     nickname: str
@@ -48,11 +48,11 @@ class UserResponse(BaseModel):
     created_at: datetime
 
 
-class LoginRequest(BaseModel):
+class LoginRequest(CamelModel):
     code: str
 
 
-class LoginResponse(BaseModel):
+class LoginResponse(CamelModel):
     token: str
     user: UserResponse
     is_new: bool

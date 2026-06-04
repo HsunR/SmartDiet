@@ -69,10 +69,10 @@ const STORAGE_KEYS = {
 }
 
 /**
- * 云开发环境ID
+ * API 后端地址
  * @constant {string}
  */
-const CLOUD_ENV = 'cloud1-5g94ikff8709bdba'
+const API_BASE_URL = 'http://localhost:8000/api/v1'
 
 /**
  * 默认卡路里目标值
@@ -106,7 +106,7 @@ module.exports = {
   MESSAGE_TYPES,
   MESSAGE_ROLES,
   STORAGE_KEYS,
-  CLOUD_ENV,
+  API_BASE_URL,
   DEFAULT_CALORIES_TARGET,
   ACTIVITY_LEVELS
 }

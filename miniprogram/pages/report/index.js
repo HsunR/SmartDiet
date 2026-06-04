@@ -197,18 +197,10 @@ Page({
               const mealOverview = record.mealOverview || {}
               const foods = record.foods || []
               
-              // 获取图片的 cloud:// fileID（优先使用 record 的 imageUrl，其次是 foods[0] 的 imageUrl）
-              let imageFileID = null
-              if (record.imageUrl && record.imageUrl.startsWith('cloud://')) {
-                imageFileID = record.imageUrl
-              } else if (foods[0]?.imageUrl && foods[0].imageUrl.startsWith('cloud://')) {
-                imageFileID = foods[0].imageUrl
-              }
-              
               const recordData = {
-                _id: record._id,
-                imageFileID: imageFileID,  // 存储 cloud:// fileID
-                imageUrl: imageFileID,     // 初始使用 fileID，显示时会刷新
+                _id: record.id,
+                imageFileID: record.imageUrl || '',
+                imageUrl: record.imageUrl || '',
                 foods: foods.map(food => {
                   const foodTags = food.tags || { positive: [], warning: [] }
                   return {
@@ -387,110 +379,10 @@ Page({
    * @returns {Promise<Array<Object>>} 刷新后的记录列表
    */
   refreshImageUrls: async function(records) {
-    if (!records || records.length === 0) return records
-    
-    // 收集所有需要刷新的图片fileID
-    const fileIDs = []
-    const fileIDMap = new Map()
-    
-    records.forEach((record, recordIndex) => {
-      if (record.imageUrl && record.imageUrl.startsWith('cloud://')) {
-        fileIDs.push(record.imageUrl)
-        fileIDMap.set(record.imageUrl, { type: 'record', index: recordIndex })
-      }
-      
-      if (record.foods && record.foods.length > 0) {
-        record.foods.forEach((food, foodIndex) => {
-          if (food.imageUrl && food.imageUrl.startsWith('cloud://')) {
-            fileIDs.push(food.imageUrl)
-            fileIDMap.set(food.imageUrl, { type: 'food', recordIndex, foodIndex })
-          }
-        })
-      }
-    })
-    
-    if (fileIDs.length === 0) return records
-    
-    try {
-      // 调用云开发API获取新的临时URL
-      const result = await wx.cloud.getTempFileURL({ fileList: fileIDs })
-      
-      if (result.fileList && result.fileList.length > 0) {
-        // 深拷贝记录，避免修改原始数据
-        const newRecords = JSON.parse(JSON.stringify(records))
-        
-        result.fileList.forEach(file => {
-          const mapping = fileIDMap.get(file.fileID)
-          if (mapping && file.tempFileURL) {
-            if (mapping.type === 'record') {
-              newRecords[mapping.index].imageUrl = file.tempFileURL
-            } else if (mapping.type === 'food') {
-              newRecords[mapping.recordIndex].foods[mapping.foodIndex].imageUrl = file.tempFileURL
-            }
-          }
-        })
-        
-        return newRecords
-      }
-    } catch (error) {
-      console.error('刷新图片URL失败:', error)
-    }
-    
     return records
   },
 
-  /**
-   * 刷新日历数据中的所有图片URL
-   * 云存储临时URL有过期时间，需要在显示前重新获取
-   * @param {Object} calendarData - 日历数据对象
-   * @returns {Promise<Object>} 刷新后的日历数据
-   */
   refreshCalendarImageUrls: async function(calendarData) {
-    if (!calendarData) return calendarData
-    
-    // 收集所有需要刷新的图片fileID
-    const fileIDs = []
-    const fileIDMap = new Map()
-    
-    Object.keys(calendarData).forEach(date => {
-      const dayData = calendarData[date]
-      Object.keys(dayData).forEach(mealType => {
-        const records = dayData[mealType]
-        if (records && records.length > 0) {
-          records.forEach((record, recordIndex) => {
-            if (record.imageFileID && record.imageFileID.startsWith('cloud://')) {
-              fileIDs.push(record.imageFileID)
-              fileIDMap.set(record.imageFileID, { date, mealType, recordIndex })
-            }
-          })
-        }
-      })
-    })
-    
-    if (fileIDs.length === 0) return calendarData
-    
-    try {
-      // 调用云开发API获取新的临时URL
-      const result = await wx.cloud.getTempFileURL({ fileList: fileIDs })
-      
-      if (result.fileList && result.fileList.length > 0) {
-        // 深拷贝日历数据，避免修改原始数据
-        const newCalendarData = JSON.parse(JSON.stringify(calendarData))
-        
-        result.fileList.forEach(file => {
-          const mapping = fileIDMap.get(file.fileID)
-          if (mapping && file.tempFileURL) {
-            const { date, mealType, recordIndex } = mapping
-            newCalendarData[date][mealType][recordIndex].imageUrl = file.tempFileURL
-          }
-        })
-        
-        return newCalendarData
-      }
-    } catch (error) {
-      console.error('刷新日历图片URL失败:', error)
-    }
-    
     return calendarData
   },
 

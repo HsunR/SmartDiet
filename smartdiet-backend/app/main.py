@@ -1,13 +1,16 @@
 from contextlib import asynccontextmanager
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.core.database import engine, Base
 from app.core.exceptions import AppException
 from app.api.v1.user import router as user_router
 from app.api.v1.food import router as food_router
 from app.api.v1.chat import router as chat_router
+from app.api.upload import router as upload_router
 
 
 @asynccontextmanager
@@ -39,6 +42,11 @@ async def app_exception_handler(request, exc: AppException):
 app.include_router(user_router, prefix="/api/v1")
 app.include_router(food_router, prefix="/api/v1")
 app.include_router(chat_router, prefix="/api/v1")
+app.include_router(upload_router)
+
+uploads_dir = os.path.join(os.path.dirname(__file__), "uploads")
+os.makedirs(uploads_dir, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
 
 
 @app.get("/health")

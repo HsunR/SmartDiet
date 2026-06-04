@@ -6,13 +6,13 @@ from datetime import date
 async def test_create_food_record(auth_client):
     resp = await auth_client.post("/api/v1/records", json={
         "date": str(date.today()),
-        "meal_type": "lunch",
+        "mealType": "lunch",
         "foods": [{"name": "测试食物", "score": 80}],
     })
     assert resp.status_code == 201
     data = resp.json()
     assert data["date"] == str(date.today())
-    assert data["meal_type"] == "lunch"
+    assert data["mealType"] == "lunch"
 
 
 @pytest.mark.asyncio

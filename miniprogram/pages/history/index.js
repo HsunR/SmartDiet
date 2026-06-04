@@ -274,7 +274,7 @@ Page({
             this.editRecord(record)
             break
           case 2:
-            this.deleteRecord(record._id)
+            this.deleteRecord(record.id)
             break
         }
       }

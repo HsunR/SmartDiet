@@ -48,19 +48,16 @@ module.exports = {
       chatService.saveMessages(this.data.messages)
       this.scrollToBottom()
 
-      // 上传图片到云存储
       const { fileID, tempUrl } = await imageService.processImage(tempFilePath)
       const { pendingRecord } = this.data
       const todayStr = formatDate(new Date())
 
-      // 创建日期选择消息
       const dateMessage = createDateSelectMessage(
         tempUrl, fileID,
         pendingRecord?.date || todayStr,
         pendingRecord?.mealType || null
       )
 
-      // 更新页面数据
       this.setData({
         messages: [...this.data.messages, dateMessage],
         currentImageUrl: tempUrl,
@@ -71,7 +68,6 @@ module.exports = {
       chatService.saveMessages(this.data.messages)
       this.scrollToBottom()
 
-      // 启动AI食物识别 - 使用 fileID 作为任务键，避免 URL 中的特殊字符问题
       await this.startRecognition(tempUrl, fileID, dateMessage.id)
     } catch (error) {
       console.error('Image process error:', error)
