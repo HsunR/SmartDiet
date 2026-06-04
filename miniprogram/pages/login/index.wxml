@@ -29,7 +29,7 @@
     <!-- 登录操作按钮 -->
     <view class="login-actions">
       <!-- 微信登录按钮 -->
-      <button class="login-btn" bindtap="onGetUserProfile">
+      <button class="login-btn" bindtap="onLogin">
         <text class="btn-icon">👤</text>
         <text>微信登录</text>
       </button>
