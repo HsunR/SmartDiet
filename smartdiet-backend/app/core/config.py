@@ -8,11 +8,10 @@ class Settings(BaseSettings):
     jwt_secret: str = "change-me-in-production"
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 1440
-    llm_provider: str = "dashscope"
-    dashscope_api_key: str = ""
-    zhipu_api_key: str = ""
-    dashscope_model: str = "qwen-vl-plus"
-    zhipu_model: str = "glm-4v-plus"
+    llm_base_url: str = "https://api.openai.com/v1"
+    llm_model: str = "gpt-4o"
+    llm_api_key: str = ""
+    llm_vision_model: str = ""
 
 
 settings = Settings()
