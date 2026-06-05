@@ -62,16 +62,16 @@ Page({
       streakDays: 0
     },
     goals: [
-      { value: 'lose_weight', label: '减脂', icon: '🏃', desc: '控制热量摄入，科学减重' },
-      { value: 'maintain', label: '维持', icon: '⚖️', desc: '保持当前体重，均衡营养' },
-      { value: 'gain_muscle', label: '增肌', icon: '💪', desc: '增加蛋白质摄入，增强肌肉' }
+      { value: 'lose_weight', label: '减脂', icon: '📉', desc: '减少体脂，塑造线条' },
+      { value: 'maintain', label: '维持', icon: '⚖️', desc: '保持当前体重和健康' },
+      { value: 'gain_muscle', label: '增肌', icon: '📈', desc: '增加肌肉量，提升力量' }
     ],
     activityLevels: [
-      { value: 1, label: '久坐', desc: '很少运动' },
-      { value: 2, label: '轻度活动', desc: '每周运动 1-2 次' },
-      { value: 3, label: '中度活动', desc: '每周运动 3-4 次' },
-      { value: 4, label: '活跃', desc: '每周运动 5-6 次' },
-      { value: 5, label: '非常活跃', desc: '每天运动' }
+      { value: 1, label: '久坐', desc: '几乎不运动，办公室工作', icon: '🪑' },
+      { value: 2, label: '轻度活动', desc: '每周运动1-2次', icon: '🚶' },
+      { value: 3, label: '中度活动', desc: '每周运动3-4次', icon: '🏃' },
+      { value: 4, label: '活跃', desc: '每周运动5-6次', icon: '💪' },
+      { value: 5, label: '非常活跃', desc: '每天高强度运动', icon: '🔥' }
     ],
     goalIndex: 1,
     activityIndex: 2,
@@ -441,18 +441,6 @@ Page({
       })
     } finally {
       wx.hideLoading()
-    }
-  },
-
-  /**
-   * 菜单项点击事件
-   * @param {Object} e - 事件对象
-   * @param {string} e.currentTarget.dataset.path - 页面路径
-   */
-  onMenuTap: function(e) {
-    const { path } = e.currentTarget.dataset
-    if (path) {
-      wx.navigateTo({ url: path })
     }
   },
 

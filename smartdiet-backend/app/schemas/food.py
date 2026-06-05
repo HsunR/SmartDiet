@@ -30,6 +30,7 @@ class FoodRecordCreate(CamelModel):
     foods: list[FoodItem] = []
     meal_overview: MealOverview = MealOverview()
     image_url: str = ""
+    rating: int = 0
 
 
 class FoodRecordUpdate(CamelModel):
@@ -46,6 +47,7 @@ class FoodRecordResponse(CamelModel):
     foods: list[FoodItem]
     meal_overview: MealOverview
     image_url: str
+    rating: Optional[int] = 0
     created_at: datetime
 
 

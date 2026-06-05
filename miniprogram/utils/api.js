@@ -34,6 +34,81 @@ const request = (method, path, data) => {
   })
 }
 
+/**
+ * 流式请求 - 使用 enableChunked 实现 SSE 流式接收
+ * @param {string} path - API 路径
+ * @param {object} data - 请求数据
+ * @param {function} onChunk - 收到数据块回调 (content: string) => void
+ * @param {function} onDone - 流式结束回调 () => void
+ * @param {function} onError - 错误回调 (error: string) => void
+ * @returns {object} requestTask - 可用于中断请求
+ */
+const streamRequest = (path, data, onChunk, onDone, onError) => {
+  let buffer = ''
+  
+  const requestTask = wx.request({
+    url: `${API_BASE_URL}${path}`,
+    method: 'POST',
+    data,
+    responseType: 'arraybuffer',
+    enableChunked: true,
+    header: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${getToken()}`,
+    },
+    success: res => {
+      // 流式结束时的最终回调
+      if (onDone) onDone()
+    },
+    fail: err => {
+      let msg = '网络异常'
+      if (err.errMsg?.includes('timeout')) msg = '请求超时'
+      else if (err.errMsg?.includes('fail')) msg = '请求失败'
+      if (onError) onError(msg)
+    },
+  })
+
+  // 监听数据分块接收事件
+  requestTask.onChunkReceived(response => {
+    try {
+      // 将 ArrayBuffer 转换为字符串
+      const uint8Array = new Uint8Array(response.data)
+      let binary = ''
+      for (let i = 0; i < uint8Array.length; i++) {
+        binary += String.fromCharCode(uint8Array[i])
+      }
+      const text = binary
+      
+      // 处理 SSE 格式数据
+      buffer += text
+      const lines = buffer.split('\n')
+      buffer = lines.pop() || '' // 保留未完成的行
+      
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const jsonStr = line.slice(6).trim()
+          if (jsonStr) {
+            try {
+              const parsed = JSON.parse(jsonStr)
+              if (parsed.done) {
+                if (onDone) onDone()
+              } else if (parsed.content) {
+                if (onChunk) onChunk(parsed.content)
+              }
+            } catch (e) {
+              // 忽略解析错误
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('onChunkReceived error:', error)
+    }
+  })
+
+  return requestTask
+}
+
 const api = {
   user: {
     login: code => request('POST', '/users/login', { code }),
@@ -52,6 +127,9 @@ const api = {
   },
   chat: {
     send: (message, context) => request('POST', '/chat/messages', { content: message, context }),
+    sendStream: (message, conversationId, onChunk, onDone, onError) => {
+      return streamRequest('/chat/messages/stream', { content: message, conversation_id: conversationId }, onChunk, onDone, onError)
+    },
   },
   upload: tempFilePath => {
     return new Promise((resolve, reject) => {

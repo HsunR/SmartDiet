@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, Date, DateTime, ForeignKey
+from sqlalchemy import Column, String, Date, DateTime, ForeignKey, Integer
 from sqlalchemy import JSON
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -17,5 +17,6 @@ class FoodRecord(Base):
     foods = Column(JSON, default=list)
     meal_overview = Column(JSON, default=dict)
     image_url = Column(String(512), default="")
+    rating = Column(Integer, default=0)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))

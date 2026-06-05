@@ -98,6 +98,40 @@
   border-top-right-radius: 4rpx;
 }
 
+/* ==================== 识别中消息样式 ==================== */
+.recognizing-message {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 24rpx;
+}
+
+.recognizing-icon-wrapper {
+  width: 48rpx;
+  height: 48rpx;
+  margin-right: 16rpx;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.recognizing-icon {
+  font-size: 36rpx;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+}
+
+.recognizing-text {
+  font-size: 28rpx;
+  color: #757575;
+}
+
 .message-time {
   margin-top: 4rpx;
   padding: 0 8rpx;

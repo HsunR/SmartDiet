@@ -1,1 +1,4 @@
-<text class="message-text">{{content}}</text>
+<view class="message-text-container">
+  <text class="message-text">{{content}}</text>
+  <text wx:if="{{isStreaming}}" class="streaming-cursor">|</text>
+</view>

@@ -234,8 +234,14 @@ module.exports = {
 
     // 更新消息列表，标记结果已显示
     const currentTask = this.data.recognizingTasks[taskKey]
+    
+    // 移除等待消息（识别中类型 或 包含"AI 正在识别中"的文本消息）
+    const filteredMessages = this.data.messages.filter(msg => 
+      msg.type !== 'recognizing' && !(msg.type === 'text' && msg.content.includes('AI 正在识别中'))
+    )
+    
     this.setData({
-      messages: [...this.data.messages, foodCardMessage],
+      messages: [...filteredMessages, foodCardMessage],
       recognizingTasks: {
         ...this.data.recognizingTasks,
         [taskKey]: {

@@ -162,6 +162,15 @@ const createQuickActionsMessage = (actions) =>
     ]
   })
 
+/**
+ * 创建识别中等待消息
+ * @returns {Object} 识别中消息对象
+ */
+const createRecognizingMessage = () =>
+  createBaseMessage('recognizing', MESSAGE_ROLES.ASSISTANT, 'AI 正在识别中，请稍候...', {
+    isRecognizing: true
+  })
+
 module.exports = {
   createTextMessage,
   createImageMessage,
@@ -170,5 +179,6 @@ module.exports = {
   createRatingSelectMessage,
   createDateSelectMessage,
   createFeedbackInputMessage,
-  createQuickActionsMessage
+  createQuickActionsMessage,
+  createRecognizingMessage
 }

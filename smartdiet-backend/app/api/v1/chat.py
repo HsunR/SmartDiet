@@ -1,5 +1,7 @@
+import json
 from uuid import UUID
 from fastapi import APIRouter, Depends
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -7,7 +9,9 @@ from app.core.dependencies import get_current_user
 from app.models.user import User
 from app.schemas.chat import MessageCreate, MessageResponse, ConversationResponse
 from app.services import chat as chat_service
-from app.workflows.chat import build_chat_graph, ChatState
+from app.services.ai import get_streaming_llm
+from app.workflows.chat import build_chat_graph, ChatState, CHAT_PROMPT
+from langchain_core.messages import HumanMessage, SystemMessage
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
@@ -68,3 +72,55 @@ async def send_message(
 
     msg = await chat_service.add_message(db, conv_id, "assistant", reply, {"intent": result.get("intent")})
     return MessageResponse.model_validate(msg)
+
+
+@router.post("/messages/stream")
+async def send_message_stream(
+    req: MessageCreate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    conv_id = req.conversation_id
+    if not conv_id:
+        conv = await chat_service.create_conversation(db, current_user.id)
+        conv_id = conv.id
+    else:
+        await chat_service.get_conversation(db, current_user.id, conv_id)
+
+    await chat_service.add_message(db, conv_id, "user", req.content)
+
+    history_messages = await chat_service.get_history(db, conv_id, 20)
+    history = [{"role": m.role, "content": m.content} for m in history_messages[-10:]]
+
+    # 构建消息列表
+    prompt = CHAT_PROMPT.format(
+        user_profile=json.dumps({"age": current_user.age, "weight": float(current_user.weight), "goal": current_user.goal}, ensure_ascii=False),
+        recent_diet=json.dumps({}, ensure_ascii=False),
+    )
+    messages = [SystemMessage(content=prompt)]
+    for msg in history:
+        messages.append(HumanMessage(content=msg.get("content", "")) if msg.get("role") == "user" else SystemMessage(content=msg.get("content", "")))
+    messages.append(HumanMessage(content=req.content))
+
+    async def event_generator():
+        full_reply = ""
+        llm = get_streaming_llm()
+        async for chunk in llm.astream(messages):
+            content = chunk.content
+            if content:
+                full_reply += content
+                yield f"data: {json.dumps({'content': content, 'done': False})}\n\n"
+        
+        # 保存完整的AI回复到数据库
+        await chat_service.add_message(db, conv_id, "assistant", full_reply)
+        yield f"data: {json.dumps({'content': '', 'done': True})}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )

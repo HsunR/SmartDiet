@@ -34,7 +34,16 @@
             content="{{item.content}}"
             role="{{item.role}}"
             timestamp="{{item.timestamp}}"
+            is-streaming="{{item.isStreaming}}"
           />
+          
+          <!-- 识别中消息 -->
+          <view wx:elif="{{item.type === 'recognizing'}}" class="recognizing-message">
+            <view class="recognizing-icon-wrapper">
+              <text class="recognizing-icon">🔍</text>
+            </view>
+            <text class="recognizing-text">{{item.content}}</text>
+          </view>
           
           <!-- 图片类型消息 -->
           <image-message 

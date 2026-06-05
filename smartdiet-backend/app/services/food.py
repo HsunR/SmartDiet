@@ -17,6 +17,7 @@ async def create_record(db: AsyncSession, user_id: UUID, data: FoodRecordCreate)
         foods=[f.model_dump() for f in data.foods],
         meal_overview=data.meal_overview.model_dump(),
         image_url=data.image_url,
+        rating=data.rating,
     )
     db.add(record)
     await db.flush()

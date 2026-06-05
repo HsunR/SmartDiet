@@ -6,48 +6,82 @@
 
 const { createTextMessage } = require('../../../utils/message-factory')
 const { MESSAGE_ROLES } = require('../../../utils/constants')
-const { formatDate } = require('../../../utils/helper')
+const { formatDate, generateId } = require('../../../utils/helper')
 const { api, safeApiCall } = require('../../../utils/api')
 const chatService = require('../../../services/chat-service')
 
 module.exports = {
   /**
-   * 发送用户消息并获取AI回复
+   * 发送用户消息并获取AI回复（流式）
    * @async
    * @param {void}
    * @returns {Promise<void>}
-   * @description 验证输入内容，创建用户消息，调用AI接口获取回复，并更新消息列表
+   * @description 验证输入内容，创建用户消息，调用AI流式接口获取回复，并实时更新消息列表
    */
   async sendMessage() {
     const { inputValue, isLoading } = this.data
-    // 验证输入：不能为空且不能在加载中
     if (!inputValue.trim() || isLoading) return
 
-    // 创建用户文本消息并添加到消息列表
     const userMessage = createTextMessage(MESSAGE_ROLES.USER, inputValue.trim())
     this.setData({ messages: [...this.data.messages, userMessage], inputValue: '', isLoading: true })
     chatService.saveMessages(this.data.messages)
     this.scrollToBottom()
 
-    try {
-      // 调用AI聊天接口，传递最近10条消息作为上下文
-      const result = await safeApiCall(() => api.chat.send(inputValue.trim(), {
-        messages: this.data.messages.slice(-10)
-      }))
+    // 创建一个空的AI消息，用于流式更新
+    const aiMessageId = generateId()
+    const aiMessage = createTextMessage(MESSAGE_ROLES.ASSISTANT, '')
+    aiMessage.id = aiMessageId
+    aiMessage.isStreaming = true
+    this.setData({ messages: [...this.data.messages, aiMessage] })
+    this.scrollToBottom()
 
-      // 处理AI回复结果
-      if (result.success && result.data?.reply) {
-        const aiMessage = createTextMessage(MESSAGE_ROLES.ASSISTANT, result.data.reply)
-        this.setData({ messages: [...this.data.messages, aiMessage] })
-        chatService.saveMessages(this.data.messages)
-      } else {
-        this.showErrorMessage(result.error || 'AI 回复失败，请稍后重试')
-      }
+    let fullContent = ''
+
+    try {
+      // 使用流式API
+      api.chat.sendStream(
+        inputValue.trim(),
+        null, // conversationId
+        // onChunk - 收到数据块时更新消息
+        (content) => {
+          fullContent += content
+          const messages = this.data.messages.map(msg => {
+            if (msg.id === aiMessageId) {
+              return { ...msg, content: fullContent }
+            }
+            return msg
+          })
+          this.setData({ messages })
+          this.scrollToBottom()
+        },
+        // onDone - 流式结束
+        () => {
+          const messages = this.data.messages.map(msg => {
+            if (msg.id === aiMessageId) {
+              return { ...msg, content: fullContent, isStreaming: false }
+            }
+            return msg
+          })
+          this.setData({ messages, isLoading: false })
+          chatService.saveMessages(this.data.messages)
+          this.scrollToBottom()
+        },
+        // onError - 错误处理
+        (error) => {
+          const messages = this.data.messages.map(msg => {
+            if (msg.id === aiMessageId) {
+              return { ...msg, content: `❌ ${error}`, isStreaming: false }
+            }
+            return msg
+          })
+          this.setData({ messages, isLoading: false })
+          chatService.saveMessages(this.data.messages)
+          this.scrollToBottom()
+        }
+      )
     } catch (error) {
       this.showErrorMessage(error.message || '网络错误，请稍后重试')
-    } finally {
       this.setData({ isLoading: false })
-      this.scrollToBottom()
     }
   },
 

@@ -1,5 +1,22 @@
+.message-text-container {
+  display: inline;
+}
+
 .message-text {
   font-size: 28rpx;
   line-height: 1.6;
   white-space: pre-wrap;
+}
+
+.streaming-cursor {
+  display: inline-block;
+  font-size: 28rpx;
+  color: #333;
+  animation: blink 0.8s infinite;
+  margin-left: 2rpx;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }

@@ -162,10 +162,9 @@ module.exports = {
         console.log('onRatingSelect: 识别已完成，调用 checkAndShowResult')
         this.checkAndShowResult(taskKey)
       } else if (!updatedTask || !updatedTask.completed) {
-        // 识别未完成，显示等待消息
-        const { createTextMessage } = require('../../../utils/message-factory')
-        const { MESSAGE_ROLES } = require('../../../utils/constants')
-        const waitingMessage = createTextMessage(MESSAGE_ROLES.ASSISTANT, '⏳ AI 正在识别中，请稍候...')
+        // 识别未完成，显示等待消息（带动画效果）
+        const { createRecognizingMessage } = require('../../../utils/message-factory')
+        const waitingMessage = createRecognizingMessage()
         this.setData({ messages: [...messages, waitingMessage] })
         chatService.saveMessages(this.data.messages)
         this.scrollToBottom()
