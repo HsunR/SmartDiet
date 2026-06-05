@@ -4,5 +4,6 @@
     src="{{imageUrl}}" 
     mode="widthFix" 
     bindtap="handlePreview"
+    bindload="onImageLoad"
   />
 </view>

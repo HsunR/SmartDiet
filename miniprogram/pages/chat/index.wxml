@@ -42,6 +42,7 @@
             image-url="{{item.data.imageUrl}}"
             role="{{item.role}}"
             bind:previewImage="onPreviewImage"
+            bind:loaded="onImageLoaded"
           />
           
           <!-- 食物卡片类型消息 -->

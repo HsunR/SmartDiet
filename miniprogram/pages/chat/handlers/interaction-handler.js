@@ -40,7 +40,7 @@ module.exports = {
     // 更新消息列表并滚动到底部
     this.setData({ messages: [...messages, ratingMessage] })
     chatService.saveMessages(this.data.messages)
-    setTimeout(() => this.scrollToBottom(), 300)
+    this.scrollToBottom()
   },
 
   /**
@@ -95,7 +95,7 @@ module.exports = {
     // 更新消息列表并滚动到底部
     this.setData({ messages: [...messages, nextMessage] })
     chatService.saveMessages(this.data.messages)
-    setTimeout(() => this.scrollToBottom(), 300)
+    this.scrollToBottom()
   },
 
   /**

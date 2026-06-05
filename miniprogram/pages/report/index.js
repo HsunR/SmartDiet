@@ -9,6 +9,10 @@
 
 const { formatDate } = require('../../utils/formatter')
 const { api, safeApiCall } = require('../../utils/api')
+const { API_BASE_URL } = require('../../utils/constants')
+
+// 服务器基础URL（用于拼接图片路径）
+const SERVER_BASE_URL = API_BASE_URL.replace('/api/v1', '')
 
 /**
  * 缓存键名
@@ -379,11 +383,32 @@ Page({
    * @returns {Promise<Array<Object>>} 刷新后的记录列表
    */
   refreshImageUrls: async function(records) {
-    return records
+    return records.map(record => {
+      let imageUrl = record.imageUrl
+      // 将相对路径转换为完整URL
+      if (imageUrl && imageUrl.startsWith('/uploads/')) {
+        imageUrl = SERVER_BASE_URL + imageUrl
+      }
+      return { ...record, imageUrl }
+    })
   },
 
   refreshCalendarImageUrls: async function(calendarData) {
-    return calendarData
+    const result = {}
+    for (const date in calendarData) {
+      result[date] = {}
+      for (const mealType in calendarData[date]) {
+        result[date][mealType] = calendarData[date][mealType].map(record => {
+          let imageUrl = record.imageUrl
+          // 将相对路径转换为完整URL
+          if (imageUrl && imageUrl.startsWith('/uploads/')) {
+            imageUrl = SERVER_BASE_URL + imageUrl
+          }
+          return { ...record, imageUrl }
+        })
+      }
+    }
+    return result
   },
 
   /**

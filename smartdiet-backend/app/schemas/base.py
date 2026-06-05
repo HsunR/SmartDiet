@@ -1,5 +1,11 @@
 import re
+import warnings
 from pydantic import BaseModel, ConfigDict
+
+# Suppress Pydantic v2 alias generator warnings
+warnings.filterwarnings("ignore", message=".*alias.*Field.*", category=UserWarning)
+warnings.filterwarnings("ignore", message=".*validation_alias.*Field.*", category=UserWarning)
+warnings.filterwarnings("ignore", message=".*serialization_alias.*Field.*", category=UserWarning)
 
 
 def to_camel(snake_str: str) -> str:

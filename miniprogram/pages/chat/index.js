@@ -100,6 +100,10 @@ Page({
     imageService.previewImage(e.currentTarget.dataset.url)
   },
 
+  onImageLoaded() {
+    this.scrollToBottom()
+  },
+
   onQuickAction(e) {
     const { actionId } = e.detail
     const actions = {

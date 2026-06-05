@@ -43,6 +43,14 @@ Component({
       this.triggerEvent('previewImage', {
         imageUrl: this.data.imageUrl
       });
+    },
+    /**
+     * 图片加载完成事件处理
+     * 图片加载完成后触发loaded事件，用于通知父页面滚动到底部
+     * @fires ImageMessage#loaded
+     */
+    onImageLoad() {
+      this.triggerEvent('loaded');
     }
   }
 })

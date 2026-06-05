@@ -109,13 +109,25 @@ module.exports = {
    * @param {void}
    * @returns {void}
    * @description 获取最后一条消息的ID，设置scrollToView实现自动滚动
+   * 多次尝试滚动，确保异步加载内容（如图片）也能正确滚动
    */
   scrollToBottom() {
     const messages = this.data.messages
     if (messages.length === 0) return
 
-    // 生成最后一条消息的视图ID
     const lastMsgId = `msg-${messages[messages.length - 1].id}`
+    
+    // 立即尝试滚动
     this.setData({ scrollToView: lastMsgId })
+    
+    // 延迟再次滚动，确保子组件渲染完成
+    setTimeout(() => {
+      this.setData({ scrollToView: lastMsgId })
+    }, 150)
+    
+    // 再次延迟滚动，处理图片等异步加载内容
+    setTimeout(() => {
+      this.setData({ scrollToView: lastMsgId })
+    }, 500)
   }
 }

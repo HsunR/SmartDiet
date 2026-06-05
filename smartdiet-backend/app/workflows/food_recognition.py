@@ -1,10 +1,39 @@
 import json
+import os
+import base64
 from typing import TypedDict, Optional
 from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.graph import StateGraph, START, END
 
 from app.services.ai import get_vision_llm
 from app.schemas.food import FoodItem, MealOverview
+
+UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
+
+
+def _prepare_image_url(url: str) -> str:
+    """将图片URL转换为LLM API支持的格式（base64或http/https URL）"""
+    if url.startswith("http://") or url.startswith("https://"):
+        return url
+    
+    if url.startswith("/uploads/"):
+        filename = url.replace("/uploads/", "")
+        filepath = os.path.join(UPLOAD_DIR, filename)
+        if os.path.exists(filepath):
+            with open(filepath, "rb") as f:
+                image_data = base64.b64encode(f.read()).decode("utf-8")
+            ext = os.path.splitext(filename)[1].lower()
+            mime_type = "image/jpeg" if ext in [".jpg", ".jpeg"] else "image/png" if ext == ".png" else "image/webp"
+            return f"data:{mime_type};base64,{image_data}"
+    
+    if os.path.exists(url):
+        with open(url, "rb") as f:
+            image_data = base64.b64encode(f.read()).decode("utf-8")
+        ext = os.path.splitext(url)[1].lower()
+        mime_type = "image/jpeg" if ext in [".jpg", ".jpeg"] else "image/png" if ext == ".png" else "image/webp"
+        return f"data:{mime_type};base64,{image_data}"
+    
+    return url
 
 
 class FoodRecognitionState(TypedDict):
@@ -49,9 +78,10 @@ AI 营养师。分析图像，结合用户信息 ({user_profile}) 输出 JSON。
 async def recognize_food(state: FoodRecognitionState) -> FoodRecognitionState:
     llm = get_vision_llm()
     prompt = FOOD_RECOGNITION_PROMPT.replace("{user_profile}", json.dumps(state.get("user_profile", {}), ensure_ascii=False))
+    image_url = _prepare_image_url(state["image_url"])
     messages = [
         SystemMessage(content=prompt),
-        HumanMessage(content=[{"type": "image_url", "image_url": {"url": state["image_url"]}}]),
+        HumanMessage(content=[{"type": "image_url", "image_url": {"url": image_url}}]),
     ]
     try:
         response = await llm.ainvoke(messages)
