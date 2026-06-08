@@ -40,7 +40,6 @@ module.exports = {
       this.showErrorMessage('保存失败')
     } finally {
       this.setData({ isLoading: false })
-      this.scrollToBottom()
     }
   },
 

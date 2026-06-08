@@ -2,6 +2,7 @@ const { STORAGE_KEYS } = require('./utils/constants')
 
 App({
   onLaunch() {
+    // 先检查用户登录状态
     this.checkLoginStatus()
   },
 

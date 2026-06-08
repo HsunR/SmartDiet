@@ -32,7 +32,6 @@ module.exports = {
       isLoading: true
     })
     chatService.saveMessages(this.data.messages)
-    this.scrollToBottom()
 
     try {
       const saveResult = await safeApiCall(() =>
@@ -53,7 +52,6 @@ module.exports = {
       this.setData({ messages: [...this.data.messages, successMessage] })
       chatService.saveMessages(this.data.messages)
       this.updateDailyProgress()
-      this.scrollToBottom()
     } catch (error) {
       console.error('Save record error:', error)
       this.showErrorMessage('保存记录失败，请重试')

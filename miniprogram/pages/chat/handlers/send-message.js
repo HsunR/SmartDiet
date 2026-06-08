@@ -5,7 +5,6 @@
  * - sendMessage      将用户文本发往 SSE 流式接口，实时更新气泡内容
  * - getRecommendation 拉取当日饮食记录生成摘要推荐
  * - showErrorMessage  在对话中插入错误提示气泡
- * - scrollToBottom    将消息列表滚动至最后一条
  */
 
 const { createTextMessage } = require('../../../utils/message-factory')
@@ -33,7 +32,6 @@ module.exports = {
       isLoading: true
     })
     chatService.saveMessages(this.data.messages)
-    this.scrollToBottom()
 
     let fullContent = ''
 
@@ -48,7 +46,6 @@ module.exports = {
             msg.id === aiMessageId ? { ...msg, content: fullContent } : msg
           )
           this.setData({ messages })
-          this.scrollToBottom()
         },
         // onDone — 流式结束，关闭 loading 态
         () => {
@@ -57,7 +54,6 @@ module.exports = {
           )
           this.setData({ messages, isLoading: false })
           chatService.saveMessages(this.data.messages)
-          this.scrollToBottom()
         },
         // onError — 流式异常，展示错误消息
         (error) => {
@@ -66,7 +62,6 @@ module.exports = {
           )
           this.setData({ messages, isLoading: false })
           chatService.saveMessages(this.data.messages)
-          this.scrollToBottom()
         }
       )
     } catch (error) {
@@ -100,7 +95,6 @@ module.exports = {
       this.showErrorMessage('获取建议失败，请稍后重试')
     } finally {
       this.setData({ isLoading: false })
-      this.scrollToBottom()
     }
   },
 
@@ -109,15 +103,5 @@ module.exports = {
     const errorMessage = createTextMessage(MESSAGE_ROLES.ASSISTANT, `❌ ${message}`)
     this.setData({ messages: [...this.data.messages, errorMessage] })
     chatService.saveMessages(this.data.messages)
-  },
-
-  /** 滚动到消息列表底部（多次尝试确保子组件渲染完成） */
-  scrollToBottom() {
-    const messages = this.data.messages
-    if (messages.length === 0) return
-    const lastMsgId = `msg-${messages[messages.length - 1].id}`
-    this.setData({ scrollToView: lastMsgId })
-    setTimeout(() => { this.setData({ scrollToView: lastMsgId }) }, 150)
-    setTimeout(() => { this.setData({ scrollToView: lastMsgId }) }, 500)
   }
 }

@@ -23,7 +23,13 @@ Page({
     wx.showLoading({ title: '登录中...' })
 
     try {
-      const result = await safeApiCall(() => api.user.login('wx_login'))
+      // 调用微信登录获取临时 code
+      const loginResult = await wx.login()
+      if (!loginResult.code) {
+        throw new Error('获取微信登录凭证失败')
+      }
+
+      const result = await safeApiCall(() => api.user.login(loginResult.code))
 
       if (result.success && result.data) {
         const { token, user, isNew } = result.data
@@ -39,7 +45,7 @@ Page({
 
         wx.hideLoading()
 
-        if (is_new || !user.age) {
+        if (isNew || !user.age) {
           wx.redirectTo({ url: '/pages/onboarding/index' })
         } else {
           wx.switchTab({ url: '/pages/chat/index' })

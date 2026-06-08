@@ -65,6 +65,7 @@ docker-compose logs -f app                # 查看后端日志
 
 环境变量（`.env`）：
 - `DATABASE_URL`: PostgreSQL 连接串，Docker 内用 `db` 主机名
+- `WECHAT_APPID` / `WECHAT_SECRET`: 微信小程序凭证，留空则使用 mock 登录
 - `LLM_BASE_URL` / `LLM_MODEL` / `LLM_API_KEY`: AI 模型配置
 - `LLM_VISION_MODEL`: 可选，默认同 `LLM_MODEL`
 - `JWT_SECRET`: JWT 签名密钥

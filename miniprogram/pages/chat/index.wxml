@@ -8,8 +8,6 @@
   <scroll-view
     class="message-list"
     scroll-y
-    scroll-top="{{scrollTop}}"
-    scroll-into-view="{{scrollToView}}"
     scroll-with-animation
   >
 
@@ -149,8 +147,6 @@
       </view>
     </view>
 
-    <!-- 滚动到底部占位，确保最后一条消息不贴底 -->
-    <view class="scroll-bottom-placeholder"></view>
   </scroll-view>
 
   <!-- ================== 底部输入区域 ================== -->

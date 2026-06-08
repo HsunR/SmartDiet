@@ -36,7 +36,6 @@ module.exports = {
       editingSelectedDate: foodCardMsg?.data?.selectedDate || ''
     })
     chatService.saveMessages(this.data.messages)
-    this.scrollToBottom()
   },
 
   /** 用户提交反馈 → 调用 recognizeWithFeedback → 替换为新食物卡片 */
@@ -61,7 +60,6 @@ module.exports = {
     const feedbackText = createTextMessage(MESSAGE_ROLES.USER, `反馈：${feedback}`)
     this.setData({ messages: [...this.data.messages, feedbackText] })
     chatService.saveMessages(this.data.messages)
-    this.scrollToBottom()
 
     try {
       const recognizeResult = await safeApiCall(() => api.food.recognizeWithFeedback(imageUrl, feedback))
@@ -97,7 +95,6 @@ module.exports = {
       this.showErrorMessage('重新识别失败')
     } finally {
       this.setData({ isLoading: false })
-      this.scrollToBottom()
     }
   },
 

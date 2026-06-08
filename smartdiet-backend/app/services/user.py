@@ -3,11 +3,15 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from jose import jwt
+import httpx
 
 from app.core.config import settings
-from app.core.exceptions import BadRequest
+from app.core.exceptions import BadRequest, InternalError
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
+
+
+WECHAT_CODE2SESSION = "https://api.weixin.qq.com/sns/jscode2session"
 
 
 def _create_token(user_id: UUID) -> str:
@@ -15,10 +19,32 @@ def _create_token(user_id: UUID) -> str:
     return jwt.encode({"sub": str(user_id), "exp": expire}, settings.jwt_secret, algorithm=settings.jwt_algorithm)
 
 
+async def _mock_openid(code: str) -> str:
+    return f"mock_{code}" if code != "mock" else "mock_openid"
+
+
+async def _wechat_openid(code: str) -> str:
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(WECHAT_CODE2SESSION, params={
+            "appid": settings.wechat_appid,
+            "secret": settings.wechat_secret,
+            "js_code": code,
+            "grant_type": "authorization_code",
+        })
+        data = resp.json()
+    if errcode := data.get("errcode"):
+        raise BadRequest(f"微信登录失败: {data.get('errmsg', '未知错误')}")
+    return data["openid"]
+
+
 async def login(db: AsyncSession, code: str) -> tuple[User, str, bool]:
     if not code:
         raise BadRequest("登录 code 不能为空")
-    openid = f"mock_{code}" if code != "mock" else "mock_openid"
+
+    if settings.wechat_secret:
+        openid = await _wechat_openid(code)
+    else:
+        openid = await _mock_openid(code)
 
     result = await db.execute(select(User).where(User.openid == openid))
     user = result.scalar_one_or_none()

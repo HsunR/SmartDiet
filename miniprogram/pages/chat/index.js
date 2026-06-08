@@ -22,7 +22,6 @@ Page({
     messages: [],             // 聊天消息列表
     inputValue: '',            // 输入框当前文本
     isLoading: false,          // AI 响应或识别进行中
-    scrollToView: '',          // 滚动目标的元素 id
     userProfile: null,         // 当前用户档案
     currentImageUrl: '',       // 最近选择的图片 URL
     currentCloudFileId: '',    // 最近选择的云文件 ID
@@ -70,7 +69,6 @@ Page({
     const savedMessages = chatService.loadMessages()
     if (savedMessages) {
       this.setData({ messages: savedMessages })
-      this.scrollToBottom()
     } else {
       this.setData({ messages: chatService.initChat() })
     }
@@ -117,10 +115,8 @@ Page({
     imageService.previewImage(e.currentTarget.dataset.url)
   },
 
-  /** 图片加载完成后滚到底部 */
-  onImageLoaded() {
-    this.scrollToBottom()
-  },
+  /** 图片加载完成后无需额外操作 */
+  onImageLoaded() {},
 
   /* ==================== 快捷操作路由 ==================== */
   onQuickAction(e) {
