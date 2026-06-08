@@ -14,41 +14,53 @@
 
   <!-- 餐食概览区域：包含健康评分圆环和健康标签 -->
   <view class="meal-overview">
-    <view class="health-score-section">
-      <!-- 健康评分圆环（灰色背景 + 橙色进度） -->
-      <view class="score-circle-wrapper">
-        <view class="score-circle-bg"></view>
-        <view class="score-circle-progress" style="background: conic-gradient(#FF9800 {{mealOverview.overallHealthScore}}%, transparent {{mealOverview.overallHealthScore}}%)"></view>
-        <view class="score-inner">
-          <text class="score-number">{{mealOverview.overallHealthScore}}</text>
-          <text class="score-label">健康评分</text>
-        </view>
+    <!-- 骨架屏加载状态 -->
+    <view wx:if="{{mealOverview.overallHealthScore === 0 && mealOverview.summary === '正在分析食物...'}}" class="skeleton-overview">
+      <view class="skeleton-circle"></view>
+      <view class="skeleton-lines">
+        <view class="skeleton-line skeleton-line-long"></view>
+        <view class="skeleton-line skeleton-line-short"></view>
       </view>
     </view>
 
-    <!-- 健康标签区域 -->
-    <view class="health-tags-section">
-      <!-- 正面标签（绿色） -->
-      <view class="tags-row" wx:if="{{mealOverview.healthTags.positive.length > 0}}">
-        <view class="tag tag-positive" wx:for="{{mealOverview.healthTags.positive}}" wx:for-index="index" wx:for-item="tag" wx:key="index">
-          <text class="tag-icon">✓</text>
-          <text>{{tag}}</text>
-          <text class="tag-reason" wx:if="{{mealOverview.tagReasons[tag]}}">{{mealOverview.tagReasons[tag]}}</text>
+    <!-- 正常内容 -->
+    <view wx:else>
+      <view class="health-score-section">
+        <!-- 健康评分圆环（灰色背景 + 橙色进度） -->
+        <view class="score-circle-wrapper">
+          <view class="score-circle-bg"></view>
+          <view class="score-circle-progress" style="background: conic-gradient(#FF9800 {{mealOverview.overallHealthScore}}%, transparent {{mealOverview.overallHealthScore}}%)"></view>
+          <view class="score-inner">
+            <text class="score-number">{{mealOverview.overallHealthScore}}</text>
+            <text class="score-label">健康评分</text>
+          </view>
         </view>
       </view>
-      <!-- 警告标签（橙色） -->
-      <view class="tags-row" wx:if="{{mealOverview.healthTags.warning.length > 0}}">
-        <view class="tag tag-warning" wx:for="{{mealOverview.healthTags.warning}}" wx:for-index="index" wx:for-item="tag" wx:key="index">
-          <text class="tag-icon">!</text>
-          <text>{{tag}}</text>
-          <text class="tag-reason" wx:if="{{mealOverview.tagReasons[tag]}}">{{mealOverview.tagReasons[tag]}}</text>
-        </view>
-      </view>
-    </view>
 
-    <!-- 餐食总结文本 -->
-    <view class="meal-summary">
-      <text>{{mealOverview.summary}}</text>
+      <!-- 健康标签区域 -->
+      <view class="health-tags-section">
+        <!-- 正面标签（绿色） -->
+        <view class="tags-row" wx:if="{{mealOverview.healthTags.positive.length > 0}}">
+          <view class="tag tag-positive" wx:for="{{mealOverview.healthTags.positive}}" wx:for-index="index" wx:for-item="tag" wx:key="index">
+            <text class="tag-icon">✓</text>
+            <text>{{tag}}</text>
+            <text class="tag-reason" wx:if="{{mealOverview.tagReasons[tag]}}">{{mealOverview.tagReasons[tag]}}</text>
+          </view>
+        </view>
+        <!-- 警告标签（橙色） -->
+        <view class="tags-row" wx:if="{{mealOverview.healthTags.warning.length > 0}}">
+          <view class="tag tag-warning" wx:for="{{mealOverview.healthTags.warning}}" wx:for-index="index" wx:for-item="tag" wx:key="index">
+            <text class="tag-icon">!</text>
+            <text>{{tag}}</text>
+            <text class="tag-reason" wx:if="{{mealOverview.tagReasons[tag]}}">{{mealOverview.tagReasons[tag]}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 餐食总结文本 -->
+      <view class="meal-summary">
+        <text>{{mealOverview.summary}}</text>
+      </view>
     </view>
   </view>
 

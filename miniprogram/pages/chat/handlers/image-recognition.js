@@ -155,9 +155,15 @@ module.exports = {
     mealOverview.healthTags = mealOverview.healthTags || { positive: [], warning: [] }
     mealOverview.tagReasons = mealOverview.tagReasons || {}
 
-    // 创建食物卡片并绑定用户选择信息
+    // 创建空食物列表的卡片（显示加载状态，逐步渲染）
     const { createFoodCardMessage } = require('../../../utils/message-factory')
-    const foodCardMessage = createFoodCardMessage(foods, mealOverview, result.dietaryAdvice || '', generateId())
+    const recordId = generateId()
+    const foodCardMessage = createFoodCardMessage([], {
+      overallHealthScore: 0,
+      healthTags: { positive: [], warning: [] },
+      tagReasons: {},
+      summary: '正在分析食物...'
+    }, '', recordId)
     Object.assign(foodCardMessage.data, {
       imageUrl: task.imageUrl,
       mealType: task.selectedMealType,
@@ -181,5 +187,45 @@ module.exports = {
     })
     chatService.saveMessages(this.data.messages)
     this.scrollToBottom()
+
+    // 逐步渲染食物项
+    this._progressiveRenderFoods(foodCardMessage.id, foods, mealOverview, result.dietaryAdvice || '')
+  },
+
+  /**
+   * 逐步渲染食物项，每次添加一个食物到卡片中
+   * @param {string} msgId - 食物卡片消息 ID
+   * @param {Array} foods - 完整食物列表
+   * @param {Object} mealOverview - 餐食概览
+   * @param {string} dietaryAdvice - 饮食建议
+   */
+  _progressiveRenderFoods(msgId, foods, mealOverview, dietaryAdvice) {
+    const ITEM_DELAY = 600
+    const HEAD_DELAY = 400
+
+    foods.forEach((food, index) => {
+      setTimeout(() => {
+        const messages = this.data.messages.map(msg => {
+          if (msg.id !== msgId) return msg
+          const currentFoods = msg.data.foods || []
+          const newFoods = [...currentFoods, food]
+          const isLastItem = index === foods.length - 1
+
+          return {
+            ...msg,
+            data: {
+              ...msg.data,
+              foods: newFoods,
+              mealOverview: isLastItem ? mealOverview : msg.data.mealOverview,
+              dietaryAdvice: isLastItem ? dietaryAdvice : msg.data.dietaryAdvice,
+              _progressiveRendering: !isLastItem,
+              _currentFoodIndex: index + 1
+            }
+          }
+        })
+        this.setData({ messages })
+        this.scrollToBottom()
+      }, HEAD_DELAY + index * ITEM_DELAY)
+    })
   }
 }
