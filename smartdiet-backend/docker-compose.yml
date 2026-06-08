@@ -15,9 +15,12 @@ services:
     ports:
       - "8000:8000"
     environment:
+      LLM_BASE_URL: ${LLM_BASE_URL}
+      LLM_MODEL: ${LLM_MODEL}
+      LLM_API_KEY: ${LLM_API_KEY}
+      LLM_VISION_MODEL: ${LLM_VISION_MODEL}
+      JWT_SECRET: ${JWT_SECRET}
       DATABASE_URL: postgresql+asyncpg://smartdiet:smartdiet@db:5432/smartdiet
-      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY}
-      ZHIPU_API_KEY: ${ZHIPU_API_KEY}
     depends_on:
       - db
     volumes:

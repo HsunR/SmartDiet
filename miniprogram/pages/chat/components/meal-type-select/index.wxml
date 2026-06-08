@@ -1,4 +1,4 @@
-<view class="meal-type-select-container {{collapsed ? 'meal-type-collapsed' : ''}}">
+    <view class="meal-type-select-container {{collapsed ? 'meal-type-collapsed message-animate-out' : ''}}">
   <view wx:if="{{!collapsed}}">
     <text class="select-title">{{content}}</text>
     <view class="meal-type-grid">

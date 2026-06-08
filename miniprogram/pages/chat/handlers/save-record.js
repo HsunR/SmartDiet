@@ -1,9 +1,9 @@
 /**
- * @fileoverview 饮食记录处理模块
- * @description 处理饮食记录的保存、确认、每日进度更新等功能
- * @module handlers/record-handler
- * @author SmartDiet Team
- * @created 2026-04-26
+ * save-record.js — 食物记录保存与每日进度
+ *
+ * 职责：
+ * - onFoodCardConfirm   用户确认食物卡片 → 保存到 FastAPI → 插入成功提示
+ * - updateDailyProgress 拉取当日记录，更新 dailyScore 数据
  */
 
 const { createTextMessage } = require('../../../utils/message-factory')
@@ -13,21 +13,13 @@ const { api, safeApiCall } = require('../../../utils/api')
 const chatService = require('../../../services/chat-service')
 
 module.exports = {
-  /**
-   * 处理食物卡片确认保存事件
-   * @async
-   * @param {Object} e - 事件对象
-   * @param {Object} e.detail - 事件详情
-   * @param {Array} e.detail.foods - 食物列表
-   * @param {Object} e.detail.mealOverview - 餐食概览信息
-   * @param {string} e.detail.dietaryAdvice - 饮食建议
-   * @returns {Promise<void>}
-   * @description 用户确认保存饮食记录，将数据提交到服务器并更新UI状态
-   */
+
+  /** 用户点击「确认」→ 保存饮食记录到服务器 → 显示成功消息 → 刷新进度 */
   async onFoodCardConfirm(e) {
     const { foods, mealOverview, dietaryAdvice } = e.detail
-    const { index: foodCardIndex, message: foodCardMsg } = chatService.findLastMessageByType(this.data.messages, MESSAGE_TYPES.FOOD_CARD)
-
+    const { index: foodCardIndex, message: foodCardMsg } = chatService.findLastMessageByType(
+      this.data.messages, MESSAGE_TYPES.FOOD_CARD
+    )
     if (foodCardIndex === -1) return
 
     const mealType = foodCardMsg?.data?.mealType || getCurrentMealType()
@@ -42,20 +34,13 @@ module.exports = {
     chatService.saveMessages(this.data.messages)
     this.scrollToBottom()
 
-    const record = {
-      date: selectedDate, mealType, rating, foods,
-      imageUrl, mealOverview
-    }
-
     try {
-      const saveResult = await safeApiCall(() => api.food.addRecord(record))
+      const saveResult = await safeApiCall(() =>
+        api.food.addRecord({ date: selectedDate, mealType, rating, foods, imageUrl, mealOverview })
+      )
+      getApp().globalData.needRefreshReport = true
 
-      const app = getApp()
-      app.globalData.needRefreshReport = true
-
-      // 确保 recordId 是字符串类型，如果没有则使用空字符串
       const recordId = saveResult?.data?.recordId || ''
-      
       this.setData({
         ['messages[' + foodCardIndex + '].data.recordSaved']: true,
         ['messages[' + foodCardIndex + '].data.recordId']: recordId
@@ -65,10 +50,7 @@ module.exports = {
         MESSAGE_ROLES.ASSISTANT,
         `✅ 已记录为${getMealTypeLabel(mealType)}！\n\n健康评分：${mealOverview.overallHealthScore || 60}分\n您的评分：${rating === 0 ? '待定' : rating + '星'}`
       )
-
-      this.setData({
-        messages: [...this.data.messages, successMessage]
-      })
+      this.setData({ messages: [...this.data.messages, successMessage] })
       chatService.saveMessages(this.data.messages)
       this.updateDailyProgress()
       this.scrollToBottom()
@@ -80,12 +62,7 @@ module.exports = {
     }
   },
 
-  /**
-   * 更新每日饮食进度
-   * @async
-   * @returns {Promise<void>}
-   * @description 获取今日所有饮食记录，计算总热量并更新页面显示
-   */
+  /** 拉取当日记录 → 计算平均健康评分 → 更新 dailyScore */
   async updateDailyProgress() {
     const app = getApp()
     if (!app.globalData.hasLogin) return
@@ -93,7 +70,6 @@ module.exports = {
       const today = formatDate(new Date())
       const result = await safeApiCall(() => api.food.getRecords(today))
       if (result.success && result.data) {
-        // 计算今日平均健康评分
         const avgScore = result.data.length > 0
           ? Math.round(result.data.reduce((sum, r) => sum + ((r.mealOverview?.overallHealthScore) || 60), 0) / result.data.length)
           : 0

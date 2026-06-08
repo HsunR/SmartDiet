@@ -1,62 +1,63 @@
-<!-- 引入 WXS 工具模块 -->
+<!-- WXS 时间格式化工具 -->
 <wxs src="../../utils/utils.wxs" module="utils" />
 
-<!-- 聊天页面主容器 -->
+<!-- ==================== 聊天页面容器 ==================== -->
 <view class="chat-container">
-  <!-- 消息列表滚动区域 -->
-  <scroll-view 
-    class="message-list" 
-    scroll-y 
+
+  <!-- ================== 消息列表（可滚动） ================== -->
+  <scroll-view
+    class="message-list"
+    scroll-y
     scroll-top="{{scrollTop}}"
     scroll-into-view="{{scrollToView}}"
     scroll-with-animation
   >
-    <!-- 消息列表：遍历所有消息 -->
-    <view 
-      wx:for="{{messages}}" 
-      wx:key="id" 
+
+    <!-- 遍历所有消息，跳过已完成的反馈输入 -->
+    <view
+      wx:for="{{messages}}"
+      wx:key="id"
       id="msg-{{item.id}}"
       wx:if="{{!(item.type === 'feedback_input' && item.data.completed)}}"
       class="message-item {{item.role === 'user' ? 'message-user' : 'message-ai'}}"
     >
-      <!-- AI 头像（仅 AI 消息显示） -->
+      <!-- AI 头像（用户无头像） -->
       <view class="message-avatar" wx:if="{{item.role === 'assistant'}}">
         <view class="avatar-placeholder avatar-ai">🤖</view>
       </view>
-      
-      <!-- 消息内容区域 -->
+
       <view class="message-content {{item.role === 'user' ? 'message-content-user' : ''}}">
-        <!-- 消息气泡 -->
         <view class="message-bubble {{item.role === 'user' ? 'bubble-user' : 'bubble-ai'}}">
-          <!-- 文本类型消息 -->
-          <text-message 
+
+          <!-- 纯文本消息（含流式输出支持） -->
+          <text-message
             wx:if="{{item.type === 'text'}}"
             content="{{item.content}}"
             role="{{item.role}}"
             timestamp="{{item.timestamp}}"
             is-streaming="{{item.isStreaming}}"
           />
-          
-          <!-- 识别中消息 -->
+
+          <!-- AI 识别中（带脉冲动画） -->
           <view wx:elif="{{item.type === 'recognizing'}}" class="recognizing-message">
             <view class="recognizing-icon-wrapper">
               <text class="recognizing-icon">🔍</text>
             </view>
             <text class="recognizing-text">{{item.content}}</text>
           </view>
-          
-          <!-- 图片类型消息 -->
-          <image-message 
+
+          <!-- 用户上传的图片 -->
+          <image-message
             wx:elif="{{item.type === 'image'}}"
             image-url="{{item.data.imageUrl}}"
             role="{{item.role}}"
             bind:previewImage="onPreviewImage"
             bind:loaded="onImageLoaded"
           />
-          
-          <!-- 食物卡片类型消息 -->
-          <food-card 
-            wx:elif="{{item.type === 'food_card'}}" 
+
+          <!-- AI 识别结果卡片（食物列表、营养标签、建议） -->
+          <food-card
+            wx:elif="{{item.type === 'food_card'}}"
             foods="{{item.data.foods}}"
             meal-overview="{{item.data.mealOverview}}"
             dietary-advice="{{item.data.dietaryAdvice}}"
@@ -66,19 +67,19 @@
             bind:confirm="onFoodCardConfirm"
             bind:edit="onFoodCardEdit"
           />
-          
-          <!-- 餐次选择器（滚轮式） -->
+
+          <!-- 餐次选择器（Picker 滚轮模式） -->
           <meal-type-picker
-            wx:if="{{item.type === 'meal_type_picker' && !item.data.completed}}"
+            wx:elif="{{item.type === 'meal_type_picker' && !item.data.completed}}"
             content="{{item.content}}"
             meal-types="{{item.data.mealTypes}}"
             msg-id="{{item.id}}"
             bind:confirm="onMealTypePickerConfirm"
           />
-          
-          <!-- 餐次选择（网格样式） -->
+
+          <!-- 餐次选择（按钮网格模式，折叠/展开由组件内部管理） -->
           <meal-type-select
-            wx:if="{{item.type === 'meal_type_select' && !item.data.collapsed}}"
+            wx:elif="{{item.type === 'meal_type_select'}}"
             content="{{item.content}}"
             meal-types="{{item.data.mealTypes}}"
             selected-meal-type="{{item.data.selectedMealType}}"
@@ -86,15 +87,10 @@
             msg-id="{{item.id}}"
             bind:select="onMealTypeSelect"
           />
-          
-          <!-- 餐次选择（已折叠状态） -->
-          <view wx:if="{{item.type === 'meal_type_select' && item.data.collapsed}}" class="meal-type-collapsed message-animate-out">
-            <text class="collapsed-text">已选择：{{item.data.selectedMealType === 'breakfast' ? '🌅 早餐' : item.data.selectedMealType === 'lunch' ? '☀️ 午餐' : item.data.selectedMealType === 'dinner' ? '🌙 晚餐' : '🍎 其他'}}</text>
-          </view>
-          
+
           <!-- 日期选择器 -->
           <date-select
-            wx:if="{{item.type === 'date_select' && !item.data.collapsed}}"
+            wx:elif="{{item.type === 'date_select'}}"
             content="{{item.content}}"
             selected-date="{{item.data.selectedDate}}"
             selected-meal-type="{{item.data.selectedMealType}}"
@@ -103,15 +99,10 @@
             bind:dateChange="onDateSelect"
             bind:confirm="onDateConfirm"
           />
-          
-          <!-- 日期选择器（已折叠状态） -->
-          <view wx:if="{{item.type === 'date_select' && item.data.collapsed}}" class="date-collapsed message-animate-out">
-            <text class="collapsed-text">日期：{{item.data.selectedDate}}{{item.data.selectedMealType ? ' | ' + (item.data.selectedMealType === 'breakfast' ? '🌅 早餐' : item.data.selectedMealType === 'lunch' ? '☀️ 午餐' : item.data.selectedMealType === 'dinner' ? '🌙 晚餐' : '🍎 其他') : ''}}</text>
-          </view>
-          
+
           <!-- 评分选择器 -->
           <rating-select
-            wx:if="{{item.type === 'rating_select' && !item.data.collapsed}}"
+            wx:elif="{{item.type === 'rating_select'}}"
             content="{{item.content}}"
             ratings="{{item.data.ratings}}"
             selected-rating="{{item.data.selectedRating}}"
@@ -119,15 +110,10 @@
             msg-id="{{item.id}}"
             bind:select="onRatingSelect"
           />
-          
-          <!-- 评分选择器（已折叠状态） -->
-          <view wx:if="{{item.type === 'rating_select' && item.data.collapsed}}" class="rating-collapsed message-animate-out">
-            <text class="collapsed-text">评分：{{item.data.selectedRating === 0 ? '❓ 待定' : item.data.selectedRating + '星'}}</text>
-          </view>
-          
-          <!-- 反馈输入框 -->
+
+          <!-- 反馈输入（用户修正识别结果） -->
           <feedback-input
-            wx:if="{{item.type === 'feedback_input' && !item.data.completed}}"
+            wx:elif="{{item.type === 'feedback_input' && !item.data.completed}}"
             content="{{item.content}}"
             placeholder="例如：分量估算不对、漏识别了食物、烹饪方式判断错误..."
             value="{{feedbackValues[item.id] || ''}}"
@@ -135,33 +121,34 @@
             bind:input="onFeedbackInput"
             bind:submit="onFeedbackSubmit"
           />
-          
-          <!-- 用户信息表单 -->
+
+          <!-- 用户信息表单（引导页未完成时的内联表单） -->
           <user-info-form
-            wx:if="{{item.type === 'user_info_form' && !item.data.completed}}"
+            wx:elif="{{item.type === 'user_info_form' && !item.data.completed}}"
             content="{{item.content}}"
             fields="{{item.data.fields}}"
             values="{{formValues}}"
             msg-id="{{item.id}}"
             bind:submit="onUserInfoFormSubmit"
           />
-          
-          <!-- 快捷操作按钮组 -->
+
+          <!-- 快捷操作按钮组（拍照、查看报告、获取建议） -->
           <quick-actions
             wx:elif="{{item.type === 'quick_actions'}}"
             content="{{item.content}}"
             actions="{{item.data.actions}}"
             bind:actionClick="onQuickAction"
           />
+
         </view>
-        
+
         <!-- 消息时间戳 -->
         <view class="message-time" wx:if="{{item.timestamp}}">
           <text class="text">{{utils.formatTime(item.timestamp)}}</text>
         </view>
       </view>
     </view>
-    
+
     <!-- AI 正在输入动画 -->
     <view wx:if="{{isLoading}}" class="message-item message-ai">
       <view class="message-avatar">
@@ -173,38 +160,36 @@
         </view>
       </view>
     </view>
-    
-    <!-- 滚动到底部占位符 -->
+
+    <!-- 滚动到底部占位，确保最后一条消息不贴底 -->
     <view class="scroll-bottom-placeholder"></view>
   </scroll-view>
-  
-  <!-- 底部输入区域 -->
+
+  <!-- ================== 底部输入区域 ================== -->
   <view class="input-area">
     <view class="input-wrapper">
-      <!-- 相机按钮 -->
+      <!-- 相机按钮（触发拍照/选图） -->
       <view class="camera-btn" bindtap="chooseImage">
         <view class="camera-icon-svg">
           <view class="camera-body"></view>
           <view class="camera-lens"></view>
         </view>
       </view>
-      
+
       <!-- 文本输入框 -->
-      <input 
+      <input
         class="message-input"
         type="text"
         placeholder="输入消息..."
         value="{{inputValue}}"
         bindinput="onInputChange"
-        bindfocus="onInputFocus"
-        bindblur="onInputBlur"
         confirm-type="send"
         bindconfirm="sendMessage"
       />
-      
-      <!-- 发送按钮 -->
-      <view 
-        class="send-btn {{inputValue ? 'send-btn-active' : ''}}" 
+
+      <!-- 发送按钮（有内容时高亮） -->
+      <view
+        class="send-btn {{inputValue ? 'send-btn-active' : ''}}"
         bindtap="sendMessage"
       >
         <text>发送</text>

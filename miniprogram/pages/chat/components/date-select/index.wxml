@@ -17,7 +17,7 @@
   
   <button class="date-confirm-btn" bindtap="onConfirm">确认</button>
   
-  <view wx:if="{{collapsed}}" class="date-collapsed">
+  <view wx:if="{{collapsed}}" class="date-collapsed message-animate-out">
     <text class="collapsed-text">已选择：{{selectedDate}} {{selectedMealType ? ' - ' + selectedMealType : ''}}</text>
   </view>
 </view>

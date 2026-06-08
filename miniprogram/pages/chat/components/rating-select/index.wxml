@@ -14,7 +14,7 @@
     </view>
   </view>
   
-  <view wx:if="{{collapsed}}" class="rating-collapsed">
+  <view wx:if="{{collapsed}}" class="rating-collapsed message-animate-out">
     <text class="collapsed-text">已选择：{{selectedRating}}</text>
   </view>
 </view>

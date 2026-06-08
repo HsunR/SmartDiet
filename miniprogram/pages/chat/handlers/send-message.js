@@ -1,7 +1,11 @@
 /**
- * @fileoverview 聊天消息处理模块
- * @description 处理聊天消息的发送、AI回复获取、错误提示及消息滚动等功能
- * @module handlers/chat-handler
+ * send-message.js — 消息发送与 AI 流式回复
+ *
+ * 职责：
+ * - sendMessage      将用户文本发往 SSE 流式接口，实时更新气泡内容
+ * - getRecommendation 拉取当日饮食记录生成摘要推荐
+ * - showErrorMessage  在对话中插入错误提示气泡
+ * - scrollToBottom    将消息列表滚动至最后一条
  */
 
 const { createTextMessage } = require('../../../utils/message-factory')
@@ -11,23 +15,19 @@ const { api, safeApiCall } = require('../../../utils/api')
 const chatService = require('../../../services/chat-service')
 
 module.exports = {
-  /**
-   * 发送用户消息并获取AI回复（流式）
-   * @async
-   * @param {void}
-   * @returns {Promise<void>}
-   * @description 验证输入内容，创建用户消息，调用AI流式接口获取回复，并实时更新消息列表
-   */
+
+  /** 发送文本消息 → SSE 流式获取 AI 回复 → 实时更新气泡 */
   async sendMessage() {
     const { inputValue, isLoading } = this.data
     if (!inputValue.trim() || isLoading) return
 
+    // 插入用户消息
     const userMessage = createTextMessage(MESSAGE_ROLES.USER, inputValue.trim())
     this.setData({ messages: [...this.data.messages, userMessage], inputValue: '', isLoading: true })
     chatService.saveMessages(this.data.messages)
     this.scrollToBottom()
 
-    // 创建一个空的AI消息，用于流式更新
+    // 创建空 AI 消息占位，开启流式更新
     const aiMessageId = generateId()
     const aiMessage = createTextMessage(MESSAGE_ROLES.ASSISTANT, '')
     aiMessage.id = aiMessageId
@@ -38,42 +38,32 @@ module.exports = {
     let fullContent = ''
 
     try {
-      // 使用流式API
       api.chat.sendStream(
         inputValue.trim(),
-        null, // conversationId
-        // onChunk - 收到数据块时更新消息
+        null, // conversationId, 暂不启用多轮会话管理
+        // onChunk — 每次收到数据块时更新气泡
         (content) => {
           fullContent += content
-          const messages = this.data.messages.map(msg => {
-            if (msg.id === aiMessageId) {
-              return { ...msg, content: fullContent }
-            }
-            return msg
-          })
+          const messages = this.data.messages.map(msg =>
+            msg.id === aiMessageId ? { ...msg, content: fullContent } : msg
+          )
           this.setData({ messages })
           this.scrollToBottom()
         },
-        // onDone - 流式结束
+        // onDone — 流式结束，关闭 loading 态
         () => {
-          const messages = this.data.messages.map(msg => {
-            if (msg.id === aiMessageId) {
-              return { ...msg, content: fullContent, isStreaming: false }
-            }
-            return msg
-          })
+          const messages = this.data.messages.map(msg =>
+            msg.id === aiMessageId ? { ...msg, content: fullContent, isStreaming: false } : msg
+          )
           this.setData({ messages, isLoading: false })
           chatService.saveMessages(this.data.messages)
           this.scrollToBottom()
         },
-        // onError - 错误处理
+        // onError — 流式异常，展示错误消息
         (error) => {
-          const messages = this.data.messages.map(msg => {
-            if (msg.id === aiMessageId) {
-              return { ...msg, content: `❌ ${error}`, isStreaming: false }
-            }
-            return msg
-          })
+          const messages = this.data.messages.map(msg =>
+            msg.id === aiMessageId ? { ...msg, content: `❌ ${error}`, isStreaming: false } : msg
+          )
           this.setData({ messages, isLoading: false })
           chatService.saveMessages(this.data.messages)
           this.scrollToBottom()
@@ -85,32 +75,20 @@ module.exports = {
     }
   },
 
-  /**
-   * 获取今日饮食推荐摘要
-   * @async
-   * @param {void}
-   * @returns {Promise<void>}
-   * @description 获取今日饮食记录，计算总热量和食物种类，生成推荐消息
-   */
+  /** 获取今日饮食记录 → 生成摘要推荐消息 */
   async getRecommendation() {
     this.setData({ isLoading: true })
-
     try {
       const today = formatDate(new Date())
       const result = await safeApiCall(() => api.food.getRecords(today))
-
-      // 处理饮食记录数据，生成摘要消息
       if (result.success && result.data) {
         const records = result.data
-        // 计算平均健康评分
         const avgScore = records.length > 0
           ? Math.round(records.reduce((sum, r) => sum + ((r.mealOverview?.overallHealthScore) || 60), 0) / records.length)
           : 0
-        // 收集所有食物名称
         const foods = []
         records.forEach(r => (r.foods || []).forEach(f => foods.push(f.name)))
 
-        // 创建AI推荐消息
         const message = createTextMessage(
           MESSAGE_ROLES.ASSISTANT,
           `📊 今日饮食摘要\n\n平均健康评分：${avgScore} 分\n用餐次数：${records.length} 次\n食物种类：${[...new Set(foods)].join('、')}\n\n建议保持均衡饮食，多吃蔬菜水果！`
@@ -126,42 +104,20 @@ module.exports = {
     }
   },
 
-  /**
-   * 显示错误消息
-   * @param {string} message - 错误信息内容
-   * @returns {void}
-   * @description 创建带错误标识的AI消息并添加到消息列表
-   */
+  /** 插入错误提示气泡 */
   showErrorMessage(message) {
     const errorMessage = createTextMessage(MESSAGE_ROLES.ASSISTANT, `❌ ${message}`)
     this.setData({ messages: [...this.data.messages, errorMessage] })
     chatService.saveMessages(this.data.messages)
   },
 
-  /**
-   * 滚动到消息列表底部
-   * @param {void}
-   * @returns {void}
-   * @description 获取最后一条消息的ID，设置scrollToView实现自动滚动
-   * 多次尝试滚动，确保异步加载内容（如图片）也能正确滚动
-   */
+  /** 滚动到消息列表底部（多次尝试确保子组件渲染完成） */
   scrollToBottom() {
     const messages = this.data.messages
     if (messages.length === 0) return
-
     const lastMsgId = `msg-${messages[messages.length - 1].id}`
-    
-    // 立即尝试滚动
     this.setData({ scrollToView: lastMsgId })
-    
-    // 延迟再次滚动，确保子组件渲染完成
-    setTimeout(() => {
-      this.setData({ scrollToView: lastMsgId })
-    }, 150)
-    
-    // 再次延迟滚动，处理图片等异步加载内容
-    setTimeout(() => {
-      this.setData({ scrollToView: lastMsgId })
-    }, 500)
+    setTimeout(() => { this.setData({ scrollToView: lastMsgId }) }, 150)
+    setTimeout(() => { this.setData({ scrollToView: lastMsgId }) }, 500)
   }
 }

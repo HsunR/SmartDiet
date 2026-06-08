@@ -86,3 +86,22 @@
   font-size: 24rpx;
   color: #757575;
 }
+
+.message-animate-out {
+  animation: slideOutUp 0.3s ease-in;
+}
+
+@keyframes slideOutUp {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 500rpx;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20rpx);
+    max-height: 0;
+    padding: 0;
+    margin: 0;
+  }
+}
