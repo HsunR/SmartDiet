@@ -1,20 +1,22 @@
-<view class="rating-select-container">
-  <view class="select-title">{{content}}</view>
-  
-  <view class="rating-grid">
-    <view 
-      wx:for="{{ratings}}" 
-      wx:key="value"
-      class="rating-option {{selectedRating === item.value ? 'rating-selected' : ''}}"
-      data-value="{{item.value}}"
-      bindtap="handleSelect"
-    >
-      <view class="rating-icon">{{item.icon}}</view>
-      <view class="rating-text">{{item.label}}</view>
+<view class="rating-select-container {{collapsed ? 'rating-collapsed message-animate-out' : ''}}">
+  <view wx:if="{{!collapsed}}">
+    <view class="select-title">{{content}}</view>
+
+    <view class="rating-grid">
+      <view
+        wx:for="{{ratings}}"
+        wx:key="value"
+        class="rating-option {{selectedRating === item.value ? 'rating-selected' : ''}}"
+        data-value="{{item.value}}"
+        bindtap="handleSelect"
+      >
+        <view class="rating-icon">{{item.icon}}</view>
+        <view class="rating-text">{{item.label}}</view>
+      </view>
     </view>
   </view>
-  
-  <view wx:if="{{collapsed}}" class="rating-collapsed message-animate-out">
-    <text class="collapsed-text">已选择：{{selectedRating}}</text>
+
+  <view wx:else class="collapsed-text">
+    <text>已选择：{{selectedRating}}</text>
   </view>
 </view>
