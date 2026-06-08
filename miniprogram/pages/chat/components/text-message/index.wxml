@@ -1,4 +1,13 @@
 <view class="message-text-container">
-  <text class="message-text">{{content}}</text>
-  <text wx:if="{{isStreaming}}" class="streaming-cursor">|</text>
+  <!-- 流式加载中且尚无内容时显示跳动圆点 -->
+  <view wx:if="{{isStreaming && !content}}" class="typing-dots">
+    <view class="typing-dot"></view>
+    <view class="typing-dot"></view>
+    <view class="typing-dot"></view>
+  </view>
+  <!-- 正常文本内容 -->
+  <block wx:else>
+    <text class="message-text">{{content}}</text>
+    <text wx:if="{{isStreaming}}" class="streaming-cursor">|</text>
+  </block>
 </view>

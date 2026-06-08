@@ -149,18 +149,6 @@
       </view>
     </view>
 
-    <!-- AI 正在输入动画 -->
-    <view wx:if="{{isLoading}}" class="message-item message-ai">
-      <view class="message-avatar">
-        <view class="avatar-placeholder avatar-ai">🤖</view>
-      </view>
-      <view class="message-content">
-        <view class="message-bubble bubble-ai">
-          <typing-indicator />
-        </view>
-      </view>
-    </view>
-
     <!-- 滚动到底部占位，确保最后一条消息不贴底 -->
     <view class="scroll-bottom-placeholder"></view>
   </scroll-view>

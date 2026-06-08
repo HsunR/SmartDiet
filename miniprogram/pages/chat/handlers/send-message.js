@@ -21,18 +21,18 @@ module.exports = {
     const { inputValue, isLoading } = this.data
     if (!inputValue.trim() || isLoading) return
 
-    // 插入用户消息
+    // 插入用户消息 + 空 AI 占位（同时渲染，避免出现两条消息）
     const userMessage = createTextMessage(MESSAGE_ROLES.USER, inputValue.trim())
-    this.setData({ messages: [...this.data.messages, userMessage], inputValue: '', isLoading: true })
-    chatService.saveMessages(this.data.messages)
-    this.scrollToBottom()
-
-    // 创建空 AI 消息占位，开启流式更新
     const aiMessageId = generateId()
     const aiMessage = createTextMessage(MESSAGE_ROLES.ASSISTANT, '')
     aiMessage.id = aiMessageId
     aiMessage.isStreaming = true
-    this.setData({ messages: [...this.data.messages, aiMessage] })
+    this.setData({
+      messages: [...this.data.messages, userMessage, aiMessage],
+      inputValue: '',
+      isLoading: true
+    })
+    chatService.saveMessages(this.data.messages)
     this.scrollToBottom()
 
     let fullContent = ''
