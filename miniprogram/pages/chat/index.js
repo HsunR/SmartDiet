@@ -28,6 +28,7 @@ Page({
     recognizingTasks: {},      // 正在进行中的食物识别任务 map
     pendingRecord: null,        // 来自外部页面的待处理记录
     scrollIntoView: '',         // scroll-into-view 指向的消息 ID
+    scrollTop: 0,               // scroll-top 流式模式下强制滚动到最新消息
     isAtBottom: true,           // 用户是否在底部
     showScrollToBottom: false   // 是否显示回到底部按钮
   },
@@ -38,7 +39,9 @@ Page({
   },
 
   onReady() {
-    this._scrollThreshold = 50
+    this._showButtonThreshold = 30
+    this._autoScrollThreshold = 150
+    this._scrollTopValue = 999999
     this.createSelectorQuery()
       .select('.message-list')
       .boundingClientRect(rect => {
@@ -129,7 +132,9 @@ Page({
   },
 
   /** 图片加载完成后无需额外操作 */
-  onImageLoaded() {},
+  onImageLoaded() {
+    if (this.data.isAtBottom) this.scrollToBottom()
+  },
 
   /* ==================== 快捷操作路由 ==================== */
   onQuickAction(e) {
@@ -145,27 +150,36 @@ Page({
   onViewReport() { wx.switchTab({ url: '/pages/report/index' }) },
   onPullDownRefresh() { this.initChat(); wx.stopPullDownRefresh() },
 
-  /** 滚动到最新消息（toggle 机制强制 scroll-view 重新定位） */
+  /** 滚动到最新消息 */
   scrollToBottom() {
     if (!this.data.isAtBottom) return
-    const messages = this.data.messages
-    if (!messages.length) return
-    const targetId = `msg-${messages[messages.length - 1].id}`
-    this.setData({ scrollIntoView: '' }, () => {
-      this.setData({ scrollIntoView: targetId })
+    if (!this.data.messages.length) return
+
+    this._scrollTopValue++
+    this.setData({
+      scrollIntoView: '',
+      scrollTop: this._scrollTopValue
     })
   },
 
   /** 滚动事件：检测用户是否在底部 */
   onScroll(e) {
-    const threshold = this._scrollThreshold || 50
     const { scrollTop, scrollHeight } = e.detail
     const viewHeight = this._viewHeight || 0
-    const isAtBottom = scrollHeight - scrollTop - viewHeight < threshold
-    if (isAtBottom && this.data.showScrollToBottom) {
-      this.setData({ showScrollToBottom: false, isAtBottom: true })
-    } else if (!isAtBottom && !this.data.showScrollToBottom) {
-      this.setData({ isAtBottom: false, showScrollToBottom: true })
+    if (!viewHeight) return
+    const distanceFromBottom = scrollHeight - scrollTop - viewHeight
+
+    const nearBottom = distanceFromBottom < (this._showButtonThreshold || 50)
+    const farFromBottom = distanceFromBottom > (this._autoScrollThreshold || 200)
+
+    if (nearBottom) {
+      if (this.data.showScrollToBottom || !this.data.isAtBottom) {
+        this.setData({ showScrollToBottom: false, isAtBottom: true })
+      }
+    } else if (farFromBottom) {
+      if (!this.data.showScrollToBottom || this.data.isAtBottom) {
+        this.setData({ isAtBottom: false, showScrollToBottom: true })
+      }
     }
   },
 

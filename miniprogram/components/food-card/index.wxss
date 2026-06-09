@@ -462,3 +462,100 @@
 .skeleton-food-info .skeleton-line-short {
   width: 45%;
 }
+
+/* ==================== 保存状态动画 ==================== */
+
+.save-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28rpx 24rpx;
+  border-radius: 16rpx;
+  margin-top: 16rpx;
+}
+
+/* 保存中 */
+.saving-indicator {
+  background: linear-gradient(90deg, #E8F5E9 25%, #C8E6C9 50%, #E8F5E9 75%);
+  background-size: 200% 100%;
+  animation: save-shimmer 1.5s infinite;
+}
+
+.saving-spinner {
+  width: 36rpx;
+  height: 36rpx;
+  border: 4rpx solid #C8E6C9;
+  border-top-color: #4CAF50;
+  border-radius: 50%;
+  animation: save-spin 0.8s linear infinite;
+  margin-right: 16rpx;
+}
+
+.saving-text {
+  font-size: 28rpx;
+  color: #4CAF50;
+  font-weight: 500;
+}
+
+/* 保存成功 */
+.saved-success {
+  background: linear-gradient(135deg, #E8F5E9, #F1F8E9);
+  border: 2rpx solid #A5D6A7;
+  animation: saved-slide-up 0.4s ease;
+}
+
+.saved-checkmark {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  background-color: #4CAF50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+  animation: checkmark-pop 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+.checkmark-icon {
+  color: #FFFFFF;
+  font-size: 36rpx;
+  font-weight: bold;
+}
+
+.saved-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.saved-title {
+  font-size: 30rpx;
+  color: #2E7D32;
+  font-weight: 600;
+}
+
+.saved-detail {
+  font-size: 24rpx;
+  color: #66BB6A;
+  margin-top: 4rpx;
+}
+
+@keyframes save-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes save-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes saved-slide-up {
+  from { opacity: 0; transform: translateY(12rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes checkmark-pop {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}

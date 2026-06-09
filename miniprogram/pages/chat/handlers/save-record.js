@@ -2,19 +2,18 @@
  * save-record.js — 食物记录保存与每日进度
  *
  * 职责：
- * - onFoodCardConfirm   用户确认食物卡片 → 保存到 FastAPI → 插入成功提示
+ * - onFoodCardConfirm   用户确认食物卡片 → 保存到 FastAPI → 卡片展示保存成功动画
  * - updateDailyProgress 拉取当日记录，更新 dailyScore 数据
  */
 
-const { createTextMessage } = require('../../../utils/message-factory')
-const { MESSAGE_TYPES, MESSAGE_ROLES } = require('../../../utils/constants')
-const { formatDate, getCurrentMealType, getMealTypeLabel } = require('../../../utils/helper')
+const { MESSAGE_TYPES } = require('../../../utils/constants')
+const { formatDate, getCurrentMealType } = require('../../../utils/helper')
 const { api, safeApiCall } = require('../../../utils/api')
 const chatService = require('../../../services/chat-service')
 
 module.exports = {
 
-  /** 用户点击「确认」→ 保存饮食记录到服务器 → 显示成功消息 → 刷新进度 */
+  /** 用户点击「确认」→ 保存饮食记录到服务器 → 卡片展示保存成功动画 → 刷新进度 */
   async onFoodCardConfirm(e) {
     const { foods, mealOverview, dietaryAdvice } = e.detail
     const { index: foodCardIndex, message: foodCardMsg } = chatService.findLastMessageByType(
@@ -28,7 +27,7 @@ module.exports = {
     const selectedDate = foodCardMsg?.data?.selectedDate || formatDate(new Date())
 
     this.setData({
-      ['messages[' + foodCardIndex + '].data.actionCompleted']: true,
+      ['messages[' + foodCardIndex + '].data.saving']: true,
       isLoading: true
     })
     chatService.saveMessages(this.data.messages)
@@ -41,19 +40,17 @@ module.exports = {
 
       const recordId = saveResult?.data?.recordId || ''
       this.setData({
+        ['messages[' + foodCardIndex + '].data.saving']: false,
         ['messages[' + foodCardIndex + '].data.recordSaved']: true,
         ['messages[' + foodCardIndex + '].data.recordId']: recordId
       })
-
-      const successMessage = createTextMessage(
-        MESSAGE_ROLES.ASSISTANT,
-        `✅ 已记录为${getMealTypeLabel(mealType)}！\n\n健康评分：${mealOverview.overallHealthScore || 60}分\n您的评分：${rating === 0 ? '待定' : rating + '星'}`
-      )
-      this.setData({ messages: [...this.data.messages, successMessage] })
       chatService.saveMessages(this.data.messages)
       this.updateDailyProgress()
     } catch (error) {
       console.error('Save record error:', error)
+      this.setData({
+        ['messages[' + foodCardIndex + '].data.saving']: false
+      })
       this.showErrorMessage('保存记录失败，请重试')
     } finally {
       this.setData({ isLoading: false })

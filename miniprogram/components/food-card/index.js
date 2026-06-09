@@ -50,6 +50,14 @@ Component({
     isStreaming: {
       type: Boolean,
       value: false
+    },
+    saving: {
+      type: Boolean,
+      value: false
+    },
+    recordSaved: {
+      type: Boolean,
+      value: false
     }
   },
 

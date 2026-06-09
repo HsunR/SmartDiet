@@ -123,24 +123,23 @@ module.exports = {
         }
         const cardMsgId = task.cardMsgId
         if (cardMsgId) {
-          const messages = this.data.messages.map(msg => {
-            if (msg.id !== cardMsgId) return msg
-            return {
-              ...msg,
-              data: {
-                ...msg.data,
-                dietaryAdvice: doneData.dietaryAdvice || msg.data.dietaryAdvice,
-                mealOverview: streamData.overview || msg.data.mealOverview,
-                isStreaming: false
-              }
-            }
+          const cardIndex = task.cardIndex
+          this._scrollTopValue++
+          this.setData({
+            [`messages[${cardIndex}].data.dietaryAdvice`]: streamData.dietaryAdvice,
+            [`messages[${cardIndex}].data.mealOverview`]: streamData.overview || doneData.mealOverview,
+            [`messages[${cardIndex}].data.isStreaming`]: false,
+            scrollIntoView: '',
+            scrollTop: this._scrollTopValue,
+            recognizingTasks: updatedTasks
+          }, () => {
+            chatService.saveMessages(this.data.messages)
           })
-          this.setData({ messages, recognizingTasks: updatedTasks })
-          chatService.saveMessages(messages)
         } else {
           this.setData({ recognizingTasks: updatedTasks })
+          this.scrollToBottom()
+          chatService.saveMessages(this.data.messages)
         }
-        this.scrollToBottom()
       },
       (errorMsg) => {
         const task = this.data.recognizingTasks[taskKey]
@@ -154,7 +153,6 @@ module.exports = {
             msg.id === cardMsgId ? errorMessage : msg
           )
           this.setData({ messages, recognizingTasks: { ...this.data.recognizingTasks, [taskKey]: { ...task, completed: true, streamData } } })
-          chatService.saveMessages(messages)
         } else {
           this.setData({ recognizingTasks: { ...this.data.recognizingTasks, [taskKey]: { ...task, completed: true, streamData } } })
         }
@@ -176,18 +174,20 @@ module.exports = {
 
     const cardMsgId = task.cardMsgId
     if (cardMsgId) {
-      const messages = this.data.messages.map(msg => {
-        if (msg.id !== cardMsgId) return msg
-        if (eventType === 'overview') {
-          return { ...msg, data: { ...msg.data, mealOverview: data } }
-        }
-        if (eventType === 'food_item') {
-          return { ...msg, data: { ...msg.data, foods: [...(msg.data.foods || []), data] } }
-        }
-        return msg
-      })
-      this.setData({ messages, recognizingTasks: { ...this.data.recognizingTasks, [taskKey]: { ...task, streamData } } })
-      this.scrollToBottom()
+      const cardIndex = task.cardIndex
+      this._scrollTopValue++
+      const updates = {
+        recognizingTasks: { ...this.data.recognizingTasks, [taskKey]: { ...task, streamData } },
+        scrollIntoView: '',
+        scrollTop: this._scrollTopValue
+      }
+      if (eventType === 'overview') {
+        updates[`messages[${cardIndex}].data.mealOverview`] = data
+      } else if (eventType === 'food_item') {
+        const currentFoods = this.data.messages[cardIndex]?.data?.foods || []
+        updates[`messages[${cardIndex}].data.foods`] = [...currentFoods, data]
+      }
+      this.setData(updates)
     } else {
       this.setData({ recognizingTasks: { ...this.data.recognizingTasks, [taskKey]: { ...task, streamData } } })
     }
@@ -230,14 +230,17 @@ module.exports = {
       msg.type !== 'recognizing' && !(msg.type === 'text' && msg.content.includes('AI 正在识别中'))
     )
 
+    const cardIndex = filteredMessages.length
+
     this.setData({
       messages: [...filteredMessages, skeletonCard],
       recognizingTasks: {
         ...this.data.recognizingTasks,
-        [taskKey]: { ...task, cardMsgId, resultShown: true }
+        [taskKey]: { ...task, cardMsgId, cardIndex, resultShown: true }
       }
+    }, () => {
+      this.scrollToBottom()
     })
     chatService.saveMessages(this.data.messages)
-    this.scrollToBottom()
   }
 }

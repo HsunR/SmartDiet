@@ -43,28 +43,30 @@ module.exports = {
         // onChunk — 每次收到数据块时更新气泡
         (content) => {
           fullContent += content
-          const messages = this.data.messages.map(msg =>
-            msg.id === aiMessageId ? { ...msg, content: fullContent } : msg
-          )
-          this.setData({ messages })
-          this.scrollToBottom()
+          this._scrollTopValue++
+          const aiIndex = this.data.messages.length - 1
+          this.setData({
+            [`messages[${aiIndex}].content`]: fullContent,
+            scrollIntoView: '',
+            scrollTop: this._scrollTopValue
+          })
         },
         // onDone — 流式结束，关闭 loading 态
         () => {
-          const messages = this.data.messages.map(msg =>
-            msg.id === aiMessageId ? { ...msg, content: fullContent, isStreaming: false } : msg
+          const aiIndex = this.data.messages.length - 1
+          const messages = this.data.messages.map((msg, i) =>
+            i === aiIndex ? { ...msg, content: fullContent, isStreaming: false } : msg
           )
-          this.setData({ messages, isLoading: false })
-          this.scrollToBottom()
+          this.setData({ messages, isLoading: false }, () => this.scrollToBottom())
           chatService.saveMessages(this.data.messages)
         },
         // onError — 流式异常，展示错误消息
         (error) => {
-          const messages = this.data.messages.map(msg =>
-            msg.id === aiMessageId ? { ...msg, content: `❌ ${error}`, isStreaming: false } : msg
+          const aiIndex = this.data.messages.length - 1
+          const messages = this.data.messages.map((msg, i) =>
+            i === aiIndex ? { ...msg, content: `❌ ${error}`, isStreaming: false } : msg
           )
-          this.setData({ messages, isLoading: false })
-          this.scrollToBottom()
+          this.setData({ messages, isLoading: false }, () => this.scrollToBottom())
           chatService.saveMessages(this.data.messages)
         }
       )

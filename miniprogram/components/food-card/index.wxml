@@ -134,15 +134,30 @@
     <text class="advice-content">{{dietaryAdvice}}</text>
   </view>
 
-  <!-- 操作按钮区域（仅可编辑、未完成、非流式时显示） -->
-  <view class="card-actions" wx:if="{{editable && !actionCompleted && !isStreaming}}">
-    <!-- 修改按钮 -->
+  <!-- 操作按钮区域 -->
+  <view class="card-actions" wx:if="{{!isStreaming && !saving && !recordSaved}}">
     <button class="action-btn edit-btn" bindtap="onEdit" hover-class="edit-btn-hover">
       <text>修改</text>
     </button>
-    <!-- 确认记录按钮 -->
     <button class="action-btn confirm-btn" bindtap="onConfirm" hover-class="confirm-btn-hover">
       <text>确认记录</text>
     </button>
+  </view>
+
+  <!-- 保存中状态 -->
+  <view class="save-status saving-indicator" wx:if="{{saving}}">
+    <view class="saving-spinner"></view>
+    <text class="saving-text">正在保存记录...</text>
+  </view>
+
+  <!-- 保存成功动画 -->
+  <view class="save-status saved-success" wx:if="{{recordSaved}}">
+    <view class="saved-checkmark">
+      <text class="checkmark-icon">✓</text>
+    </view>
+    <view class="saved-info">
+      <text class="saved-title">已记录</text>
+      <text class="saved-detail">健康评分 · {{mealOverview.overallHealthScore || 60}}分</text>
+    </view>
   </view>
 </view>

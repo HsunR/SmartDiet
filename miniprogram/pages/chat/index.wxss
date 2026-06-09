@@ -227,11 +227,17 @@
 }
 
 /* ==================== 回到底部按钮 ==================== */
-.scroll-to-bottom-btn {
+.scroll-to-bottom-wrapper {
   position: fixed;
-  bottom: 200rpx;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: 300rpx;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  z-index: 110;
+}
+
+.scroll-to-bottom-btn {
   background: #4CAF50;
   color: #fff;
   padding: 12rpx 32rpx;
@@ -241,7 +247,7 @@
   align-items: center;
   gap: 8rpx;
   box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.15);
-  z-index: 100;
+  animation: fadeIn 0.2s ease;
 }
 
 .scroll-to-bottom-icon {
