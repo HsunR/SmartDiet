@@ -29,7 +29,8 @@ module.exports = {
     this.setData({
       messages: [...this.data.messages, userMessage, aiMessage],
       inputValue: '',
-      isLoading: true
+      isLoading: true,
+      isAtBottom: true
     })
     chatService.saveMessages(this.data.messages)
     this.scrollToBottom()

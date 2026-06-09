@@ -23,11 +23,6 @@
 
       class="message-item {{item.role === 'user' ? 'message-user' : 'message-ai'}}"
     >
-      <!-- AI 头像（用户无头像） -->
-      <view class="message-avatar" wx:if="{{item.role === 'assistant'}}">
-        <view class="avatar-placeholder avatar-ai">🤖</view>
-      </view>
-
       <view class="message-content {{item.role === 'user' ? 'message-content-user' : ''}}">
         <view class="message-bubble {{item.role === 'user' ? 'bubble-user' : 'bubble-ai'}}">
 

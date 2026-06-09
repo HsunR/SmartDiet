@@ -229,6 +229,7 @@ Page({
                 dietaryAdvice: record.dietaryAdvice || ''
               }
               
+              calendarData[day.date][mealType] = calendarData[day.date][mealType] || []
               calendarData[day.date][mealType].push(recordData)
               
               mealCount++

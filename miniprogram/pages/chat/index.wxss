@@ -28,6 +28,10 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+.message-ai {
+  padding-left: 60rpx;
+}
+
 /* ==================== 消息元素 ====================
    .message-avatar         AI 机器人圆形头像
    .message-content        气泡容器（用户消息靠右对齐）
@@ -61,7 +65,7 @@
 }
 
 .message-content {
-  max-width: calc(100% - 120rpx);
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -86,6 +90,7 @@
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
   border-top-left-radius: 4rpx;
   overflow: visible;
+  max-width: 90%;
 }
 
 .bubble-user {

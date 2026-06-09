@@ -39,7 +39,7 @@ module.exports = {
     try {
       const tempFilePath = await imageService.pickImage(sourceType)
       const userMessage = createImageMessage(MESSAGE_ROLES.USER, tempFilePath)
-      this.setData({ messages: [...this.data.messages, userMessage] })
+      this.setData({ messages: [...this.data.messages, userMessage], isAtBottom: true })
       chatService.saveMessages(this.data.messages)
       this.scrollToBottom()
 
@@ -61,6 +61,7 @@ module.exports = {
         currentCloudFileId: fileID,
         selectedDate: selectedDate,
         pendingRecord: null,
+        isAtBottom: true,
         recognizingTasks: {
           ...this.data.recognizingTasks,
           [fileID]: {
@@ -234,6 +235,7 @@ module.exports = {
 
     this.setData({
       messages: [...filteredMessages, skeletonCard],
+      isAtBottom: true,
       recognizingTasks: {
         ...this.data.recognizingTasks,
         [taskKey]: { ...task, cardMsgId, cardIndex, resultShown: true }
