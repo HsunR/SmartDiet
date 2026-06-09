@@ -109,9 +109,10 @@
                           <view class="cell-foods">
                             <text class="food-name" wx:for="{{record.foods}}" wx:for-item="food" wx:key="name">{{food.name}}</text>
                           </view>
-                          <!-- 用户评分 -->
-                          <view class="cell-rating" wx:if="{{record.rating !== undefined}}">
-                            <text class="rating-stars">{{utils.getRatingStars(record.rating)}}</text>
+                          <!-- 分数与评分 -->
+                          <view class="cell-score-row">
+                            <text class="cell-score">{{record.mealOverview.overallHealthScore}}分</text>
+                            <text class="rating-stars" wx:if="{{record.rating !== undefined}}">{{utils.getRatingStars(record.rating)}}</text>
                           </view>
                           <!-- 健康标签 -->
                           <view class="cell-tags">
@@ -133,8 +134,10 @@
                       <view class="cell-foods">
                         <text class="food-name" wx:for="{{calendarData[day.date][item.type][0].foods}}" wx:for-item="food" wx:key="name">{{food.name}}</text>
                       </view>
-                      <view class="cell-rating" wx:if="{{calendarData[day.date][item.type][0].rating !== undefined}}">
-                        <text class="rating-stars">{{utils.getRatingStars(calendarData[day.date][item.type][0].rating)}}</text>
+                      <!-- 分数与评分 -->
+                      <view class="cell-score-row">
+                        <text class="cell-score">{{calendarData[day.date][item.type][0].mealOverview.overallHealthScore}}分</text>
+                        <text class="rating-stars" wx:if="{{calendarData[day.date][item.type][0].rating !== undefined}}">{{utils.getRatingStars(calendarData[day.date][item.type][0].rating)}}</text>
                       </view>
                       <view class="cell-tags">
                         <text class="tag-positive" wx:for="{{calendarData[day.date][item.type][0].healthTags.positive || []}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>

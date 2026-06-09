@@ -31,6 +31,8 @@ build/
 miniprogram/assets/images/
 !miniprogram/assets/images/.gitkeep
 
+smartdiet-backend/app/uploads/
+
 *.tmp
 *.temp
 
