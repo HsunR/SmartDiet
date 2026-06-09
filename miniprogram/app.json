@@ -4,9 +4,7 @@
     "pages/report/index",
     "pages/profile/index",
     "pages/onboarding/index",
-    "pages/settings/index",
-    "pages/login/index",
-    "pages/history/index"
+    "pages/login/index"
   ],
   "window": {
     "backgroundTextStyle": "light",
