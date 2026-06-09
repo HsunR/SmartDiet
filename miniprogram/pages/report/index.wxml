@@ -309,6 +309,7 @@
               meal-overview="{{currentRecords[currentRecordIndex].mealOverview}}"
               dietary-advice="{{currentRecords[currentRecordIndex].dietaryAdvice}}"
               rating="{{currentRecords[currentRecordIndex].rating}}"
+              record-saved="true"
             />
           </block>
         </view>
