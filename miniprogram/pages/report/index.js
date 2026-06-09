@@ -473,6 +473,47 @@ Page({
   },
 
   /**
+   * 删除当前记录
+   * 确认后调用 DELETE API，从 currentRecords 中移除并刷新日历
+   */
+  onDeleteRecord: function() {
+    const record = this.data.currentRecords[this.data.currentRecordIndex]
+    if (!record || !record._id) return
+
+    wx.showModal({
+      title: '确认删除',
+      content: '确定要删除这条记录吗？删除后不可恢复。',
+      success: async (res) => {
+        if (!res.confirm) return
+        const result = await safeApiCall(() => api.food.deleteRecord(record._id))
+        if (result.success) {
+          wx.showToast({ title: '删除成功', icon: 'success' })
+          const newRecords = [...this.data.currentRecords]
+          newRecords.splice(this.data.currentRecordIndex, 1)
+          const newTotal = newRecords.length
+          let newIndex = this.data.currentRecordIndex
+          if (newIndex >= newTotal) newIndex = Math.max(0, newTotal - 1)
+
+          if (newTotal === 0) {
+            this.closeDetailModal()
+          } else {
+            this.setData({
+              currentRecords: newRecords,
+              totalRecords: newTotal,
+              currentRecordIndex: newIndex,
+              detailData: newRecords[newIndex] || null
+            })
+          }
+          this.clearCache()
+          this.loadWeekData()
+        } else {
+          wx.showToast({ title: '删除失败', icon: 'none' })
+        }
+      }
+    })
+  },
+
+  /**
    * 编辑食物名称
    * @param {Object} e - 事件对象
    * @param {number} e.currentTarget.dataset.index - 食物索引

@@ -699,6 +699,17 @@
   color: #4CAF50;
 }
 
+.delete-btn {
+  padding: 8rpx 20rpx;
+  background-color: #FFEBEE;
+  border-radius: 20rpx;
+}
+
+.delete-btn .text {
+  font-size: 24rpx;
+  color: #F44336;
+}
+
 .close-btn {
   width: 48rpx;
   height: 48rpx;

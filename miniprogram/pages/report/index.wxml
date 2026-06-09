@@ -272,9 +272,9 @@
         <text class="modal-date">{{detailDate}}</text>
       </view>
       <view class="header-right">
-        <!-- 编辑按钮 -->
-        <view class="edit-btn" bindtap="toggleEdit">
-          <text class="text">{{isEditing ? '取消' : '编辑'}}</text>
+        <!-- 删除按钮 -->
+        <view class="delete-btn" bindtap="onDeleteRecord">
+          <text class="text">删除</text>
         </view>
         <!-- 关闭按钮 -->
         <view class="close-btn" bindtap="closeDetailModal">
