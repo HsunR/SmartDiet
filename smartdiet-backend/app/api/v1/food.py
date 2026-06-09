@@ -57,6 +57,7 @@ async def recognize_food(
         "image_url": req.image_url,
         "user_id": str(current_user.id),
         "user_profile": {"age": current_user.age, "weight": float(current_user.weight), "goal": current_user.goal},
+        "user_feedback": req.user_feedback or "",
         "raw_response": None,
         "foods": [],
         "meal_overview": None,

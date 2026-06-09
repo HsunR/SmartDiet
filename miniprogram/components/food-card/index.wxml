@@ -136,9 +136,6 @@
 
   <!-- 操作按钮区域 -->
   <view class="card-actions" wx:if="{{!isStreaming && !saving && !recordSaved}}">
-    <button class="action-btn edit-btn" bindtap="onEdit" hover-class="edit-btn-hover">
-      <text>修改</text>
-    </button>
     <button class="action-btn confirm-btn" bindtap="onConfirm" hover-class="confirm-btn-hover">
       <text>确认记录</text>
     </button>

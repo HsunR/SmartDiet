@@ -134,19 +134,6 @@ const createDateSelectMessage = (imageUrl, cloudFileId, defaultDate, defaultMeal
   })
 }
 
-/**
- * 创建反馈输入消息
- * @param {Array<Object>} foods - 食物列表
- * @param {Object} mealOverview - 餐食概览信息
- * @param {string} imageUrl - 图片URL
- * @returns {Object} 反馈输入消息对象
- */
-const createFeedbackInputMessage = (foods, mealOverview, imageUrl) =>
-  createBaseMessage(MESSAGE_TYPES.FEEDBACK_INPUT, MESSAGE_ROLES.ASSISTANT, '请告诉我识别结果有什么问题，我会重新分析：', {
-    foods,
-    mealOverview,
-    imageUrl
-  })
 
 /**
  * 创建快捷操作消息
@@ -205,7 +192,6 @@ module.exports = {
   createMealTypeSelectMessage,
   createRatingSelectMessage,
   createDateSelectMessage,
-  createFeedbackInputMessage,
   createQuickActionsMessage,
   createRecognizingMessage,
   createFoodCardSkeleton

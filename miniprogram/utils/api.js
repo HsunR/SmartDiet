@@ -112,7 +112,7 @@ const api = {
     updateProfile: profile => request('PATCH', '/users/me', profile),
   },
   food: {
-    recognize: imageUrl => request('POST', '/records/recognize', { imageUrl }),
+    recognize: (imageUrl, userFeedback) => request('POST', '/records/recognize', { imageUrl, userFeedback: userFeedback || '' }),
     /**
      * 流式食物识别 - 使用 SSE 实时返回识别结果
      * @param {string} imageUrl - 图片URL

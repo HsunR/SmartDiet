@@ -1,7 +1,7 @@
 /**
  * 食物卡片组件
  * 展示 AI 识别的食物列表、营养信息和建议
- * 支持编辑和确认操作
+ * 支持确认操作
  * @component FoodCard
  * @version 1.0.0
  */
@@ -38,14 +38,6 @@ Component({
     rating: {
       type: Number,
       value: 0
-    },
-    editable: {
-      type: Boolean,
-      value: true
-    },
-    actionCompleted: {
-      type: Boolean,
-      value: false
     },
     isStreaming: {
       type: Boolean,
@@ -148,17 +140,6 @@ Component({
         mealOverview: this.properties.mealOverview,
         dietaryAdvice: this.properties.dietaryAdvice,
         recordId: this.properties.recordId
-      })
-    },
-
-    /**
-     * 编辑按钮点击事件
-     * 触发自定义 edit 事件
-     */
-    onEdit: function() {
-      this.triggerEvent('edit', {
-        foods: this.properties.foods,
-        mealOverview: this.properties.mealOverview
       })
     },
 

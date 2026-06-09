@@ -309,8 +309,6 @@
               meal-overview="{{currentRecords[currentRecordIndex].mealOverview}}"
               dietary-advice="{{currentRecords[currentRecordIndex].dietaryAdvice}}"
               rating="{{currentRecords[currentRecordIndex].rating}}"
-              editable="false"
-              action-completed="true"
             />
           </block>
         </view>

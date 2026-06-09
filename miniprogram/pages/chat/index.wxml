@@ -20,7 +20,7 @@
       wx:for="{{messages}}"
       wx:key="id"
       id="msg-{{item.id}}"
-      wx:if="{{!(item.type === 'feedback_input' && item.data.completed)}}"
+
       class="message-item {{item.role === 'user' ? 'message-user' : 'message-ai'}}"
     >
       <!-- AI 头像（用户无头像） -->
@@ -65,12 +65,9 @@
             dietary-advice="{{item.data.dietaryAdvice}}"
             record-id="{{item.data.recordId}}"
             rating="{{item.data.rating}}"
-            action-completed="{{item.data.actionCompleted}}"
-            is-streaming="{{item.data.isStreaming}}"
             saving="{{item.data.saving}}"
             record-saved="{{item.data.recordSaved}}"
             bind:confirm="onFoodCardConfirm"
-            bind:edit="onFoodCardEdit"
           />
 
           <!-- 餐次选择器（Picker 滚轮模式） -->
@@ -116,16 +113,6 @@
             bind:select="onRatingSelect"
           />
 
-          <!-- 反馈输入（用户修正识别结果） -->
-          <feedback-input
-            wx:elif="{{item.type === 'feedback_input' && !item.data.completed}}"
-            content="{{item.content}}"
-            placeholder="例如：分量估算不对、漏识别了食物、烹饪方式判断错误..."
-            value="{{feedbackValues[item.id] || ''}}"
-            msg-id="{{item.id}}"
-            bind:input="onFeedbackInput"
-            bind:submit="onFeedbackSubmit"
-          />
 
           <!-- 用户信息表单（引导页未完成时的内联表单） -->
           <user-info-form

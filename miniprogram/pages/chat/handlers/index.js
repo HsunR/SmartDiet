@@ -9,7 +9,6 @@ const sendMessage = require('./send-message')
 const imageRecognition = require('./image-recognition')
 const saveRecord = require('./save-record')
 const profileForm = require('./profile-form')
-const feedback = require('./feedback')
 const selection = require('./selection')
 
 module.exports = {
@@ -17,6 +16,5 @@ module.exports = {
   ...imageRecognition,
   ...saveRecord,
   ...profileForm,
-  ...feedback,
   ...selection
 }

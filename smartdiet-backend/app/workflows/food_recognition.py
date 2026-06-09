@@ -40,6 +40,7 @@ class FoodRecognitionState(TypedDict):
     image_url: str
     user_id: str
     user_profile: Optional[dict]
+    user_feedback: str
     raw_response: Optional[str]
     foods: list[FoodItem]
     meal_overview: Optional[MealOverview]
@@ -50,7 +51,7 @@ class FoodRecognitionState(TypedDict):
 FOOD_RECOGNITION_PROMPT = """### 角色
 AI 营养师。分析图像，结合用户信息 ({user_profile}) 输出 JSON。
 必须严格遵循下方 JSON 结构，无 Markdown 标记。
-
+{user_feedback_section}
 ### JSON 结构示例
 {{
    "success": true,
@@ -96,7 +97,11 @@ AI 营养师。分析图像，结合用户信息 ({user_profile}) 逐行输出 J
 
 async def recognize_food(state: FoodRecognitionState) -> FoodRecognitionState:
     llm = get_vision_llm()
-    prompt = FOOD_RECOGNITION_PROMPT.replace("{user_profile}", json.dumps(state.get("user_profile", {}), ensure_ascii=False))
+    user_feedback = state.get("user_feedback", "")
+    feedback_section = ""
+    if user_feedback:
+        feedback_section = f"### 用户反馈\n用户对上次识别结果提出以下修正意见：{user_feedback}\n请结合图片和用户反馈重新分析，优先采纳用户的合理意见。\n"
+    prompt = FOOD_RECOGNITION_PROMPT.replace("{user_profile}", json.dumps(state.get("user_profile", {}), ensure_ascii=False)).replace("{user_feedback_section}", feedback_section)
     image_url = _prepare_image_url(state["image_url"])
     messages = [
         SystemMessage(content=prompt),

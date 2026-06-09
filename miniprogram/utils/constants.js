@@ -22,7 +22,7 @@
  * @property {string} IMAGE - 图片消息
  * @property {string} FOOD_CARD - 食物卡片消息
  * @property {string} USER_INFO_FORM - 用户信息表单消息
- * @property {string} FEEDBACK_INPUT - 反馈输入消息
+
  * @property {string} QUICK_ACTIONS - 快捷操作消息
  * @property {string} MEAL_TYPE_PICKER - 餐次选择器消息（Picker模式）
  * @property {string} MEAL_TYPE_SELECT - 餐次选择消息（按钮模式）
@@ -34,7 +34,6 @@ const MESSAGE_TYPES = {
   IMAGE: 'image',
   FOOD_CARD: 'food_card',
   USER_INFO_FORM: 'user_info_form',
-  FEEDBACK_INPUT: 'feedback_input',
   QUICK_ACTIONS: 'quick_actions',
   MEAL_TYPE_PICKER: 'meal_type_picker',
   MEAL_TYPE_SELECT: 'meal_type_select',
