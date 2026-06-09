@@ -32,6 +32,7 @@ module.exports = {
 
     this.setData({ messages: [...messages, ratingMessage] })
     chatService.saveMessages(this.data.messages)
+    this.scrollToBottom()
   },
 
   /** 日期 picker 值变化 → 更新 selectedDate */
@@ -62,6 +63,7 @@ module.exports = {
 
     this.setData({ messages: [...messages, nextMessage] })
     chatService.saveMessages(this.data.messages)
+    this.scrollToBottom()
   },
 
   /** 用户选择评分 → 更新 recognizingTasks → 识别完成则显示结果 */
@@ -89,6 +91,7 @@ module.exports = {
       }
       this.setData({ messages, recognizingTasks: updatedTasks })
       chatService.saveMessages(this.data.messages)
+      this.scrollToBottom()
 
       const updatedTask = updatedTasks[taskKey]
       if (updatedTask.completed && !updatedTask.resultShown) {
@@ -100,6 +103,7 @@ module.exports = {
         const waitingMessage = createRecognizingMessage()
         this.setData({ messages: [...messages, waitingMessage] })
         chatService.saveMessages(this.data.messages)
+        this.scrollToBottom()
       }
     } else {
       this.setData({ messages })

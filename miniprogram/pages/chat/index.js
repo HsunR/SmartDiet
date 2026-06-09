@@ -26,12 +26,25 @@ Page({
     currentImageUrl: '',       // 最近选择的图片 URL
     currentCloudFileId: '',    // 最近选择的云文件 ID
     recognizingTasks: {},      // 正在进行中的食物识别任务 map
-    pendingRecord: null        // 来自外部页面的待处理记录
+    pendingRecord: null,        // 来自外部页面的待处理记录
+    scrollIntoView: '',         // scroll-into-view 指向的消息 ID
+    isAtBottom: true,           // 用户是否在底部
+    showScrollToBottom: false   // 是否显示回到底部按钮
   },
 
   /* ==================== 生命周期 ==================== */
   onLoad() {
     this.checkLogin()
+  },
+
+  onReady() {
+    this._scrollThreshold = 50
+    this.createSelectorQuery()
+      .select('.message-list')
+      .boundingClientRect(rect => {
+        if (rect) this._viewHeight = rect.height
+      })
+      .exec()
   },
 
   onShow() {
@@ -68,9 +81,9 @@ Page({
   initChat() {
     const savedMessages = chatService.loadMessages()
     if (savedMessages) {
-      this.setData({ messages: savedMessages })
+      this.setData({ messages: savedMessages }, () => this.scrollToBottom())
     } else {
-      this.setData({ messages: chatService.initChat() })
+      this.setData({ messages: chatService.initChat() }, () => this.scrollToBottom())
     }
   },
 
@@ -131,6 +144,36 @@ Page({
 
   onViewReport() { wx.switchTab({ url: '/pages/report/index' }) },
   onPullDownRefresh() { this.initChat(); wx.stopPullDownRefresh() },
+
+  /** 滚动到最新消息（toggle 机制强制 scroll-view 重新定位） */
+  scrollToBottom() {
+    if (!this.data.isAtBottom) return
+    const messages = this.data.messages
+    if (!messages.length) return
+    const targetId = `msg-${messages[messages.length - 1].id}`
+    this.setData({ scrollIntoView: '' }, () => {
+      this.setData({ scrollIntoView: targetId })
+    })
+  },
+
+  /** 滚动事件：检测用户是否在底部 */
+  onScroll(e) {
+    const threshold = this._scrollThreshold || 50
+    const { scrollTop, scrollHeight } = e.detail
+    const viewHeight = this._viewHeight || 0
+    const isAtBottom = scrollHeight - scrollTop - viewHeight < threshold
+    if (isAtBottom && this.data.showScrollToBottom) {
+      this.setData({ showScrollToBottom: false, isAtBottom: true })
+    } else if (!isAtBottom && !this.data.showScrollToBottom) {
+      this.setData({ isAtBottom: false, showScrollToBottom: true })
+    }
+  },
+
+  /** 点击回到底部按钮 */
+  onTapScrollToBottom() {
+    this.setData({ isAtBottom: true, showScrollToBottom: false })
+    this.scrollToBottom()
+  },
 
   /* ==================== 分享 ==================== */
   onShareAppMessage() {

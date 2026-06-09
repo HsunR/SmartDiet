@@ -225,3 +225,26 @@
 .send-btn-active:active {
   background-color: #43A047;
 }
+
+/* ==================== 回到底部按钮 ==================== */
+.scroll-to-bottom-btn {
+  position: fixed;
+  bottom: 200rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #4CAF50;
+  color: #fff;
+  padding: 12rpx 32rpx;
+  border-radius: 40rpx;
+  font-size: 26rpx;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.15);
+  z-index: 100;
+}
+
+.scroll-to-bottom-icon {
+  font-size: 28rpx;
+  font-weight: bold;
+}

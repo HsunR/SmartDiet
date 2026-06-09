@@ -41,6 +41,7 @@ module.exports = {
       const userMessage = createImageMessage(MESSAGE_ROLES.USER, tempFilePath)
       this.setData({ messages: [...this.data.messages, userMessage] })
       chatService.saveMessages(this.data.messages)
+      this.scrollToBottom()
 
       const { fileID, tempUrl } = await imageService.processImage(tempFilePath)
       const { pendingRecord } = this.data
@@ -61,6 +62,7 @@ module.exports = {
         pendingRecord: null
       })
       chatService.saveMessages(this.data.messages)
+      this.scrollToBottom()
 
       // 后台启动 AI 识别
       await this.startRecognition(tempUrl, fileID, dateMessage.id)
@@ -184,6 +186,7 @@ module.exports = {
       }
     })
     chatService.saveMessages(this.data.messages)
+    this.scrollToBottom()
 
     // 逐步渲染食物项
     this._progressiveRenderFoods(foodCardMessage.id, foods, mealOverview, result.dietaryAdvice || '')
@@ -221,6 +224,7 @@ module.exports = {
           }
         })
         this.setData({ messages })
+        this.scrollToBottom()
       }, HEAD_DELAY + index * ITEM_DELAY)
     })
   }

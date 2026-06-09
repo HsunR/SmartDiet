@@ -71,7 +71,7 @@ Page({
       { type: 'breakfast', label: '早餐', icon: '🌅' },
       { type: 'lunch', label: '午餐', icon: '☀️' },
       { type: 'dinner', label: '晚餐', icon: '🌙' },
-      { type: 'snack', label: '其他', icon: '🍎' }
+      { type: 'other', label: '其他', icon: '🍎' }
     ],
     showDetailModal: false,
     detailData: null,
@@ -186,7 +186,7 @@ Page({
           breakfast: [],
           lunch: [],
           dinner: [],
-          snack: []
+          other: []
         }
         dailyScores[day.date] = { total: 0, count: 0 }
         
@@ -197,7 +197,7 @@ Page({
             const records = result.data
             
             records.forEach(record => {
-              const mealType = record.mealType || 'snack'
+              const mealType = record.mealType || 'other'
               const mealOverview = record.mealOverview || {}
               const foods = record.foods || []
               

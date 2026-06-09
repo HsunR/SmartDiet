@@ -36,5 +36,11 @@ smartdiet-backend/app/uploads/
 *.tmp
 *.temp
 
+*.mp4
+*.mov
+*.avi
+*.doc
+*.docx
+
 .worktrees/
 worktrees/

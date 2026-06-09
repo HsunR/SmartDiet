@@ -32,6 +32,7 @@ module.exports = {
       isLoading: true
     })
     chatService.saveMessages(this.data.messages)
+    this.scrollToBottom()
 
     let fullContent = ''
 
@@ -46,6 +47,7 @@ module.exports = {
             msg.id === aiMessageId ? { ...msg, content: fullContent } : msg
           )
           this.setData({ messages })
+          this.scrollToBottom()
         },
         // onDone — 流式结束，关闭 loading 态
         () => {
@@ -53,6 +55,7 @@ module.exports = {
             msg.id === aiMessageId ? { ...msg, content: fullContent, isStreaming: false } : msg
           )
           this.setData({ messages, isLoading: false })
+          this.scrollToBottom()
           chatService.saveMessages(this.data.messages)
         },
         // onError — 流式异常，展示错误消息
@@ -61,6 +64,7 @@ module.exports = {
             msg.id === aiMessageId ? { ...msg, content: `❌ ${error}`, isStreaming: false } : msg
           )
           this.setData({ messages, isLoading: false })
+          this.scrollToBottom()
           chatService.saveMessages(this.data.messages)
         }
       )
@@ -89,6 +93,7 @@ module.exports = {
           `📊 今日饮食摘要\n\n平均健康评分：${avgScore} 分\n用餐次数：${records.length} 次\n食物种类：${[...new Set(foods)].join('、')}\n\n建议保持均衡饮食，多吃蔬菜水果！`
         )
         this.setData({ messages: [...this.data.messages, message] })
+        this.scrollToBottom()
         chatService.saveMessages(this.data.messages)
       }
     } catch (error) {
@@ -102,6 +107,7 @@ module.exports = {
   showErrorMessage(message) {
     const errorMessage = createTextMessage(MESSAGE_ROLES.ASSISTANT, `❌ ${message}`)
     this.setData({ messages: [...this.data.messages, errorMessage] })
+    this.scrollToBottom()
     chatService.saveMessages(this.data.messages)
   }
 }
