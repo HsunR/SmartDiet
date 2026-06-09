@@ -64,6 +64,7 @@
             record-id="{{item.data.recordId}}"
             rating="{{item.data.rating}}"
             action-completed="{{item.data.actionCompleted}}"
+            is-streaming="{{item.data.isStreaming}}"
             bind:confirm="onFoodCardConfirm"
             bind:edit="onFoodCardEdit"
           />

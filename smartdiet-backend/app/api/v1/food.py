@@ -1,6 +1,8 @@
+import json
 from datetime import date
 from uuid import UUID
 from fastapi import APIRouter, Depends, Query
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -10,7 +12,7 @@ from app.models.user import User
 from app.schemas.food import FoodRecordCreate, FoodRecordUpdate, FoodRecordResponse, FoodRecognitionRequest, FoodRecognitionResponse
 from app.schemas.report import WeeklyReportResponse
 from app.services import food as food_service
-from app.workflows.food_recognition import build_food_recognition_graph, FoodRecognitionState
+from app.workflows.food_recognition import build_food_recognition_graph, FoodRecognitionState, recognize_food_stream
 
 router = APIRouter(prefix="/records", tags=["food_records"])
 
@@ -68,6 +70,29 @@ async def recognize_food(
         foods=result["foods"],
         meal_overview=result["meal_overview"],
         dietary_advice=result["dietary_advice"],
+    )
+
+
+@router.post("/recognize/stream")
+async def recognize_food_stream_endpoint(
+    req: FoodRecognitionRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    user_profile = {"age": current_user.age, "weight": float(current_user.weight), "goal": current_user.goal}
+
+    async def event_generator():
+        async for event in recognize_food_stream(req.image_url, user_profile):
+            yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
     )
 
 

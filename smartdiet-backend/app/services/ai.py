@@ -25,3 +25,8 @@ def get_streaming_llm() -> BaseChatModel:
 def get_vision_llm() -> BaseChatModel:
     model = settings.llm_vision_model or settings.llm_model
     return _make_llm(model, 0.3)
+
+
+def get_streaming_vision_llm() -> BaseChatModel:
+    model = settings.llm_vision_model or settings.llm_model
+    return _make_llm(model, 0.3, streaming=True)

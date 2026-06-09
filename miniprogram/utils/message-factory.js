@@ -171,6 +171,33 @@ const createRecognizingMessage = () =>
     isRecognizing: true
   })
 
+/**
+ * 创建食物卡片骨架消息（流式识别前先展示骨架）
+ * @param {string} recordId - 记录ID
+ * @param {string} imageUrl - 图片URL
+ * @param {string} cloudFileId - 云存储文件ID
+ * @param {string} selectedDate - 选择日期
+ * @returns {Object} 骨架食物卡片消息对象
+ */
+const createFoodCardSkeleton = (recordId, imageUrl, cloudFileId, selectedDate) =>
+  createBaseMessage(MESSAGE_TYPES.FOOD_CARD, MESSAGE_ROLES.ASSISTANT, '', {
+    foods: [],
+    mealOverview: {
+      overallHealthScore: 0,
+      healthTags: { positive: [], warning: [] },
+      tagReasons: {},
+      summary: '正在分析食物...'
+    },
+    dietaryAdvice: '',
+    recordId: recordId || '',
+    imageUrl: imageUrl || '',
+    cloudFileId: cloudFileId || '',
+    selectedDate: selectedDate || '',
+    mealType: '',
+    rating: 0,
+    isStreaming: true
+  })
+
 module.exports = {
   createTextMessage,
   createImageMessage,
@@ -180,5 +207,6 @@ module.exports = {
   createDateSelectMessage,
   createFeedbackInputMessage,
   createQuickActionsMessage,
-  createRecognizingMessage
+  createRecognizingMessage,
+  createFoodCardSkeleton
 }

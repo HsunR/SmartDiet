@@ -1,22 +1,22 @@
 /**
- * image-recognition.js — 图片选择与 AI 食物识别
+ * image-recognition.js — 图片选择与 AI 食物识别（SSE 流式版）
  *
  * 职责：
- * - chooseImage        弹出来源选择（拍照/相册）
- * - pickImage          拍照/选图 → 上传 → 插入日期选择消息 → 启动识别
- * - startRecognition   调用 FastAPI 食物识别接口，结果存入 recognizingTasks
- * - checkAndShowResult 用户完成餐次/日期/评分选择后，将识别结果渲染为食物卡片
+ * - chooseImage             弹出来源选择（拍照/相册）
+ * - pickImage               拍照/选图 → 上传 → 插入日期选择 → 启动 SSE 流式识别（后台缓冲）
+ * - _startStreamRecognition 发起 SSE 流式请求，结果缓冲到 recognizingTasks
+ * - _showFoodCard           在评分选定后创建食物卡片，填充已有数据，继续接收流式更新
  *
  * 关键数据流：
- *   recognizingTasks[cloudFileId] = {
- *     completed, result, selectedMealType, selectedRating, selectedDate, resultShown
- *   }
+ *   选图 → 上传 → SSE 后台流式 → 结果缓冲在 recognizingTasks.streamData
+ *   用户完成日期/餐次/评分选择 → _showFoodCard 创建骨架卡片
+ *   SSE 后续事件 → 更新已创建的卡片
  */
 
-const { createImageMessage, createDateSelectMessage } = require('../../../utils/message-factory')
+const { createImageMessage, createDateSelectMessage, createFoodCardSkeleton } = require('../../../utils/message-factory')
 const { MESSAGE_ROLES } = require('../../../utils/constants')
 const { formatDate, generateId } = require('../../../utils/helper')
-const { api, safeApiCall } = require('../../../utils/api')
+const { api } = require('../../../utils/api')
 const chatService = require('../../../services/chat-service')
 const imageService = require('../../../services/image-service')
 
@@ -34,7 +34,7 @@ module.exports = {
     }
   },
 
-  /** 选图 → 上传 → 插入日期选择消息 → 启动识别 */
+  /** 选图 → 上传 → 插入日期选择 → 启动 SSE 流式识别（后台缓冲，不立即显示卡片） */
   async pickImage(sourceType) {
     try {
       const tempFilePath = await imageService.pickImage(sourceType)
@@ -47,25 +47,41 @@ module.exports = {
       const { pendingRecord } = this.data
       const todayStr = formatDate(new Date())
 
-      // 插入日期选择器（用户指定餐次归属日期）
       const dateMessage = createDateSelectMessage(
         tempUrl, fileID,
         pendingRecord?.date || todayStr,
         pendingRecord?.mealType || null
       )
 
+      const selectedDate = pendingRecord?.date || todayStr
+
       this.setData({
         messages: [...this.data.messages, dateMessage],
         currentImageUrl: tempUrl,
         currentCloudFileId: fileID,
-        selectedDate: pendingRecord?.date || todayStr,
-        pendingRecord: null
+        selectedDate: selectedDate,
+        pendingRecord: null,
+        recognizingTasks: {
+          ...this.data.recognizingTasks,
+          [fileID]: {
+            imageUrl: tempUrl,
+            cloudFileId: fileID,
+            cardMsgId: null,
+            mealTypeMsgId: dateMessage.id,
+            startTime: Date.now(),
+            completed: false,
+            selectedDate: selectedDate,
+            selectedMealType: null,
+            selectedRating: null,
+            resultShown: false,
+            streamData: { overview: null, foods: [], dietaryAdvice: '', completed: false, error: null }
+          }
+        }
       })
       chatService.saveMessages(this.data.messages)
       this.scrollToBottom()
 
-      // 后台启动 AI 识别
-      await this.startRecognition(tempUrl, fileID, dateMessage.id)
+      this._startStreamRecognition(tempUrl, fileID)
     } catch (error) {
       if (!error.errMsg?.includes('cancel')) {
         console.error('Image process error:', error)
@@ -75,157 +91,153 @@ module.exports = {
     }
   },
 
-  /** 调用 FastAPI 食物识别接口，结果存入 recognizingTasks */
-  async startRecognition(imageUrl, cloudFileId, mealTypeMsgId) {
+  /** 发起 SSE 流式识别，结果缓冲到 recognizingTasks；若卡片已创建则同步更新 */
+  _startStreamRecognition(imageUrl, cloudFileId) {
     const taskKey = cloudFileId
 
-    this.setData({
-      recognizingTasks: {
-        ...this.data.recognizingTasks,
-        [taskKey]: {
-          imageUrl, cloudFileId, mealTypeMsgId,
-          startTime: Date.now(),
-          selectedDate: null, selectedMealType: null, selectedRating: null
+    api.food.recognizeStream(
+      imageUrl,
+      (overview) => {
+        this._updateStreamData(taskKey, 'overview', overview)
+      },
+      (foodData) => {
+        const foodItem = {
+          id: foodData.id || `food_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          name: foodData.name || '未知食物',
+          category: foodData.category || '其他',
+          score: foodData.score || 60,
+          weight: foodData.weight || 100,
+          tags: foodData.tags || { positive: [], warning: [] },
+          tagReasons: foodData.tagReasons || {},
+          advice: foodData.advice || ''
+        }
+        this._updateStreamData(taskKey, 'food_item', foodItem)
+      },
+      (doneData) => {
+        const task = this.data.recognizingTasks[taskKey]
+        if (!task) return
+        const streamData = { ...task.streamData, dietaryAdvice: doneData.dietaryAdvice || '', completed: true, mealOverview: doneData.mealOverview || task.streamData.overview }
+        const updatedTasks = {
+          ...this.data.recognizingTasks,
+          [taskKey]: { ...task, completed: true, streamData }
+        }
+        const cardMsgId = task.cardMsgId
+        if (cardMsgId) {
+          const messages = this.data.messages.map(msg => {
+            if (msg.id !== cardMsgId) return msg
+            return {
+              ...msg,
+              data: {
+                ...msg.data,
+                dietaryAdvice: doneData.dietaryAdvice || msg.data.dietaryAdvice,
+                mealOverview: streamData.overview || msg.data.mealOverview,
+                isStreaming: false
+              }
+            }
+          })
+          this.setData({ messages, recognizingTasks: updatedTasks })
+          chatService.saveMessages(messages)
+        } else {
+          this.setData({ recognizingTasks: updatedTasks })
+        }
+        this.scrollToBottom()
+      },
+      (errorMsg) => {
+        const task = this.data.recognizingTasks[taskKey]
+        if (!task) return
+        const streamData = { ...task.streamData, error: errorMsg, completed: true }
+        const cardMsgId = task.cardMsgId
+        if (cardMsgId) {
+          const { createTextMessage } = require('../../../utils/message-factory')
+          const errorMessage = createTextMessage(MESSAGE_ROLES.ASSISTANT, `❌ ${errorMsg}`)
+          const messages = this.data.messages.map(msg =>
+            msg.id === cardMsgId ? errorMessage : msg
+          )
+          this.setData({ messages, recognizingTasks: { ...this.data.recognizingTasks, [taskKey]: { ...task, completed: true, streamData } } })
+          chatService.saveMessages(messages)
+        } else {
+          this.setData({ recognizingTasks: { ...this.data.recognizingTasks, [taskKey]: { ...task, completed: true, streamData } } })
         }
       }
-    })
+    )
+  },
 
-    try {
-      const recognizeResult = await safeApiCall(() => api.food.recognize(imageUrl))
-      const currentTask = this.data.recognizingTasks[taskKey]
-      this.setData({
-        recognizingTasks: {
-          ...this.data.recognizingTasks,
-          [taskKey]: { ...currentTask, result: recognizeResult, completed: true }
+  /** 更新缓冲的流式数据，若卡片已存在则同步更新 UI */
+  _updateStreamData(taskKey, eventType, data) {
+    const task = this.data.recognizingTasks[taskKey]
+    if (!task) return
+
+    const streamData = { ...task.streamData }
+    if (eventType === 'overview') {
+      streamData.overview = data
+    } else if (eventType === 'food_item') {
+      streamData.foods = [...streamData.foods, data]
+    }
+
+    const cardMsgId = task.cardMsgId
+    if (cardMsgId) {
+      const messages = this.data.messages.map(msg => {
+        if (msg.id !== cardMsgId) return msg
+        if (eventType === 'overview') {
+          return { ...msg, data: { ...msg.data, mealOverview: data } }
         }
-      })
-      this.checkAndShowResult(taskKey)
-    } catch (error) {
-      console.error('Recognition error:', error)
-      const currentTask = this.data.recognizingTasks[taskKey]
-      this.setData({
-        recognizingTasks: {
-          ...this.data.recognizingTasks,
-          [taskKey]: { ...currentTask, error, completed: true }
+        if (eventType === 'food_item') {
+          return { ...msg, data: { ...msg.data, foods: [...(msg.data.foods || []), data] } }
         }
+        return msg
       })
+      this.setData({ messages, recognizingTasks: { ...this.data.recognizingTasks, [taskKey]: { ...task, streamData } } })
+      this.scrollToBottom()
+    } else {
+      this.setData({ recognizingTasks: { ...this.data.recognizingTasks, [taskKey]: { ...task, streamData } } })
     }
   },
 
   /**
-   * 检查识别任务状态，满足条件（识别完成 + 用户选择了餐次/日期/评分）
-   * 则移除 waiting 消息，插入食物卡片
+   * 评分选定后由 selection.js 调用，创建食物卡片
+   * @param {string} taskKey - cloudFileId
    */
-  checkAndShowResult(taskKey) {
+  _showFoodCard(taskKey) {
     const task = this.data.recognizingTasks[taskKey]
-    if (!task || !task.completed || !task.selectedMealType || task.selectedRating === null || !task.selectedDate || task.resultShown) {
-      return
-    }
+    if (!task || task.resultShown) return
 
-    const recognizeResult = task.result
-    if (!recognizeResult.success || !recognizeResult.data?.foods) {
-      this.showErrorMessage(recognizeResult.error || recognizeResult.message || '无法识别图片中的食物')
-      return
-    }
+    const streamData = task.streamData || { overview: null, foods: [], dietaryAdvice: '', completed: false }
 
-    const result = recognizeResult.data
-    if (!Array.isArray(result.foods) || result.foods.length === 0) {
-      this.showErrorMessage('未识别到任何食物，请尝试重新拍摄')
-      return
-    }
-
-    // 补全食物数据必要字段
-    const foods = result.foods.map(food => ({
-      ...food,
-      imageUrl: task.cloudFileId,
-      id: food.id || `food_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      name: food.name || '未知食物',
-      category: food.category || '其他',
-      score: food.score || 60,
-      tags: food.tags || { positive: [], warning: [] },
-      tagReasons: food.tagReasons || {}
-    }))
-
-    const mealOverview = result.mealOverview || {
-      overallHealthScore: 60,
-      healthTags: { positive: [], warning: [] },
-      tagReasons: {},
-      summary: `识别到：${foods.map(f => f.name).join('、')}`
-    }
-    mealOverview.healthTags = mealOverview.healthTags || { positive: [], warning: [] }
-    mealOverview.tagReasons = mealOverview.tagReasons || {}
-
-    // 创建空食物列表的卡片（显示加载状态，逐步渲染）
-    const { createFoodCardMessage } = require('../../../utils/message-factory')
     const recordId = generateId()
-    const foodCardMessage = createFoodCardMessage([], {
-      overallHealthScore: 0,
-      healthTags: { positive: [], warning: [] },
-      tagReasons: {},
-      summary: '正在分析食物...'
-    }, '', recordId)
-    Object.assign(foodCardMessage.data, {
-      imageUrl: task.imageUrl,
-      mealType: task.selectedMealType,
-      rating: task.selectedRating,
-      cloudFileId: task.cloudFileId,
-      selectedDate: task.selectedDate || this.data.selectedDate
-    })
+    const skeletonCard = createFoodCardSkeleton(
+      recordId,
+      task.imageUrl,
+      task.cloudFileId,
+      task.selectedDate || this.data.selectedDate
+    )
+    skeletonCard.data.mealType = task.selectedMealType || ''
+    skeletonCard.data.rating = task.selectedRating || 0
 
-    // 移除 waiting 态消息（recognizing 类型或含"AI 正在识别中"的文本）
-    const currentTask = this.data.recognizingTasks[taskKey]
+    if (streamData.overview) {
+      skeletonCard.data.mealOverview = streamData.overview
+    }
+    if (streamData.foods.length > 0) {
+      skeletonCard.data.foods = streamData.foods
+    }
+    if (streamData.dietaryAdvice) {
+      skeletonCard.data.dietaryAdvice = streamData.dietaryAdvice
+    }
+    skeletonCard.data.isStreaming = !streamData.completed
+
+    const cardMsgId = skeletonCard.id
+
     const filteredMessages = this.data.messages.filter(msg =>
       msg.type !== 'recognizing' && !(msg.type === 'text' && msg.content.includes('AI 正在识别中'))
     )
 
     this.setData({
-      messages: [...filteredMessages, foodCardMessage],
+      messages: [...filteredMessages, skeletonCard],
       recognizingTasks: {
         ...this.data.recognizingTasks,
-        [taskKey]: { ...currentTask, resultShown: true }
+        [taskKey]: { ...task, cardMsgId, resultShown: true }
       }
     })
     chatService.saveMessages(this.data.messages)
     this.scrollToBottom()
-
-    // 逐步渲染食物项
-    this._progressiveRenderFoods(foodCardMessage.id, foods, mealOverview, result.dietaryAdvice || '')
-  },
-
-  /**
-   * 逐步渲染食物项，每次添加一个食物到卡片中
-   * @param {string} msgId - 食物卡片消息 ID
-   * @param {Array} foods - 完整食物列表
-   * @param {Object} mealOverview - 餐食概览
-   * @param {string} dietaryAdvice - 饮食建议
-   */
-  _progressiveRenderFoods(msgId, foods, mealOverview, dietaryAdvice) {
-    const ITEM_DELAY = 600
-    const HEAD_DELAY = 400
-
-    foods.forEach((food, index) => {
-      setTimeout(() => {
-        const messages = this.data.messages.map(msg => {
-          if (msg.id !== msgId) return msg
-          const currentFoods = msg.data.foods || []
-          const newFoods = [...currentFoods, food]
-          const isLastItem = index === foods.length - 1
-
-          return {
-            ...msg,
-            data: {
-              ...msg.data,
-              foods: newFoods,
-              mealOverview: isLastItem ? mealOverview : msg.data.mealOverview,
-              dietaryAdvice: isLastItem ? dietaryAdvice : msg.data.dietaryAdvice,
-              _progressiveRendering: !isLastItem,
-              _currentFoodIndex: index + 1
-            }
-          }
-        })
-        this.setData({ messages })
-        this.scrollToBottom()
-      }, HEAD_DELAY + index * ITEM_DELAY)
-    })
   }
 }

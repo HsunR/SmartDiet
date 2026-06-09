@@ -66,6 +66,17 @@
 
   <!-- 食物列表 -->
   <view class="food-list">
+    <!-- 骨架屏：流式识别中且暂无食物数据时展示 -->
+    <view wx:if="{{isStreaming && foods.length === 0}}" class="skeleton-food-list">
+      <view class="skeleton-food-row" wx:for="{{[1,2,3]}}" wx:key="*this">
+        <view class="skeleton-food-icon"></view>
+        <view class="skeleton-food-info">
+          <view class="skeleton-line skeleton-line-long"></view>
+          <view class="skeleton-line skeleton-line-short"></view>
+        </view>
+      </view>
+    </view>
+
     <!-- 遍历处理后的食物列表 -->
     <view
       class="food-item"
@@ -123,8 +134,8 @@
     <text class="advice-content">{{dietaryAdvice}}</text>
   </view>
 
-  <!-- 操作按钮区域（仅可编辑且未完成时显示） -->
-  <view class="card-actions" wx:if="{{editable && !actionCompleted}}">
+  <!-- 操作按钮区域（仅可编辑、未完成、非流式时显示） -->
+  <view class="card-actions" wx:if="{{editable && !actionCompleted && !isStreaming}}">
     <!-- 修改按钮 -->
     <button class="action-btn edit-btn" bindtap="onEdit" hover-class="edit-btn-hover">
       <text>修改</text>

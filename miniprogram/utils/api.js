@@ -71,13 +71,7 @@ const streamRequest = (path, data, onChunk, onDone, onError) => {
   // 监听数据分块接收事件
   requestTask.onChunkReceived(response => {
     try {
-      // 将 ArrayBuffer 转换为字符串
-      const uint8Array = new Uint8Array(response.data)
-      let binary = ''
-      for (let i = 0; i < uint8Array.length; i++) {
-        binary += String.fromCharCode(uint8Array[i])
-      }
-      const text = binary
+      const text = new TextDecoder('utf-8').decode(response.data)
       
       // 处理 SSE 格式数据
       buffer += text
@@ -119,6 +113,75 @@ const api = {
   },
   food: {
     recognize: imageUrl => request('POST', '/records/recognize', { imageUrl }),
+    /**
+     * 流式食物识别 - 使用 SSE 实时返回识别结果
+     * @param {string} imageUrl - 图片URL
+     * @param {function} onOverview - 收到餐食概览回调 (data) => void
+     * @param {function} onFoodItem - 收到单个食物回调 (data) => void
+     * @param {function} onDone - 识别完成回调 (data) => void
+     * @param {function} onError - 错误回调 (message) => void
+     * @returns {object} requestTask
+     */
+    recognizeStream: (imageUrl, onOverview, onFoodItem, onDone, onError) => {
+      let buffer = ''
+
+      const requestTask = wx.request({
+        url: `${API_BASE_URL}/records/recognize/stream`,
+        method: 'POST',
+        data: { imageUrl },
+        responseType: 'arraybuffer',
+        enableChunked: true,
+        header: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getToken()}`,
+        },
+        success: res => { },
+        fail: err => {
+          let msg = '网络异常'
+          if (err.errMsg?.includes('timeout')) msg = '请求超时'
+          else if (err.errMsg?.includes('fail')) msg = '请求失败'
+          if (onError) onError(msg)
+        },
+      })
+
+      requestTask.onChunkReceived(response => {
+        try {
+          const text = new TextDecoder('utf-8').decode(response.data)
+
+          buffer += text
+          const lines = buffer.split('\n')
+          buffer = lines.pop() || ''
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const jsonStr = line.slice(6).trim()
+              if (!jsonStr) continue
+              try {
+                const parsed = JSON.parse(jsonStr)
+                switch (parsed.type) {
+                  case 'overview':
+                    if (onOverview) onOverview(parsed.data)
+                    break
+                  case 'food_item':
+                    if (onFoodItem) onFoodItem(parsed.data)
+                    break
+                  case 'done':
+                    if (onDone) onDone(parsed.data)
+                    break
+                  case 'error':
+                    if (onError) onError(parsed.data?.message || '识别失败')
+                    break
+                }
+              } catch (e) { }
+            }
+          }
+        } catch (error) {
+          console.error('recognizeStream onChunkReceived error:', error)
+        }
+      })
+
+      return requestTask
+    },
     addRecord: record => request('POST', '/records', record),
     getRecords: date => request('GET', `/records?date=${date}`),
     getHistory: (startDate, endDate) => request('GET', `/records/history?start=${startDate}&end=${endDate}`),

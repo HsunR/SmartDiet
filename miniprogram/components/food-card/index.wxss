@@ -414,3 +414,51 @@
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* 食物列表骨架屏 */
+.skeleton-food-list {
+  padding: 8rpx 0;
+}
+
+.skeleton-food-row {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 16rpx;
+  border-bottom: 1rpx solid #F5F5F5;
+}
+
+.skeleton-food-icon {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 12rpx;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-pulse 1.5s infinite;
+  margin-right: 16rpx;
+  flex-shrink: 0;
+}
+
+.skeleton-food-info {
+  flex: 1;
+}
+
+.skeleton-food-info .skeleton-line {
+  height: 24rpx;
+  border-radius: 12rpx;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-pulse 1.5s infinite;
+  margin-bottom: 12rpx;
+}
+
+.skeleton-food-info .skeleton-line:last-child {
+  margin-bottom: 0;
+}
+
+.skeleton-food-info .skeleton-line-long {
+  width: 70%;
+}
+
+.skeleton-food-info .skeleton-line-short {
+  width: 45%;
+}

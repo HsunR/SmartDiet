@@ -11,18 +11,10 @@ Component({
    * 组件属性（外部传入的数据）
    */
   properties: {
-    /**
-     * 食物列表数组
-     * @type {Array<Object>}
-     */
     foods: {
       type: Array,
       value: []
     },
-    /**
-     * 餐食概览信息
-     * @type {Object}
-     */
     mealOverview: {
       type: Object,
       value: {
@@ -35,43 +27,27 @@ Component({
         summary: ''
       }
     },
-    /**
-     * 饮食建议
-     * @type {string}
-     */
     dietaryAdvice: {
       type: String,
       value: ''
     },
-    /**
-     * 记录 ID
-     * @type {string}
-     */
     recordId: {
       type: String,
       value: ''
     },
-    /**
-     * 用户评分（0-5 星）
-     * @type {number}
-     */
     rating: {
       type: Number,
       value: 0
     },
-    /**
-     * 是否可编辑
-     * @type {boolean}
-     */
     editable: {
       type: Boolean,
       value: true
     },
-    /**
-     * 操作是否已完成
-     * @type {boolean}
-     */
     actionCompleted: {
+      type: Boolean,
+      value: false
+    },
+    isStreaming: {
       type: Boolean,
       value: false
     }
