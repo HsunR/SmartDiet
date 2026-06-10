@@ -1,4 +1,4 @@
-var mdToHtml = require('../../../utils/markdown').mdToHtml
+var mdToHtml = require('../../../../utils/markdown').mdToHtml
 
 Component({
   properties: {
