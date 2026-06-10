@@ -98,23 +98,23 @@
                     >
                       <swiper-item wx:for="{{calendarData[day.date][item.type]}}" wx:for-item="record" wx:key="_id">
                         <view class="swiper-record">
-                          <!-- 食物图片 -->
+                          <!-- 食物图片（最高优先级，始终显示） -->
                           <image 
                             wx:if="{{record.imageUrl}}" 
                             src="{{record.imageUrl}}" 
                             class="cell-image"
                             mode="aspectFill"
                           ></image>
-                          <!-- 食物名称列表 -->
-                          <view class="cell-foods">
-                            <text class="food-name" wx:for="{{record.foods}}" wx:for-item="food" wx:key="name">{{food.name}}</text>
-                          </view>
-                          <!-- 分数与评分 -->
+                          <!-- 分数与星级（第二优先级） -->
                           <view class="cell-score-row">
                             <text class="cell-score">{{record.mealOverview.overallHealthScore}}分</text>
                             <text class="rating-stars" wx:if="{{record.rating !== undefined}}">{{utils.getRatingStars(record.rating)}}</text>
                           </view>
-                          <!-- 健康标签 -->
+                          <!-- 食物名称列表 -->
+                          <view class="cell-foods">
+                            <text class="food-name" wx:for="{{record.foods}}" wx:for-item="food" wx:key="name">{{food.name}}</text>
+                          </view>
+                          <!-- 健康标签（最低优先级，空间不足时隐藏） -->
                           <view class="cell-tags">
                             <text class="tag-positive" wx:for="{{record.healthTags.positive || []}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
                             <text class="tag-warning" wx:for="{{record.healthTags.warning || []}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
@@ -131,14 +131,15 @@
                         class="cell-image"
                         mode="aspectFill"
                       ></image>
-                      <view class="cell-foods">
-                        <text class="food-name" wx:for="{{calendarData[day.date][item.type][0].foods}}" wx:for-item="food" wx:key="name">{{food.name}}</text>
-                      </view>
-                      <!-- 分数与评分 -->
+                      <!-- 分数与星级（第二优先级） -->
                       <view class="cell-score-row">
                         <text class="cell-score">{{calendarData[day.date][item.type][0].mealOverview.overallHealthScore}}分</text>
                         <text class="rating-stars" wx:if="{{calendarData[day.date][item.type][0].rating !== undefined}}">{{utils.getRatingStars(calendarData[day.date][item.type][0].rating)}}</text>
                       </view>
+                      <view class="cell-foods">
+                        <text class="food-name" wx:for="{{calendarData[day.date][item.type][0].foods}}" wx:for-item="food" wx:key="name">{{food.name}}</text>
+                      </view>
+                      <!-- 健康标签（最低优先级，空间不足时隐藏） -->
                       <view class="cell-tags">
                         <text class="tag-positive" wx:for="{{calendarData[day.date][item.type][0].healthTags.positive || []}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
                         <text class="tag-warning" wx:for="{{calendarData[day.date][item.type][0].healthTags.warning || []}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
