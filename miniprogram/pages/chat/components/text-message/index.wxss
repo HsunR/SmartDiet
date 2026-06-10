@@ -3,9 +3,7 @@
 }
 
 .message-text {
-  font-size: 28rpx;
-  line-height: 1.6;
-  white-space: pre-wrap;
+  display: inline;
 }
 
 .streaming-cursor {
@@ -21,7 +19,6 @@
   50% { opacity: 0; }
 }
 
-/* 流式加载圆点 */
 .typing-dots {
   display: flex;
   align-items: center;
